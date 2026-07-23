@@ -2,19 +2,25 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { DsbOverdueItem } from "../lib/dsb-tasks";
+import type { DsbTaskItem } from "../lib/dsb-tasks";
 
-type OverdueHoverLabelProps = {
+type TaskHoverLabelProps = {
   label: string;
   href?: string;
-  items: DsbOverdueItem[];
+  items: DsbTaskItem[];
+  title: string;
+  emptyText: string;
+  tone?: "overdue" | "open";
 };
 
-export function OverdueHoverLabel({
+export function TaskHoverLabel({
   label,
   href,
   items,
-}: OverdueHoverLabelProps) {
+  title,
+  emptyText,
+  tone = "open",
+}: TaskHoverLabelProps) {
   const panelId = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -33,7 +39,7 @@ export function OverdueHoverLabel({
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const panelWidth = Math.min(320, window.innerWidth - 24);
+    const panelWidth = Math.min(380, window.innerWidth - 24);
     const left = Math.min(
       Math.max(12, rect.left),
       Math.max(12, window.innerWidth - panelWidth - 12),
@@ -82,7 +88,7 @@ export function OverdueHoverLabel({
 
   const labelNode = href ? (
     <a
-      className="metric-link overdue-trigger-link"
+      className="metric-link task-hover-link"
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -93,7 +99,7 @@ export function OverdueHoverLabel({
     </a>
   ) : (
     <span
-      className="overdue-trigger-link"
+      className="task-hover-link"
       aria-describedby={open ? panelId : undefined}
       aria-expanded={open}
     >
@@ -106,29 +112,29 @@ export function OverdueHoverLabel({
     createPortal(
       <div
         id={panelId}
-        className={`overdue-popover${open ? " is-open" : ""}`}
+        className={`task-hover-popover task-hover-popover--${tone}${open ? " is-open" : ""}`}
         style={{ top: coords.top, left: coords.left }}
         role="tooltip"
         onMouseEnter={showPanel}
         onMouseLeave={hidePanelSoon}
       >
-        <header className="overdue-popover-header">
-          <span>Overdue items</span>
+        <header className="task-hover-header">
+          <span>{title}</span>
           <strong>{items.length}</strong>
         </header>
 
         {items.length === 0 ? (
-          <p className="overdue-popover-empty">No overdue tasks</p>
+          <p className="task-hover-empty">{emptyText}</p>
         ) : (
-          <ul className="overdue-popover-list">
+          <ul className="task-hover-list">
             {items.map((item, index) => (
               <li
                 key={item.key}
-                className="overdue-popover-item"
+                className="task-hover-item"
                 style={{ animationDelay: `${80 + index * 55}ms` }}
               >
-                <div className="overdue-item-key">{item.key}</div>
-                <div className="overdue-item-meta">
+                <div className="task-hover-key">{item.key}</div>
+                <div className="task-hover-meta">
                   <span>
                     <em>Summary</em>
                     {item.summary || "No summary"}
@@ -149,7 +155,7 @@ export function OverdueHoverLabel({
   return (
     <span
       ref={triggerRef}
-      className={`overdue-trigger${open ? " is-open" : ""}`}
+      className={`task-hover-trigger task-hover-trigger--${tone}${open ? " is-open" : ""}`}
       onMouseEnter={showPanel}
       onMouseLeave={hidePanelSoon}
       onFocus={showPanel}

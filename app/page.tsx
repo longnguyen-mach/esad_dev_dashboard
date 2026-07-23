@@ -1,8 +1,8 @@
-import { OverdueHoverLabel } from "./overdue-hover";
+import { TaskHoverLabel } from "./task-hover";
 import {
   DSB_SHEET_EDIT_URL,
   fetchDsbTaskStats,
-  type DsbOverdueItem,
+  type DsbTaskItem,
   type DsbTaskStats,
 } from "../lib/dsb-tasks";
 
@@ -14,7 +14,7 @@ type Metric = {
   /** When set, status bar uses this completion percent instead of value/scale. */
   barPercent?: number;
   barLabel?: string;
-  overdueItems?: DsbOverdueItem[];
+  detailItems?: DsbTaskItem[];
 };
 
 type Project = {
@@ -47,11 +47,18 @@ const projects: Project[] = [
     metrics: [
       {
         value: 25,
-        label: "Open tasks",
+        label: "Open Tasks",
         href: DSB_SHEET_EDIT_URL,
         // Fallback when the sheet cannot be fetched: 1 Done / 26 total.
         barPercent: 3.8,
         barLabel: "1 of 26 tasks done",
+        detailItems: [
+          {
+            key: "EE-2221",
+            summary: "ESAD DIGITAL SAFETY BOARD - Layout & Release Checklist Complete",
+            assignee: "",
+          },
+        ],
       },
       {
         value: 1,
@@ -60,7 +67,7 @@ const projects: Project[] = [
         // Fallback when the sheet cannot be fetched.
         barPercent: 20,
         barLabel: "1 of 5 dated open tasks overdue",
-        overdueItems: [
+        detailItems: [
           {
             key: "EE-2226",
             summary: "ESAD DIGITAL SAFETY BOARD - Requirements Locked",
@@ -89,7 +96,7 @@ const projects: Project[] = [
       { name: "Array Launcher Rev A", progress: 50 },
     ],
     metrics: [
-      { value: 41, label: "Open tasks" },
+      { value: 41, label: "Open Tasks" },
       { value: 5, label: "Open rework" },
       { value: 3, label: "On order" },
     ],
@@ -101,7 +108,7 @@ const projects: Project[] = [
     status: "Critical",
     boards: [{ name: "Servo Board", progress: 5 }],
     metrics: [
-      { value: 21, label: "Open tasks" },
+      { value: 21, label: "Open Tasks" },
       { value: 0, label: "Open rework" },
       { value: 0, label: "On order" },
     ],
@@ -120,7 +127,7 @@ const projects: Project[] = [
       { name: "BMS Connector Rev A", progress: 41 },
     ],
     metrics: [
-      { value: 66, label: "Open tasks" },
+      { value: 66, label: "Open Tasks" },
       { value: 1, label: "Open rework" },
       { value: 5, label: "On order" },
     ],
@@ -181,11 +188,23 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
               <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
               <div className="metric-copy">
                 <dt>
-                  {metric.label === "Over Due" ? (
-                    <OverdueHoverLabel
+                  {metric.label === "Open Tasks" && metric.detailItems ? (
+                    <TaskHoverLabel
                       label={metric.label}
                       href={metric.href}
-                      items={metric.overdueItems ?? []}
+                      items={metric.detailItems}
+                      title="Open tasks"
+                      emptyText="No open tasks"
+                      tone="open"
+                    />
+                  ) : metric.label === "Over Due" ? (
+                    <TaskHoverLabel
+                      label={metric.label}
+                      href={metric.href}
+                      items={metric.detailItems ?? []}
+                      title="Overdue items"
+                      emptyText="No overdue tasks"
+                      tone="overdue"
                     />
                   ) : metric.href ? (
                     <a
@@ -258,13 +277,14 @@ function applyDsbTaskStats(
       taskProgressPercent: doneOverOpenPercent,
       taskProgressCaption: `${doneOverOpenPercent}% done · ${stats.doneTasks} done / ${stats.openTasks} open`,
       metrics: project.metrics.map((metric) => {
-        if (metric.label === "Open tasks") {
+        if (metric.label === "Open Tasks") {
           return {
             ...metric,
             value: stats.openTasks,
             href: DSB_SHEET_EDIT_URL,
             barPercent: stats.completionPercent,
             barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
+            detailItems: stats.openItems,
           };
         }
 
@@ -278,7 +298,7 @@ function applyDsbTaskStats(
               stats.openTasksWithDueDate === 0
                 ? "No open tasks with due dates"
                 : `${stats.overdueTasks} of ${stats.openTasksWithDueDate} dated open tasks overdue`,
-            overdueItems: stats.overdueItems,
+            detailItems: stats.overdueItems,
           };
         }
 

@@ -21,6 +21,10 @@ test("counts non-done DSB sheet rows as open tasks", () => {
   assert.equal(stats.doneTasks, 1);
   assert.equal(stats.completionPercent, 16.7);
   assert.equal(stats.syncedAt, "Jul 23, 2026");
+  assert.deepEqual(
+    stats.openItems.map((item) => item.key),
+    ["EE-1", "EE-2", "EE-3", "EE-5", "EE-6"],
+  );
 });
 
 test("counts overdue open tasks from Due date before today", () => {
@@ -72,6 +76,8 @@ test("fetchDsbTaskStats reads open and overdue tasks from the live sheet", async
   assert.ok(stats.openTasks >= 0);
   assert.ok(stats.doneTasks >= 0);
   assert.equal(stats.openTasks + stats.doneTasks, stats.totalTasks);
+  assert.equal(stats.openItems.length, stats.openTasks);
+  assert.equal(stats.overdueItems.length, stats.overdueTasks);
   assert.ok(stats.overdueTasks >= 0);
   assert.ok(stats.overdueTasks <= stats.openTasksWithDueDate);
   assert.ok(stats.completionPercent >= 0);
@@ -79,4 +85,9 @@ test("fetchDsbTaskStats reads open and overdue tasks from the live sheet", async
   assert.ok(stats.overduePercent >= 0);
   assert.ok(stats.overduePercent <= 100);
   assert.match(stats.syncedAt ?? "", /[A-Za-z]{3} \d{1,2}, \d{4}/);
+  if (stats.openItems[0]) {
+    assert.ok(stats.openItems[0].key);
+    assert.ok("summary" in stats.openItems[0]);
+    assert.ok("assignee" in stats.openItems[0]);
+  }
 });

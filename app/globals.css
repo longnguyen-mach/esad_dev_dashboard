@@ -306,28 +306,29 @@ body {
   outline: none;
 }
 
-.overdue-trigger {
+.task-hover-trigger {
   position: relative;
   display: inline-flex;
 }
 
-.overdue-trigger.is-open .overdue-trigger-link,
-.overdue-trigger:hover .overdue-trigger-link {
+.task-hover-trigger--overdue.is-open .task-hover-link,
+.task-hover-trigger--overdue:hover .task-hover-link {
   color: #ffd0c8;
   text-decoration-color: var(--red);
 }
 
-.overdue-popover {
+.task-hover-trigger--open.is-open .task-hover-link,
+.task-hover-trigger--open:hover .task-hover-link {
+  color: #d7ecff;
+  text-decoration-color: var(--blue);
+}
+
+.task-hover-popover {
   position: fixed;
   z-index: 1000;
   width: min(380px, calc(100vw - 24px));
   padding: 12px;
-  border: 1px solid rgba(231, 70, 53, .45);
   border-radius: 10px;
-  background:
-    linear-gradient(160deg, rgba(36, 14, 14, .97), rgba(8, 16, 26, .98)),
-    #0b1520;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, .45), inset 0 0 24px rgba(231, 70, 53, .08);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -338,7 +339,23 @@ body {
     visibility .22s ease;
 }
 
-.overdue-popover::before {
+.task-hover-popover--overdue {
+  border: 1px solid rgba(231, 70, 53, .45);
+  background:
+    linear-gradient(160deg, rgba(36, 14, 14, .97), rgba(8, 16, 26, .98)),
+    #0b1520;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45), inset 0 0 24px rgba(231, 70, 53, .08);
+}
+
+.task-hover-popover--open {
+  border: 1px solid rgba(36, 141, 255, .45);
+  background:
+    linear-gradient(160deg, rgba(10, 28, 48, .97), rgba(8, 16, 26, .98)),
+    #0b1520;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45), inset 0 0 24px rgba(36, 141, 255, .08);
+}
+
+.task-hover-popover::before {
   content: "";
   position: absolute;
   top: -12px;
@@ -347,39 +364,43 @@ body {
   height: 12px;
 }
 
-.overdue-popover.is-open {
+.task-hover-popover.is-open {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0) scale(1);
 }
 
-.overdue-popover-header {
+.task-hover-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
-  color: #ffb4aa;
   font-family: var(--font-geist-mono), monospace;
   font-size: .68rem;
   letter-spacing: .14em;
   text-transform: uppercase;
 }
 
-.overdue-popover-header strong {
-  color: #ffe3de;
+.task-hover-popover--overdue .task-hover-header { color: #ffb4aa; }
+.task-hover-popover--open .task-hover-header { color: #9ec9ff; }
+
+.task-hover-header strong {
   font-size: .8rem;
   letter-spacing: .04em;
 }
 
-.overdue-popover-empty {
+.task-hover-popover--overdue .task-hover-header strong { color: #ffe3de; }
+.task-hover-popover--open .task-hover-header strong { color: #e7f3ff; }
+
+.task-hover-empty {
   margin: 0;
   color: var(--muted);
   font-size: .78rem;
 }
 
-.overdue-popover-list {
+.task-hover-list {
   display: grid;
   gap: 8px;
   max-height: 240px;
@@ -389,7 +410,7 @@ body {
   list-style: none;
 }
 
-.overdue-popover-item {
+.task-hover-item {
   padding: 10px 10px 9px;
   border: 1px solid rgba(73, 105, 133, .45);
   border-radius: 8px;
@@ -398,11 +419,11 @@ body {
   transform: translateY(6px);
 }
 
-.overdue-popover.is-open .overdue-popover-item {
-  animation: overdue-item-in .34s cubic-bezier(.2, .8, .2, 1) forwards;
+.task-hover-popover.is-open .task-hover-item {
+  animation: task-hover-item-in .34s cubic-bezier(.2, .8, .2, 1) forwards;
 }
 
-.overdue-item-key {
+.task-hover-key {
   color: #fff2ef;
   font-family: var(--font-geist-mono), monospace;
   font-size: .82rem;
@@ -410,13 +431,15 @@ body {
   letter-spacing: .04em;
 }
 
-.overdue-item-meta {
+.task-hover-popover--open .task-hover-key { color: #eef7ff; }
+
+.task-hover-meta {
   display: grid;
   gap: 4px;
   margin-top: 7px;
 }
 
-.overdue-item-meta span {
+.task-hover-meta span {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 8px;
@@ -425,7 +448,7 @@ body {
   line-height: 1.35;
 }
 
-.overdue-item-meta em {
+.task-hover-meta em {
   color: #7f97ad;
   font-style: normal;
   font-family: var(--font-geist-mono), monospace;
@@ -434,7 +457,7 @@ body {
   text-transform: uppercase;
 }
 
-@keyframes overdue-item-in {
+@keyframes task-hover-item-in {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -446,17 +469,17 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .overdue-popover,
-  .overdue-popover.is-open .overdue-popover-item {
+  .task-hover-popover,
+  .task-hover-popover.is-open .task-hover-item {
     animation: none;
     transition: none;
   }
 
-  .overdue-popover {
+  .task-hover-popover {
     transform: none;
   }
 
-  .overdue-popover.is-open .overdue-popover-item {
+  .task-hover-popover.is-open .task-hover-item {
     opacity: 1;
     transform: none;
   }

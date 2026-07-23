@@ -47,18 +47,19 @@ test("server-renders the MACH ESAD dashboard", async () => {
     html,
     /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
   );
-  assert.match(html, />Open tasks<\/a>/);
+  assert.match(html, />Open Tasks<\/a>/);
   assert.match(html, /Over Due/);
   assert.match(html, /Schedule/);
   assert.match(
     html,
-    /Digital Safety Board[\s\S]*?<dt><a class="metric-link"[^>]*>Open tasks<\/a><\/dt><dd>\d+<\/dd>/,
+    /Digital Safety Board[\s\S]*?Open Tasks[\s\S]*?<dd>\d+<\/dd>/,
   );
   assert.match(
     html,
     /Digital Safety Board[\s\S]*?Over Due[\s\S]*?<dd>\d+<\/dd>/,
   );
-  assert.match(html, /overdue-trigger/);
+  assert.match(html, /task-hover-trigger--open/);
+  assert.match(html, /task-hover-trigger--overdue/);
   assert.match(html, /Over Due/);
   assert.match(
     html,
@@ -80,11 +81,13 @@ test("keeps dashboard metadata and project data in source", async () => {
 
   assert.match(page, /const projects: Project\[\] = \[/);
   assert.match(page, /name: "Digital Safety Board"/);
+  assert.match(page, /label: "Open Tasks"/);
   assert.match(page, /label: "Over Due"/);
   assert.match(page, /label: "Schedule"/);
   assert.match(page, /stats\.overdueTasks/);
-  assert.match(page, /OverdueHoverLabel/);
-  assert.match(page, /overdueItems: stats\.overdueItems/);
+  assert.match(page, /TaskHoverLabel/);
+  assert.match(page, /detailItems: stats\.openItems/);
+  assert.match(page, /detailItems: stats\.overdueItems/);
   assert.match(page, /fetchDsbTaskStats/);
   assert.match(page, /DSB_SHEET_EDIT_URL/);
   assert.match(page, /name: "High Voltage Fireset Board"/);

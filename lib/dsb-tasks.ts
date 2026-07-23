@@ -15,12 +15,15 @@ const DONE_STATUSES = new Set([
 /** Google Sheet column C (0-based index 2) — Summary. */
 const SUMMARY_COLUMN_C_INDEX = 2;
 
-export type DsbOverdueItem = {
+export type DsbTaskItem = {
   key: string;
   summary: string;
   assignee: string;
-  dueDate: string;
+  dueDate?: string;
 };
+
+/** @deprecated Use DsbTaskItem */
+export type DsbOverdueItem = DsbTaskItem;
 
 export type DsbTaskStats = {
   openTasks: number;
@@ -30,9 +33,11 @@ export type DsbTaskStats = {
   overdueTasks: number;
   /** Open tasks that have a Due date set. */
   openTasksWithDueDate: number;
+  /** Open rows with Key / Summary / Assignee for hover details. */
+  openItems: DsbTaskItem[];
   /** Overdue rows with Key / Summary / Assignee for hover details. */
-  overdueItems: DsbOverdueItem[];
-  /** Share of tasks in Done (0-100). Fill for the Open tasks status bar. */
+  overdueItems: DsbTaskItem[];
+  /** Share of tasks in Done (0-100). Fill for the Open Tasks status bar. */
   completionPercent: number;
   /** Share of dated open tasks that are overdue (0-100). */
   overduePercent: number;
@@ -170,6 +175,7 @@ export function countOpenTasksFromCsv(
       totalTasks: 0,
       overdueTasks: 0,
       openTasksWithDueDate: 0,
+      openItems: [],
       overdueItems: [],
       completionPercent: 0,
       overduePercent: 0,
@@ -192,40 +198,16 @@ export function countOpenTasksFromCsv(
     throw new Error("DSB sheet is missing a Status column");
   }
 
-  let openTasks = 0;
   let doneTasks = 0;
   let openTasksWithDueDate = 0;
-  const overdueItems: DsbOverdueItem[] = [];
+  const openItems: DsbTaskItem[] = [];
+  const overdueItems: DsbTaskItem[] = [];
   let latestUpdate: Date | null = null;
   const today = startOfLocalDay(now);
 
   for (const row of rows.slice(1)) {
     const status = (row[statusIndex] ?? "").trim().toLowerCase();
     const isDone = DONE_STATUSES.has(status);
-    if (isDone) {
-      doneTasks += 1;
-    } else {
-      openTasks += 1;
-    }
-
-    if (dueDateIndex >= 0 && !isDone) {
-      const dueDate = parseSheetDate(row[dueDateIndex] ?? "");
-      if (dueDate) {
-        openTasksWithDueDate += 1;
-        if (startOfLocalDay(dueDate) < today) {
-          // Summary comes from the Summary column (Column C).
-          const summaryFromColumnC = (row[SUMMARY_COLUMN_C_INDEX] ?? "").trim();
-          overdueItems.push({
-            key: (keyIndex >= 0 ? row[keyIndex] : "").trim() || "Unknown",
-            summary:
-              summaryFromColumnC ||
-              (summaryIndex >= 0 ? row[summaryIndex] : "").trim(),
-            assignee: (assigneeIndex >= 0 ? row[assigneeIndex] : "").trim(),
-            dueDate: formatSyncDate(dueDate),
-          });
-        }
-      }
-    }
 
     if (updatedIndex >= 0) {
       const updated = parseSheetDate(row[updatedIndex] ?? "");
@@ -233,8 +215,37 @@ export function countOpenTasksFromCsv(
         latestUpdate = updated;
       }
     }
+
+    if (isDone) {
+      doneTasks += 1;
+      continue;
+    }
+
+    const summaryFromColumnC = (row[SUMMARY_COLUMN_C_INDEX] ?? "").trim();
+    const item: DsbTaskItem = {
+      key: (keyIndex >= 0 ? row[keyIndex] : "").trim() || "Unknown",
+      summary:
+        summaryFromColumnC ||
+        (summaryIndex >= 0 ? row[summaryIndex] : "").trim(),
+      assignee: (assigneeIndex >= 0 ? row[assigneeIndex] : "").trim(),
+    };
+    openItems.push(item);
+
+    if (dueDateIndex >= 0) {
+      const dueDate = parseSheetDate(row[dueDateIndex] ?? "");
+      if (dueDate) {
+        openTasksWithDueDate += 1;
+        if (startOfLocalDay(dueDate) < today) {
+          overdueItems.push({
+            ...item,
+            dueDate: formatSyncDate(dueDate),
+          });
+        }
+      }
+    }
   }
 
+  const openTasks = openItems.length;
   const totalTasks = rows.length - 1;
   const overdueTasks = overdueItems.length;
   const completionPercent =
@@ -250,6 +261,7 @@ export function countOpenTasksFromCsv(
     totalTasks,
     overdueTasks,
     openTasksWithDueDate,
+    openItems,
     overdueItems,
     completionPercent,
     overduePercent,
