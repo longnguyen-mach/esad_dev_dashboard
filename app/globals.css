@@ -272,6 +272,41 @@ body {
   gap: 12px;
 }
 
+.metric-row--text {
+  grid-template-columns: 32px auto minmax(0, 1fr);
+}
+
+.metric-row--text .metric-copy {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.metric-task-name {
+  margin: 0;
+  color: #eaf5ff;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .78rem;
+  font-weight: 650;
+  letter-spacing: .02em;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.metric-task-name-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(243, 170, 38, .45);
+  text-underline-offset: 3px;
+  transition: color .2s ease, text-decoration-color .2s ease;
+}
+
+.metric-task-name-link:hover,
+.metric-task-name-link:focus-visible {
+  color: #ffe3b0;
+  text-decoration-color: var(--amber);
+  outline: none;
+}
+
 .metric-icon {
   color: var(--blue);
   font-family: var(--font-geist-mono), monospace;
@@ -804,6 +839,7 @@ body {
   .panel-header { grid-template-columns: 102px minmax(0,1fr) auto; gap: 18px; }
   .blueprint-tile { width: 102px; height: 108px; }
   .metric-row { grid-template-columns: 28px 118px minmax(70px,1fr); }
+  .metric-row--text { grid-template-columns: 28px auto minmax(0,1fr); }
   .project-panel:nth-child(odd) { padding-right: 92px; }
   .project-panel:nth-child(even) { padding-left: 92px; }
 }
@@ -818,6 +854,7 @@ body {
   .panel-header { grid-template-columns: 74px minmax(0,1fr) auto; }
   .blueprint-tile { width: 74px; height: 84px; }
   .metric-row { grid-template-columns: 25px 104px minmax(55px,1fr); }
+  .metric-row--text { grid-template-columns: 25px auto minmax(0,1fr); }
   .project-panel:nth-child(odd),
   .project-panel:nth-child(even) { padding-inline: 27px; }
 }
@@ -843,6 +880,7 @@ body {
   .signal-lights { gap: 5px; }
   .signal-lights i { width: 9px; height: 9px; }
   .metric-row { grid-template-columns: 26px 112px minmax(60px,1fr); gap: 8px; }
+  .metric-row--text { grid-template-columns: 26px auto minmax(0,1fr); }
   .health-center { width: 190px; }
   .health-center h2 { font-size: 1.1rem; margin-bottom: 15px; }
   .health-stat { margin: 7px 0; }

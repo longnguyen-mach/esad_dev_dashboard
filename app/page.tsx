@@ -21,6 +21,9 @@ type Metric = {
   /** When set, status bar uses this completion percent instead of value/scale. */
   barPercent?: number;
   barLabel?: string;
+  /** Replaces the numeric value + progress bar (used by Schedule). */
+  valueText?: string;
+  hideValueBar?: boolean;
   detailItems?: DsbTaskItem[];
   scheduleRevisions?: DsbScheduleRevision[];
 };
@@ -85,11 +88,11 @@ const projects: Project[] = [
         ],
       },
       {
-        value: 2,
+        value: 0,
         label: "Schedule",
         href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=128284846915460",
-        barPercent: 14.5,
-        barLabel: `${DSB_SCHEDULE_TASK_NAME} · Rev A / Rev B`,
+        valueText: DSB_SCHEDULE_TASK_NAME,
+        hideValueBar: true,
         scheduleRevisions: [
           {
             id: 4631884474285956,
@@ -243,8 +246,13 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
               : metric.value === 0
                 ? 2
                 : Math.max(10, Math.min(100, (metric.value / scale) * 100));
+          const showValueBar = !metric.hideValueBar;
+
           return (
-            <div className="metric-row" key={metric.label}>
+            <div
+              className={`metric-row${showValueBar ? "" : " metric-row--text"}`}
+              key={metric.label}
+            >
               <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
               <div className="metric-copy">
                 <dt>
@@ -285,15 +293,35 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                     metric.label
                   )}
                 </dt>
-                <dd>{metric.value}</dd>
+                {showValueBar ? <dd>{metric.value}</dd> : null}
               </div>
-              <div
-                className="metric-track"
-                aria-label={metric.barLabel}
-                aria-hidden={metric.barLabel ? undefined : true}
-              >
-                <span className={`metric-fill metric-fill--${metricIndex}`} style={{ width: `${width}%` }} />
-              </div>
+              {showValueBar ? (
+                <div
+                  className="metric-track"
+                  aria-label={metric.barLabel}
+                  aria-hidden={metric.barLabel ? undefined : true}
+                >
+                  <span
+                    className={`metric-fill metric-fill--${metricIndex}`}
+                    style={{ width: `${width}%` }}
+                  />
+                </div>
+              ) : metric.valueText ? (
+                metric.href ? (
+                  <dd className="metric-task-name">
+                    <a
+                      className="metric-task-name-link"
+                      href={metric.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {metric.valueText}
+                    </a>
+                  </dd>
+                ) : (
+                  <dd className="metric-task-name">{metric.valueText}</dd>
+                )
+              ) : null}
             </div>
           );
         })}
@@ -382,10 +410,12 @@ function applyDsbTaskStats(
           if (metric.label !== "Schedule") return metric;
           return {
             ...metric,
-            value: scheduleStats.revisionCount,
+            value: 0,
             href: scheduleStats.href,
-            barPercent: scheduleStats.overallProgressPercent,
-            barLabel: `${scheduleStats.taskName} · Rev A / Rev B`,
+            valueText: scheduleStats.taskName,
+            hideValueBar: true,
+            barPercent: undefined,
+            barLabel: undefined,
             scheduleRevisions: scheduleStats.revisions,
           };
         }),
