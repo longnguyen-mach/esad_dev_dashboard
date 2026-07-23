@@ -16,8 +16,14 @@ export type DsbTaskStats = {
   openTasks: number;
   doneTasks: number;
   totalTasks: number;
+  /** Incomplete tasks whose Due date is before today. */
+  overdueTasks: number;
+  /** Open tasks that have a Due date set. */
+  openTasksWithDueDate: number;
   /** Share of tasks in Done (0-100). Fill for the Open tasks status bar. */
   completionPercent: number;
+  /** Share of dated open tasks that are overdue (0-100). */
+  overduePercent: number;
   syncedAt: string | null;
 };
 
@@ -81,21 +87,45 @@ function parseSheetDate(value: string): Date | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
 
-  const match = trimmed.match(
+  const slashMatch = trimmed.match(
     /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?$/,
   );
-  if (!match) return null;
+  if (slashMatch) {
+    const [, month, day, year, hour = "0", minute = "0", second = "0"] =
+      slashMatch;
+    const date = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    );
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
 
-  const [, month, day, year, hour = "0", minute = "0", second = "0"] = match;
-  const date = new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second),
+  const isoMatch = trimmed.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?/,
   );
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (isoMatch) {
+    const [, year, month, day, hour = "0", minute = "0", second = "0"] =
+      isoMatch;
+    const date = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    );
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  return null;
+}
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function formatSyncDate(date: Date): string {
@@ -116,14 +146,20 @@ function formatSyncDate(date: Date): string {
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
-export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
+export function countOpenTasksFromCsv(
+  csvText: string,
+  now: Date = new Date(),
+): DsbTaskStats {
   const rows = parseCsvRows(csvText);
   if (rows.length < 2) {
     return {
       openTasks: 0,
       doneTasks: 0,
       totalTasks: 0,
+      overdueTasks: 0,
+      openTasksWithDueDate: 0,
       completionPercent: 0,
+      overduePercent: 0,
       syncedAt: null,
     };
   }
@@ -131,6 +167,7 @@ export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
   const headers = rows[0].map((header) => header.trim().toLowerCase());
   const statusIndex = headers.indexOf("status");
   const updatedIndex = headers.indexOf("updated");
+  const dueDateIndex = headers.indexOf("due date");
 
   if (statusIndex < 0) {
     throw new Error("DSB sheet is missing a Status column");
@@ -138,14 +175,28 @@ export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
 
   let openTasks = 0;
   let doneTasks = 0;
+  let overdueTasks = 0;
+  let openTasksWithDueDate = 0;
   let latestUpdate: Date | null = null;
+  const today = startOfLocalDay(now);
 
   for (const row of rows.slice(1)) {
     const status = (row[statusIndex] ?? "").trim().toLowerCase();
-    if (DONE_STATUSES.has(status)) {
+    const isDone = DONE_STATUSES.has(status);
+    if (isDone) {
       doneTasks += 1;
     } else {
       openTasks += 1;
+    }
+
+    if (dueDateIndex >= 0 && !isDone) {
+      const dueDate = parseSheetDate(row[dueDateIndex] ?? "");
+      if (dueDate) {
+        openTasksWithDueDate += 1;
+        if (startOfLocalDay(dueDate) < today) {
+          overdueTasks += 1;
+        }
+      }
     }
 
     if (updatedIndex >= 0) {
@@ -159,12 +210,19 @@ export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
   const totalTasks = rows.length - 1;
   const completionPercent =
     totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 1000) / 10;
+  const overduePercent =
+    openTasksWithDueDate === 0
+      ? 0
+      : Math.round((overdueTasks / openTasksWithDueDate) * 1000) / 10;
 
   return {
     openTasks,
     doneTasks,
     totalTasks,
+    overdueTasks,
+    openTasksWithDueDate,
     completionPercent,
+    overduePercent,
     syncedAt: latestUpdate ? formatSyncDate(latestUpdate) : null,
   };
 }

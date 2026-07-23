@@ -47,7 +47,14 @@ const projects: Project[] = [
         barPercent: 3.8,
         barLabel: "1 of 26 tasks done",
       },
-      { value: 4, label: "Over Due" },
+      {
+        value: 1,
+        label: "Over Due",
+        href: DSB_SHEET_EDIT_URL,
+        // Fallback when the sheet cannot be fetched.
+        barPercent: 20,
+        barLabel: "1 of 5 dated open tasks overdue",
+      },
       { value: 2, label: "Schedule" },
     ],
     updated: "Jul 15, 2026",
@@ -211,17 +218,32 @@ function applyDsbTaskStats(
     return {
       ...project,
       updated: stats.syncedAt ?? project.updated,
-      metrics: project.metrics.map((metric) =>
-        metric.label === "Open tasks"
-          ? {
-              ...metric,
-              value: stats.openTasks,
-              href: DSB_SHEET_EDIT_URL,
-              barPercent: stats.completionPercent,
-              barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
-            }
-          : metric,
-      ),
+      metrics: project.metrics.map((metric) => {
+        if (metric.label === "Open tasks") {
+          return {
+            ...metric,
+            value: stats.openTasks,
+            href: DSB_SHEET_EDIT_URL,
+            barPercent: stats.completionPercent,
+            barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
+          };
+        }
+
+        if (metric.label === "Over Due") {
+          return {
+            ...metric,
+            value: stats.overdueTasks,
+            href: DSB_SHEET_EDIT_URL,
+            barPercent: stats.overduePercent,
+            barLabel:
+              stats.openTasksWithDueDate === 0
+                ? "No open tasks with due dates"
+                : `${stats.overdueTasks} of ${stats.openTasksWithDueDate} dated open tasks overdue`,
+          };
+        }
+
+        return metric;
+      }),
     };
   });
 }
