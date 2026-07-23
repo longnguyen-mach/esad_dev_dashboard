@@ -114,14 +114,25 @@ test("highlights the in-window task as current work", () => {
   );
 });
 
-test("falls back to the next upcoming task when none are active", () => {
+test("does not select a future Smartsheet task as current", () => {
   const stats = buildDsbScheduleStats(fixtureSheet, new Date("2026-08-01T12:00:00Z"));
   assert.ok(stats);
   assert.equal(
     findCurrentScheduleTaskId(stats.revisions, new Date("2026-08-01T12:00:00Z")),
-    4913359450996612,
+    null,
   );
-  assert.equal(stats.nextTask, null);
+  assert.equal(stats.currentTask, null);
+  assert.equal(stats.nextTask?.name, "Requirements");
+});
+
+test("keeps current task on today's calendar date even after finish time", () => {
+  const stats = buildDsbScheduleStats(
+    fixtureSheet,
+    new Date("2026-07-16T23:30:00Z"),
+  );
+  assert.ok(stats);
+  assert.equal(stats.currentTask?.name, "Detail Architecture Work");
+  assert.equal(stats.nextTask?.name, "Requirements");
 });
 
 test("fetches live DSB schedule from Smartsheet when token is configured", async () => {
@@ -142,6 +153,11 @@ test("fetches live DSB schedule from Smartsheet when token is configured", async
   assert.ok(stats.revisions[0].tasks.length > 0);
   assert.ok(stats.revisions[1].tasks.length > 0);
   assert.ok(stats.currentTask?.name);
+  assert.notEqual(stats.currentTask?.name, "Schematic");
+  assert.match(
+    stats.currentTask.start ?? "",
+    /^2026-07-/,
+  );
   assert.ok(stats.nextTask?.name);
   assert.notEqual(stats.currentTask?.id, stats.nextTask?.id);
 });

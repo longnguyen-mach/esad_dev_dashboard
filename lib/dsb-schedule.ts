@@ -209,6 +209,11 @@ function parseSmartsheetDate(value: string): number {
   return Date.parse(`${trimmed}Z`);
 }
 
+function utcDayStartMs(ms: number): number {
+  const date = new Date(ms);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
 function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
   startMs: number;
   finishMs: number;
@@ -220,42 +225,49 @@ function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
   return { startMs, finishMs };
 }
 
-/** Pick the in-window schedule task, or the next upcoming task when none is active. */
+function overlapsCalendarDay(
+  startMs: number,
+  finishMs: number,
+  dayStartMs: number,
+): boolean {
+  const startDay = utcDayStartMs(startMs);
+  const finishDay = utcDayStartMs(finishMs);
+  return startDay <= dayStartMs && finishDay >= dayStartMs;
+}
+
+/**
+ * Pick the schedule task that covers today's calendar date.
+ * Never selects a future-dated task that has not started yet.
+ */
 export function findCurrentScheduleTask(
   revisions: DsbScheduleRevision[],
   now: Date = new Date(),
 ): DsbScheduleTask | null {
-  const nowMs = now.getTime();
+  const todayStartMs = utcDayStartMs(now.getTime());
   const tasks = revisions.flatMap((revision) => revision.tasks);
 
-  const inProgress = tasks
+  const todaysTasks = tasks
     .map((task) => {
       const bounds = taskTimeBounds(task);
       if (!bounds) return null;
-      if (nowMs < bounds.startMs || nowMs > bounds.finishMs) return null;
+      // Exclude future work that starts after today.
+      if (utcDayStartMs(bounds.startMs) > todayStartMs) return null;
+      if (!overlapsCalendarDay(bounds.startMs, bounds.finishMs, todayStartMs)) {
+        return null;
+      }
       return { task, startMs: bounds.startMs, finishMs: bounds.finishMs };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry != null);
 
-  if (inProgress.length > 0) {
-    inProgress.sort((a, b) => {
-      // Prefer the latest-started active task; break ties by earliest finish.
-      if (a.startMs !== b.startMs) return b.startMs - a.startMs;
-      return a.finishMs - b.finishMs;
-    });
-    return inProgress[0]?.task ?? null;
-  }
+  if (todaysTasks.length === 0) return null;
 
-  const upcoming = tasks
-    .map((task) => {
-      const bounds = taskTimeBounds(task);
-      if (!bounds || bounds.startMs < nowMs) return null;
-      return { task, startMs: bounds.startMs };
-    })
-    .filter((entry): entry is NonNullable<typeof entry> => entry != null)
-    .sort((a, b) => a.startMs - b.startMs);
+  todaysTasks.sort((a, b) => {
+    // Prefer the latest-started task that still covers today.
+    if (a.startMs !== b.startMs) return b.startMs - a.startMs;
+    return a.finishMs - b.finishMs;
+  });
 
-  return upcoming[0]?.task ?? null;
+  return todaysTasks[0]?.task ?? null;
 }
 
 export function findCurrentScheduleTaskId(
@@ -282,7 +294,7 @@ function orderedScheduleTasks(
     });
 }
 
-/** Task immediately after the current schedule task. */
+/** Task immediately after the current schedule task (or first future task). */
 export function findNextScheduleTask(
   revisions: DsbScheduleRevision[],
   now: Date = new Date(),
@@ -291,11 +303,17 @@ export function findNextScheduleTask(
   if (ordered.length === 0) return null;
 
   const current = findCurrentScheduleTask(revisions, now);
-  if (!current) return ordered[0]?.task ?? null;
+  if (current) {
+    const currentIndex = ordered.findIndex((entry) => entry.task.id === current.id);
+    if (currentIndex < 0) return null;
+    return ordered[currentIndex + 1]?.task ?? null;
+  }
 
-  const currentIndex = ordered.findIndex((entry) => entry.task.id === current.id);
-  if (currentIndex < 0) return ordered[0]?.task ?? null;
-  return ordered[currentIndex + 1]?.task ?? null;
+  const todayStartMs = utcDayStartMs(now.getTime());
+  const upcoming = ordered.find(
+    (entry) => utcDayStartMs(entry.startMs) > todayStartMs,
+  );
+  return upcoming?.task ?? null;
 }
 
 export async function fetchDsbScheduleStats(
