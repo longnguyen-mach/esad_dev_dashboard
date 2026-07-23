@@ -59,7 +59,7 @@ test("server-renders the MACH ESAD dashboard", async () => {
     /Digital Safety Board[\s\S]*?Over Due[\s\S]*?<dd>\d+<\/dd>/,
   );
   assert.match(html, /overdue-trigger/);
-  assert.match(html, /Overdue items/);
+  assert.match(html, /Over Due/);
   assert.match(
     html,
     /aria-label="\d+ of \d+ tasks done"[^>]*>[\s\S]*?class="metric-fill metric-fill--0"[^>]*style="width:\d+(?:\.\d+)?%"/,
