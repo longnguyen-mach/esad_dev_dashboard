@@ -52,6 +52,10 @@ test("server-renders the MACH ESAD dashboard", async () => {
     html,
     /Digital Safety Board[\s\S]*?<dt><a class="metric-link"[^>]*>Open tasks<\/a><\/dt><dd>\d+<\/dd>/,
   );
+  assert.match(
+    html,
+    /aria-label="\d+ of \d+ tasks done"[^>]*>[\s\S]*?class="metric-fill metric-fill--0"[^>]*style="width:\d+(?:\.\d+)?%"/,
+  );
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton|Codex/i);
 });
 

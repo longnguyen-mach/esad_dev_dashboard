@@ -16,6 +16,8 @@ test("counts non-done DSB sheet rows as open tasks", () => {
   const stats = countOpenTasksFromCsv(sampleCsv);
   assert.equal(stats.totalTasks, 4);
   assert.equal(stats.openTasks, 3);
+  assert.equal(stats.doneTasks, 1);
+  assert.equal(stats.completionPercent, 25);
   assert.equal(stats.syncedAt, "Jul 23, 2026");
 });
 
@@ -24,6 +26,9 @@ test("fetchDsbTaskStats reads open tasks from the live sheet", async () => {
   assert.ok(stats, "expected live DSB sheet stats");
   assert.ok(stats.totalTasks > 0);
   assert.ok(stats.openTasks >= 0);
-  assert.ok(stats.openTasks <= stats.totalTasks);
+  assert.ok(stats.doneTasks >= 0);
+  assert.equal(stats.openTasks + stats.doneTasks, stats.totalTasks);
+  assert.ok(stats.completionPercent >= 0);
+  assert.ok(stats.completionPercent <= 100);
   assert.match(stats.syncedAt ?? "", /[A-Za-z]{3} \d{1,2}, \d{4}/);
 });

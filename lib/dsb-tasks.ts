@@ -14,7 +14,10 @@ const DONE_STATUSES = new Set([
 
 export type DsbTaskStats = {
   openTasks: number;
+  doneTasks: number;
   totalTasks: number;
+  /** Share of tasks in Done (0-100). Fill for the Open tasks status bar. */
+  completionPercent: number;
   syncedAt: string | null;
 };
 
@@ -116,7 +119,13 @@ function formatSyncDate(date: Date): string {
 export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
   const rows = parseCsvRows(csvText);
   if (rows.length < 2) {
-    return { openTasks: 0, totalTasks: 0, syncedAt: null };
+    return {
+      openTasks: 0,
+      doneTasks: 0,
+      totalTasks: 0,
+      completionPercent: 0,
+      syncedAt: null,
+    };
   }
 
   const headers = rows[0].map((header) => header.trim().toLowerCase());
@@ -128,11 +137,14 @@ export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
   }
 
   let openTasks = 0;
+  let doneTasks = 0;
   let latestUpdate: Date | null = null;
 
   for (const row of rows.slice(1)) {
     const status = (row[statusIndex] ?? "").trim().toLowerCase();
-    if (!DONE_STATUSES.has(status)) {
+    if (DONE_STATUSES.has(status)) {
+      doneTasks += 1;
+    } else {
       openTasks += 1;
     }
 
@@ -144,9 +156,15 @@ export function countOpenTasksFromCsv(csvText: string): DsbTaskStats {
     }
   }
 
+  const totalTasks = rows.length - 1;
+  const completionPercent =
+    totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 1000) / 10;
+
   return {
     openTasks,
-    totalTasks: rows.length - 1,
+    doneTasks,
+    totalTasks,
+    completionPercent,
     syncedAt: latestUpdate ? formatSyncDate(latestUpdate) : null,
   };
 }

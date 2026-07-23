@@ -5,7 +5,14 @@ import {
 } from "../lib/dsb-tasks";
 
 type Board = { name: string; progress: number };
-type Metric = { value: number; label: string; href?: string };
+type Metric = {
+  value: number;
+  label: string;
+  href?: string;
+  /** When set, status bar uses this completion percent instead of value/scale. */
+  barPercent?: number;
+  barLabel?: string;
+};
 
 type Project = {
   name: string;
@@ -36,6 +43,9 @@ const projects: Project[] = [
         value: 25,
         label: "Open tasks",
         href: DSB_SHEET_EDIT_URL,
+        // Fallback when the sheet cannot be fetched: 1 Done / 26 total.
+        barPercent: 3.8,
+        barLabel: "1 of 26 tasks done",
       },
       { value: 4, label: "Schedule" },
       { value: 2, label: "On order" },
@@ -129,7 +139,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
       <dl className="panel-metrics">
         {project.metrics.map((metric, metricIndex) => {
           const scale = metricIndex === 0 ? 80 : 10;
-          const width = metric.value === 0 ? 2 : Math.max(10, Math.min(100, (metric.value / scale) * 100));
+          const width =
+            metric.barPercent != null
+              ? Math.max(0, Math.min(100, metric.barPercent))
+              : metric.value === 0
+                ? 2
+                : Math.max(10, Math.min(100, (metric.value / scale) * 100));
           return (
             <div className="metric-row" key={metric.label}>
               <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
@@ -150,7 +165,11 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                 </dt>
                 <dd>{metric.value}</dd>
               </div>
-              <div className="metric-track" aria-hidden="true">
+              <div
+                className="metric-track"
+                aria-label={metric.barLabel}
+                aria-hidden={metric.barLabel ? undefined : true}
+              >
                 <span className={`metric-fill metric-fill--${metricIndex}`} style={{ width: `${width}%` }} />
               </div>
             </div>
@@ -194,7 +213,13 @@ function applyDsbTaskStats(
       updated: stats.syncedAt ?? project.updated,
       metrics: project.metrics.map((metric) =>
         metric.label === "Open tasks"
-          ? { ...metric, value: stats.openTasks, href: DSB_SHEET_EDIT_URL }
+          ? {
+              ...metric,
+              value: stats.openTasks,
+              href: DSB_SHEET_EDIT_URL,
+              barPercent: stats.completionPercent,
+              barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
+            }
           : metric,
       ),
     };
