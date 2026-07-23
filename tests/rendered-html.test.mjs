@@ -79,11 +79,12 @@ test("server-renders the MACH ESAD dashboard", async () => {
 });
 
 test("keeps dashboard metadata and project data in source", async () => {
-  const [page, layout, packageJson, hover] = await Promise.all([
+  const [page, layout, packageJson, hover, scheduleHover] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../app/task-hover.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/schedule-hover.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /const projects: Project\[\] = \[/);
@@ -94,6 +95,9 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /stats\.overdueTasks/);
   assert.match(page, /TaskHoverLabel/);
   assert.match(page, /ScheduleHoverLabel/);
+  assert.match(scheduleHover, /findCurrentScheduleTaskId/);
+  assert.match(scheduleHover, /is-current-work/);
+  assert.match(scheduleHover, /schedule-current-arrow/);
   assert.match(page, /detailItems: stats\.openItems/);
   assert.match(page, /detailItems: stats\.overdueItems/);
   assert.match(page, /fetchDsbTaskStats/);

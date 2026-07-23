@@ -5,6 +5,7 @@ import {
   DSB_SCHEDULE_TASK_NAME,
   buildDsbScheduleStats,
   fetchDsbScheduleStats,
+  findCurrentScheduleTaskId,
 } from "../lib/dsb-schedule.ts";
 
 const fixtureSheet = {
@@ -94,6 +95,24 @@ test("builds Rev A and Rev B schedule groups for Digital Safety Board task", () 
   assert.equal(stats.revisions[1]?.tasks[0]?.name, "Requirements");
   assert.match(stats.href, /rowId=128284846915460/);
   assert.ok(stats.overallProgressPercent > 0);
+});
+
+test("highlights the in-window task as current work", () => {
+  const stats = buildDsbScheduleStats(fixtureSheet, new Date("2026-07-10T12:00:00Z"));
+  assert.ok(stats);
+  assert.equal(
+    findCurrentScheduleTaskId(stats.revisions, new Date("2026-07-10T12:00:00Z")),
+    2380084660600708,
+  );
+});
+
+test("falls back to the next upcoming task when none are active", () => {
+  const stats = buildDsbScheduleStats(fixtureSheet, new Date("2026-08-01T12:00:00Z"));
+  assert.ok(stats);
+  assert.equal(
+    findCurrentScheduleTaskId(stats.revisions, new Date("2026-08-01T12:00:00Z")),
+    4913359450996612,
+  );
 });
 
 test("fetches live DSB schedule from Smartsheet when token is configured", async () => {

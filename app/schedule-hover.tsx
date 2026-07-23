@@ -2,7 +2,10 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { DsbScheduleRevision } from "../lib/dsb-schedule";
+import {
+  findCurrentScheduleTaskId,
+  type DsbScheduleRevision,
+} from "../lib/dsb-schedule";
 
 type ScheduleHoverLabelProps = {
   label: string;
@@ -21,6 +24,33 @@ function formatDate(value: string | null): string {
   });
 }
 
+function CurrentWorkArrow() {
+  return (
+    <span className="schedule-current-arrow" aria-hidden="true">
+      <svg viewBox="0 0 28 20" width="28" height="20" focusable="false">
+        <path
+          className="schedule-current-arrow-shaft"
+          d="M2 10h16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+        />
+        <path
+          className="schedule-current-arrow-head"
+          d="M16 3.5 25 10l-9 6.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <em>Now</em>
+    </span>
+  );
+}
+
 export function ScheduleHoverLabel({
   label,
   href,
@@ -28,10 +58,12 @@ export function ScheduleHoverLabel({
 }: ScheduleHoverLabelProps) {
   const panelId = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
+  const currentItemRef = useRef<HTMLLIElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const currentTaskId = findCurrentScheduleTaskId(revisions);
 
   function clearCloseTimer() {
     if (closeTimer.current) {
@@ -91,6 +123,14 @@ export function ScheduleHoverLabel({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open || currentTaskId == null) return;
+    currentItemRef.current?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [open, currentTaskId]);
+
   const labelNode = href ? (
     <a
       className="metric-link task-hover-link"
@@ -132,62 +172,79 @@ export function ScheduleHoverLabel({
           <p className="task-hover-empty">No Rev A / Rev B schedule found</p>
         ) : (
           <div className="schedule-revision-stack">
-            {revisions.map((revision, revisionIndex) => (
-              <section
-                key={revision.id}
-                className="schedule-revision"
-                style={{ animationDelay: `${70 + revisionIndex * 60}ms` }}
-              >
-                <header className="schedule-revision-header">
-                  <a
-                    className="schedule-revision-title"
-                    href={revision.permalink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {revision.name}
-                  </a>
-                  <span>
-                    {formatDate(revision.start)} → {formatDate(revision.finish)}
-                  </span>
-                </header>
+            {revisions.map((revision, revisionIndex) => {
+              const revisionHasCurrent = revision.tasks.some(
+                (task) => task.id === currentTaskId,
+              );
 
-                <ul className="task-hover-list">
-                  {revision.tasks.map((task, taskIndex) => (
-                    <li
-                      key={task.id}
-                      className="task-hover-item"
-                      style={{
-                        animationDelay: `${110 + revisionIndex * 60 + taskIndex * 40}ms`,
-                      }}
+              return (
+                <section
+                  key={revision.id}
+                  className={`schedule-revision${revisionHasCurrent ? " is-current" : ""}`}
+                  style={{ animationDelay: `${70 + revisionIndex * 60}ms` }}
+                >
+                  <header className="schedule-revision-header">
+                    <a
+                      className="schedule-revision-title"
+                      href={revision.permalink}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <a
-                        className="task-hover-key"
-                        href={task.permalink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {task.name}
-                      </a>
-                      <div className="task-hover-meta">
-                        <span>
-                          <em>Start</em>
-                          {formatDate(task.start)}
-                        </span>
-                        <span>
-                          <em>Finish</em>
-                          {formatDate(task.finish)}
-                        </span>
-                        <span>
-                          <em>Assignee</em>
-                          {task.assignee || "Unassigned"}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+                      {revision.name}
+                    </a>
+                    <span>
+                      {formatDate(revision.start)} → {formatDate(revision.finish)}
+                    </span>
+                  </header>
+
+                  <ul className="task-hover-list">
+                    {revision.tasks.map((task, taskIndex) => {
+                      const isCurrent = task.id === currentTaskId;
+
+                      return (
+                        <li
+                          key={task.id}
+                          ref={isCurrent ? currentItemRef : undefined}
+                          className={`task-hover-item${isCurrent ? " is-current-work" : ""}`}
+                          style={{
+                            animationDelay: `${110 + revisionIndex * 60 + taskIndex * 40}ms`,
+                          }}
+                        >
+                          {isCurrent ? <CurrentWorkArrow /> : null}
+                          <div className="schedule-task-body">
+                            <a
+                              className="task-hover-key"
+                              href={task.permalink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {task.name}
+                              {isCurrent ? (
+                                <span className="visually-hidden"> (current work)</span>
+                              ) : null}
+                            </a>
+                            <div className="task-hover-meta">
+                              <span>
+                                <em>Start</em>
+                                {formatDate(task.start)}
+                              </span>
+                              <span>
+                                <em>Finish</em>
+                                {formatDate(task.finish)}
+                              </span>
+                              <span>
+                                <em>Assignee</em>
+                                {task.assignee || "Unassigned"}
+                              </span>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
           </div>
         )}
       </div>,

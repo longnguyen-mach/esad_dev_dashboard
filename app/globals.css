@@ -472,6 +472,81 @@ body {
   text-decoration-color: var(--amber);
 }
 
+.schedule-revision.is-current .schedule-revision-title {
+  color: #fff1c8;
+}
+
+.task-hover-item.is-current-work {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border-color: rgba(243, 170, 38, .72);
+  background:
+    linear-gradient(120deg, rgba(243, 170, 38, .22), rgba(243, 170, 38, .05) 42%, rgba(7, 18, 29, .78)),
+    rgba(24, 18, 8, .92);
+  box-shadow:
+    inset 3px 0 0 var(--amber),
+    0 0 0 1px rgba(243, 170, 38, .18);
+}
+
+.schedule-current-arrow {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+  color: #ffd089;
+  animation: schedule-current-pulse 1.6s ease-in-out infinite;
+}
+
+.schedule-current-arrow em {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .58rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #ffe3b0;
+}
+
+.schedule-current-arrow-head {
+  transform-origin: 18px 10px;
+}
+
+.schedule-task-body {
+  min-width: 0;
+}
+
+.task-hover-item.is-current-work .task-hover-key {
+  color: #fff6df;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes schedule-current-pulse {
+  0%,
+  100% {
+    opacity: .78;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+}
+
 .task-hover-empty {
   margin: 0;
   color: var(--muted);
@@ -568,7 +643,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .task-hover-popover,
-  .task-hover-popover.is-open .task-hover-item {
+  .task-hover-popover.is-open .task-hover-item,
+  .schedule-current-arrow {
     animation: none;
     transition: none;
   }
@@ -578,6 +654,11 @@ body {
   }
 
   .task-hover-popover.is-open .task-hover-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  .schedule-current-arrow {
     opacity: 1;
     transform: none;
   }

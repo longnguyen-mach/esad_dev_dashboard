@@ -191,6 +191,55 @@ export function buildDsbScheduleStats(
   };
 }
 
+function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
+  startMs: number;
+  finishMs: number;
+} | null {
+  if (!task.start || !task.finish) return null;
+  const startMs = Date.parse(task.start);
+  const finishMs = Date.parse(task.finish);
+  if (!Number.isFinite(startMs) || !Number.isFinite(finishMs)) return null;
+  return { startMs, finishMs };
+}
+
+/** Pick the in-window schedule task, or the next upcoming task when none is active. */
+export function findCurrentScheduleTaskId(
+  revisions: DsbScheduleRevision[],
+  now: Date = new Date(),
+): number | null {
+  const nowMs = now.getTime();
+  const tasks = revisions.flatMap((revision) => revision.tasks);
+
+  const inProgress = tasks
+    .map((task) => {
+      const bounds = taskTimeBounds(task);
+      if (!bounds) return null;
+      if (nowMs < bounds.startMs || nowMs > bounds.finishMs) return null;
+      return { id: task.id, startMs: bounds.startMs, finishMs: bounds.finishMs };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry != null);
+
+  if (inProgress.length > 0) {
+    inProgress.sort((a, b) => {
+      // Prefer the latest-started active task; break ties by earliest finish.
+      if (a.startMs !== b.startMs) return b.startMs - a.startMs;
+      return a.finishMs - b.finishMs;
+    });
+    return inProgress[0]?.id ?? null;
+  }
+
+  const upcoming = tasks
+    .map((task) => {
+      const bounds = taskTimeBounds(task);
+      if (!bounds || bounds.startMs < nowMs) return null;
+      return { id: task.id, startMs: bounds.startMs };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry != null)
+    .sort((a, b) => a.startMs - b.startMs);
+
+  return upcoming[0]?.id ?? null;
+}
+
 export async function fetchDsbScheduleStats(
   token?: string,
   now: Date = new Date(),
