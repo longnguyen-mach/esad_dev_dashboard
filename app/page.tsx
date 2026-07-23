@@ -140,12 +140,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 
 function HealthCore() {
   return (
-    <aside className="health-core" aria-label="Health distribution: 60 percent on track, 25 percent at risk, 15 percent critical">
+    <aside className="health-core" aria-label="Program status: 60 percent on track, 25 percent at risk, 15 percent critical">
       <div className="orbit orbit--outer" aria-hidden="true"><i /><i /><i /><i /></div>
       <div className="orbit orbit--inner" aria-hidden="true" />
       <div className="health-donut">
         <div className="health-center">
-          <h2>Health<br />distribution</h2>
+          <h2>Program<br />status</h2>
           <div className="health-stat health-stat--green"><i /><span>On track</span><strong>60%</strong></div>
           <div className="health-stat health-stat--amber"><i /><span>At risk</span><strong>25%</strong></div>
           <div className="health-stat health-stat--red"><i /><span>Critical</span><strong>15%</strong></div>

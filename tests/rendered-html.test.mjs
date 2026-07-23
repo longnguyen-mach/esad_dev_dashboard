@@ -39,7 +39,7 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /High Voltage Fireset Board/);
   assert.match(html, /CPLD - Primary/);
   assert.match(html, /CPLD - Independent/);
-  assert.match(html, /Health distribution/);
+  assert.match(html, /Program status/);
   assert.match(html, /Average board progress 72 percent/);
   assert.match(html, /SYNC <!-- -->JUL 21, 2026/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton|Codex/i);
