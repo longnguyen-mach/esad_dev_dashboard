@@ -1,4 +1,4 @@
-import { getSmartsheetSheet } from "./smartsheet";
+import { getSmartsheetSheet } from "./smartsheet.ts";
 
 export const AVIONICS_MASTER_SCHEDULE_SHEET_ID = 2069122061913988;
 export const DSB_SCHEDULE_TASK_NAME = "Digital Safety Board (DSB)";
