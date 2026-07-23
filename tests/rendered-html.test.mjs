@@ -49,7 +49,8 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(html, />Open Tasks<\/a>/);
   assert.match(html, /Over Due/);
-  assert.match(html, /Schedule/);
+  assert.match(html, /Current Task/);
+  assert.match(html, /Next Task/);
   assert.match(
     html,
     /Digital Safety Board[\s\S]*?Open Tasks[\s\S]*?<dd>\d+<\/dd>/,
@@ -61,10 +62,11 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /task-hover-trigger--open/);
   assert.match(html, /task-hover-trigger--overdue/);
   assert.match(html, /task-hover-trigger--schedule/);
-  assert.match(html, /Schedule/);
   assert.match(html, /metric-row--text/);
   assert.match(html, /metric-task-name/);
   assert.match(html, /metric-task-name-link/);
+  assert.match(html, /Current Task[\s\S]*?Next Task/);
+  assert.doesNotMatch(html, />Schedule</);
   assert.doesNotMatch(
     html,
     /metric-task-name[\s\S]*?Digital Safety Board \(DSB\)/,
@@ -98,9 +100,12 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /name: "Digital Safety Board"/);
   assert.match(page, /label: "Open Tasks"/);
   assert.match(page, /label: "Over Due"/);
-  assert.match(page, /label: "Schedule"/);
-  assert.match(page, /valueText:\s*scheduleStats\.currentTask\?\.name/);
-  assert.match(page, /valueHref:\s*scheduleStats\.currentTask\?\.permalink/);
+  assert.match(page, /label: "Current Task"/);
+  assert.match(page, /label: "Next Task"/);
+  assert.match(page, /valueText: scheduleStats\.currentTask\?\.name/);
+  assert.match(page, /valueText: scheduleStats\.nextTask\?\.name/);
+  assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.currentTask\?\.permalink/);
+  assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.nextTask\?\.permalink/);
   assert.match(page, /hideValueBar: true/);
   assert.match(page, /stats\.overdueTasks/);
   assert.match(page, /TaskHoverLabel/);

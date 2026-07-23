@@ -39,6 +39,7 @@ export type DsbScheduleStats = {
   revisionCount: number;
   revisions: DsbScheduleRevision[];
   currentTask: DsbScheduleTask | null;
+  nextTask: DsbScheduleTask | null;
   overallProgressPercent: number;
   syncedAt: string | null;
 };
@@ -182,6 +183,7 @@ export function buildDsbScheduleStats(
   const dsbStart = cellValue(dsbRow, COLUMN.start);
   const dsbFinish = cellValue(dsbRow, COLUMN.finish);
   const currentTask = findCurrentScheduleTask(revisions, now);
+  const nextTask = findNextScheduleTask(revisions, now);
 
   return {
     taskName: DSB_SCHEDULE_TASK_NAME,
@@ -189,6 +191,7 @@ export function buildDsbScheduleStats(
     revisionCount: revisions.length,
     revisions,
     currentTask,
+    nextTask,
     overallProgressPercent: progressFromDates(dsbStart, dsbFinish, now),
     syncedAt: formatSyncDate(dsbFinish),
   };
@@ -248,6 +251,39 @@ export function findCurrentScheduleTaskId(
   now: Date = new Date(),
 ): number | null {
   return findCurrentScheduleTask(revisions, now)?.id ?? null;
+}
+
+function orderedScheduleTasks(
+  revisions: DsbScheduleRevision[],
+): Array<{ task: DsbScheduleTask; startMs: number; finishMs: number }> {
+  return revisions
+    .flatMap((revision) => revision.tasks)
+    .map((task) => {
+      const bounds = taskTimeBounds(task);
+      if (!bounds) return null;
+      return { task, startMs: bounds.startMs, finishMs: bounds.finishMs };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry != null)
+    .sort((a, b) => {
+      if (a.startMs !== b.startMs) return a.startMs - b.startMs;
+      return a.finishMs - b.finishMs;
+    });
+}
+
+/** Task immediately after the current schedule task. */
+export function findNextScheduleTask(
+  revisions: DsbScheduleRevision[],
+  now: Date = new Date(),
+): DsbScheduleTask | null {
+  const ordered = orderedScheduleTasks(revisions);
+  if (ordered.length === 0) return null;
+
+  const current = findCurrentScheduleTask(revisions, now);
+  if (!current) return ordered[0]?.task ?? null;
+
+  const currentIndex = ordered.findIndex((entry) => entry.task.id === current.id);
+  if (currentIndex < 0) return ordered[0]?.task ?? null;
+  return ordered[currentIndex + 1]?.task ?? null;
 }
 
 export async function fetchDsbScheduleStats(

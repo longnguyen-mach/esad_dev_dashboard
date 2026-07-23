@@ -20,7 +20,7 @@ type Metric = {
   /** When set, status bar uses this completion percent instead of value/scale. */
   barPercent?: number;
   barLabel?: string;
-  /** Replaces the numeric value + progress bar (used by Schedule). */
+  /** Replaces the numeric value + progress bar (used by Current/Next Task). */
   valueText?: string;
   valueHref?: string;
   hideValueBar?: boolean;
@@ -89,7 +89,7 @@ const projects: Project[] = [
       },
       {
         value: 0,
-        label: "Schedule",
+        label: "Current Task",
         href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=128284846915460",
         valueText: "Detail Architecture Work",
         valueHref:
@@ -116,6 +116,17 @@ const projects: Project[] = [
                 permalink:
                   "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
               },
+              {
+                id: 6602209311260999,
+                name: "Block Diagram + Review",
+                start: "2026-07-17T08:00:00",
+                finish: "2026-07-23T16:59:59",
+                percentComplete: null,
+                status: null,
+                assignee: null,
+                permalink:
+                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+              },
             ],
           },
           {
@@ -141,6 +152,15 @@ const projects: Project[] = [
             ],
           },
         ],
+      },
+      {
+        value: 0,
+        label: "Next Task",
+        href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+        valueText: "Block Diagram + Review",
+        valueHref:
+          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+        hideValueBar: true,
       },
     ],
     // Fallback when the sheet cannot be fetched: 1 done / 25 open.
@@ -200,7 +220,7 @@ const projects: Project[] = [
   },
 ];
 
-const metricIcons = ["◷", "▤", "▥"];
+const metricIcons = ["◷", "▤", "▥", "▸"];
 
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const boardAverage = Math.round(
@@ -276,7 +296,8 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                       emptyText="No overdue tasks"
                       tone="overdue"
                     />
-                  ) : metric.label === "Schedule" && metric.scheduleRevisions ? (
+                  ) : metric.label === "Current Task" &&
+                    metric.scheduleRevisions ? (
                     <ScheduleHoverLabel
                       label={metric.label}
                       href={metric.href}
@@ -409,20 +430,36 @@ function applyDsbTaskStats(
       nextProject = {
         ...nextProject,
         metrics: nextProject.metrics.map((metric) => {
-          if (metric.label !== "Schedule") return metric;
-          return {
-            ...metric,
-            value: 0,
-            href: scheduleStats.href,
-            valueText:
-              scheduleStats.currentTask?.name ?? scheduleStats.taskName,
-            valueHref:
-              scheduleStats.currentTask?.permalink ?? scheduleStats.href,
-            hideValueBar: true,
-            barPercent: undefined,
-            barLabel: undefined,
-            scheduleRevisions: scheduleStats.revisions,
-          };
+          if (metric.label === "Current Task") {
+            return {
+              ...metric,
+              value: 0,
+              href: scheduleStats.href,
+              valueText: scheduleStats.currentTask?.name ?? "—",
+              valueHref:
+                scheduleStats.currentTask?.permalink ?? scheduleStats.href,
+              hideValueBar: true,
+              barPercent: undefined,
+              barLabel: undefined,
+              scheduleRevisions: scheduleStats.revisions,
+            };
+          }
+
+          if (metric.label === "Next Task") {
+            return {
+              ...metric,
+              value: 0,
+              href: scheduleStats.nextTask?.permalink ?? scheduleStats.href,
+              valueText: scheduleStats.nextTask?.name ?? "—",
+              valueHref:
+                scheduleStats.nextTask?.permalink ?? scheduleStats.href,
+              hideValueBar: true,
+              barPercent: undefined,
+              barLabel: undefined,
+            };
+          }
+
+          return metric;
         }),
       };
     }

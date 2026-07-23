@@ -6,6 +6,7 @@ import {
   buildDsbScheduleStats,
   fetchDsbScheduleStats,
   findCurrentScheduleTaskId,
+  findNextScheduleTask,
 } from "../lib/dsb-schedule.ts";
 
 const fixtureSheet = {
@@ -106,6 +107,11 @@ test("highlights the in-window task as current work", () => {
   );
   assert.equal(stats.currentTask?.id, 2380084660600708);
   assert.equal(stats.currentTask?.name, "Detail Architecture Work");
+  assert.equal(stats.nextTask?.name, "Requirements");
+  assert.equal(
+    findNextScheduleTask(stats.revisions, new Date("2026-07-10T12:00:00Z"))?.name,
+    "Requirements",
+  );
 });
 
 test("falls back to the next upcoming task when none are active", () => {
@@ -115,6 +121,7 @@ test("falls back to the next upcoming task when none are active", () => {
     findCurrentScheduleTaskId(stats.revisions, new Date("2026-08-01T12:00:00Z")),
     4913359450996612,
   );
+  assert.equal(stats.nextTask, null);
 });
 
 test("fetches live DSB schedule from Smartsheet when token is configured", async () => {
@@ -134,4 +141,7 @@ test("fetches live DSB schedule from Smartsheet when token is configured", async
   );
   assert.ok(stats.revisions[0].tasks.length > 0);
   assert.ok(stats.revisions[1].tasks.length > 0);
+  assert.ok(stats.currentTask?.name);
+  assert.ok(stats.nextTask?.name);
+  assert.notEqual(stats.currentTask?.id, stats.nextTask?.id);
 });
