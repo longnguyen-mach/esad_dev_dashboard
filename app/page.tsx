@@ -1,3 +1,9 @@
+import {
+  DSB_SHEET_EDIT_URL,
+  fetchDsbTaskStats,
+  type DsbTaskStats,
+} from "../lib/dsb-tasks";
+
 type Board = { name: string; progress: number };
 type Metric = { value: number; label: string; href?: string };
 
@@ -9,6 +15,8 @@ type Project = {
   metrics: Metric[];
   updated: string;
 };
+
+export const dynamic = "force-dynamic";
 
 const projects: Project[] = [
   {
@@ -25,9 +33,9 @@ const projects: Project[] = [
     ],
     metrics: [
       {
-        value: 35,
+        value: 25,
         label: "Open tasks",
-        href: "https://docs.google.com/spreadsheets/d/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps/edit?usp=drive_link",
+        href: DSB_SHEET_EDIT_URL,
       },
       { value: 4, label: "Schedule" },
       { value: 2, label: "On order" },
@@ -172,7 +180,31 @@ function HealthCore() {
   );
 }
 
-export default function Home() {
+function applyDsbTaskStats(
+  projectList: Project[],
+  stats: DsbTaskStats | null,
+): Project[] {
+  if (!stats) return projectList;
+
+  return projectList.map((project) => {
+    if (project.code !== "DSB") return project;
+
+    return {
+      ...project,
+      updated: stats.syncedAt ?? project.updated,
+      metrics: project.metrics.map((metric) =>
+        metric.label === "Open tasks"
+          ? { ...metric, value: stats.openTasks, href: DSB_SHEET_EDIT_URL }
+          : metric,
+      ),
+    };
+  });
+}
+
+export default async function Home() {
+  const dsbStats = await fetchDsbTaskStats();
+  const dashboardProjects = applyDsbTaskStats(projects, dsbStats);
+
   return (
     <main className="dashboard-shell">
       <header className="hero-header">
@@ -181,7 +213,7 @@ export default function Home() {
       </header>
 
       <section className="systems-grid" aria-label="Engineering project portfolio">
-        {projects.map((project, index) => (
+        {dashboardProjects.map((project, index) => (
           <ProjectPanel key={project.name} project={project} index={index} />
         ))}
         <HealthCore />

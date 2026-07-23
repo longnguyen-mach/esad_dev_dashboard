@@ -48,6 +48,10 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(html, />Open tasks<\/a>/);
   assert.match(html, /Schedule/);
+  assert.match(
+    html,
+    /Digital Safety Board[\s\S]*?<dt><a class="metric-link"[^>]*>Open tasks<\/a><\/dt><dd>\d+<\/dd>/,
+  );
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton|Codex/i);
 });
 
@@ -61,10 +65,8 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /const projects: Project\[\] = \[/);
   assert.match(page, /name: "Digital Safety Board"/);
   assert.match(page, /label: "Schedule"/);
-  assert.match(
-    page,
-    /href: "https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
-  );
+  assert.match(page, /fetchDsbTaskStats/);
+  assert.match(page, /DSB_SHEET_EDIT_URL/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
   assert.match(page, /name: "CPLD - Independent"/);
