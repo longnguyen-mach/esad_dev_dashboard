@@ -11,6 +11,8 @@ type ScheduleHoverLabelProps = {
   label: string;
   href?: string;
   revisions: DsbScheduleRevision[];
+  /** When set, popup highlight matches the Current Task display value. */
+  currentTaskId?: number;
 };
 
 function formatDate(value: string | null): string {
@@ -55,6 +57,7 @@ export function ScheduleHoverLabel({
   label,
   href,
   revisions,
+  currentTaskId: currentTaskIdProp,
 }: ScheduleHoverLabelProps) {
   const panelId = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -63,7 +66,8 @@ export function ScheduleHoverLabel({
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const currentTaskId = findCurrentScheduleTaskId(revisions);
+  const currentTaskId =
+    currentTaskIdProp ?? findCurrentScheduleTaskId(revisions);
 
   function clearCloseTimer() {
     if (closeTimer.current) {

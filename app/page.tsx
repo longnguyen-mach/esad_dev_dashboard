@@ -26,6 +26,8 @@ type Metric = {
   hideValueBar?: boolean;
   detailItems?: DsbTaskItem[];
   scheduleRevisions?: DsbScheduleRevision[];
+  /** Keeps Current Task popup highlight aligned with valueText. */
+  currentTaskId?: number;
 };
 
 type Project = {
@@ -94,6 +96,7 @@ const projects: Project[] = [
         valueText: "Detail Architecture Work",
         valueHref:
           "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
+        currentTaskId: 2380084660600708,
         hideValueBar: true,
         scheduleRevisions: [
           {
@@ -302,6 +305,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                       label={metric.label}
                       href={metric.href}
                       revisions={metric.scheduleRevisions}
+                      currentTaskId={metric.currentTaskId}
                     />
                   ) : metric.href ? (
                     <a
@@ -438,6 +442,7 @@ function applyDsbTaskStats(
               valueText: scheduleStats.currentTask?.name ?? "—",
               valueHref:
                 scheduleStats.currentTask?.permalink ?? scheduleStats.href,
+              currentTaskId: scheduleStats.currentTask?.id,
               hideValueBar: true,
               barPercent: undefined,
               barLabel: undefined,

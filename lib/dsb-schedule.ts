@@ -197,13 +197,25 @@ export function buildDsbScheduleStats(
   };
 }
 
+/** Parse Smartsheet datetimes consistently as UTC when no timezone is present. */
+function parseSmartsheetDate(value: string): number {
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  if (/[zZ]|[+-]\d{2}:?\d{2}$/.test(trimmed)) {
+    return Date.parse(trimmed);
+  }
+  // Smartsheet returns local-wall values like 2026-07-24T08:00:00 with no zone.
+  // Anchor them as UTC so server display and client popup use the same instant.
+  return Date.parse(`${trimmed}Z`);
+}
+
 function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
   startMs: number;
   finishMs: number;
 } | null {
   if (!task.start || !task.finish) return null;
-  const startMs = Date.parse(task.start);
-  const finishMs = Date.parse(task.finish);
+  const startMs = parseSmartsheetDate(task.start);
+  const finishMs = parseSmartsheetDate(task.finish);
   if (!Number.isFinite(startMs) || !Number.isFinite(finishMs)) return null;
   return { startMs, finishMs };
 }

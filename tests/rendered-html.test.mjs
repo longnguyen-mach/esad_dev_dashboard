@@ -104,9 +104,11 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /label: "Next Task"/);
   assert.match(page, /valueText: scheduleStats\.currentTask\?\.name/);
   assert.match(page, /valueText: scheduleStats\.nextTask\?\.name/);
+  assert.match(page, /currentTaskId: scheduleStats\.currentTask\?\.id/);
   assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.currentTask\?\.permalink/);
   assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.nextTask\?\.permalink/);
   assert.match(page, /hideValueBar: true/);
+  assert.match(scheduleHover, /currentTaskIdProp/);
   assert.match(page, /stats\.overdueTasks/);
   assert.match(page, /TaskHoverLabel/);
   assert.match(page, /ScheduleHoverLabel/);
