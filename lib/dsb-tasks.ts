@@ -12,12 +12,12 @@ const DONE_STATUSES = new Set([
   "completed",
 ]);
 
-/** Google Sheet column D (0-based index 3). */
-const LABELS_COLUMN_D_INDEX = 3;
+/** Google Sheet column C (0-based index 2) — Summary. */
+const SUMMARY_COLUMN_C_INDEX = 2;
 
 export type DsbOverdueItem = {
   key: string;
-  labels: string;
+  summary: string;
   assignee: string;
   dueDate: string;
 };
@@ -30,7 +30,7 @@ export type DsbTaskStats = {
   overdueTasks: number;
   /** Open tasks that have a Due date set. */
   openTasksWithDueDate: number;
-  /** Overdue rows with Key / Labels / Assignee for hover details. */
+  /** Overdue rows with Key / Summary / Assignee for hover details. */
   overdueItems: DsbOverdueItem[];
   /** Share of tasks in Done (0-100). Fill for the Open tasks status bar. */
   completionPercent: number;
@@ -183,10 +183,10 @@ export function countOpenTasksFromCsv(
   const dueDateIndex = headers.indexOf("due date");
   const keyIndex = headers.indexOf("key");
   const assigneeIndex = headers.indexOf("assignee");
-  // Prefer header match, but always fall back to Column D for Labels.
-  const labelsHeaderIndex = headers.indexOf("labels");
-  const labelsIndex =
-    labelsHeaderIndex >= 0 ? labelsHeaderIndex : LABELS_COLUMN_D_INDEX;
+  // Prefer header match, but always fall back to Column C for Summary.
+  const summaryHeaderIndex = headers.indexOf("summary");
+  const summaryIndex =
+    summaryHeaderIndex >= 0 ? summaryHeaderIndex : SUMMARY_COLUMN_C_INDEX;
 
   if (statusIndex < 0) {
     throw new Error("DSB sheet is missing a Status column");
@@ -213,13 +213,13 @@ export function countOpenTasksFromCsv(
       if (dueDate) {
         openTasksWithDueDate += 1;
         if (startOfLocalDay(dueDate) < today) {
-          // Labels always come from Column D in the DSB sheet export.
-          const labelsFromColumnD = (row[LABELS_COLUMN_D_INDEX] ?? "").trim();
+          // Summary comes from the Summary column (Column C).
+          const summaryFromColumnC = (row[SUMMARY_COLUMN_C_INDEX] ?? "").trim();
           overdueItems.push({
             key: (keyIndex >= 0 ? row[keyIndex] : "").trim() || "Unknown",
-            labels:
-              labelsFromColumnD ||
-              (labelsIndex >= 0 ? row[labelsIndex] : "").trim(),
+            summary:
+              summaryFromColumnC ||
+              (summaryIndex >= 0 ? row[summaryIndex] : "").trim(),
             assignee: (assigneeIndex >= 0 ? row[assigneeIndex] : "").trim(),
             dueDate: formatSyncDate(dueDate),
           });

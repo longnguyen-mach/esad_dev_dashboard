@@ -63,7 +63,7 @@ const projects: Project[] = [
         overdueItems: [
           {
             key: "EE-2226",
-            labels: "ESAD;ESAF",
+            summary: "ESAD DIGITAL SAFETY BOARD - Requirements Locked",
             assignee: "Bruno Abousleiman",
             dueDate: "Jul 20, 2026",
           },

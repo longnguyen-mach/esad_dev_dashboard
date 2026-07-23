@@ -320,7 +320,7 @@ body {
 .overdue-popover {
   position: fixed;
   z-index: 1000;
-  width: min(320px, calc(100vw - 24px));
+  width: min(380px, calc(100vw - 24px));
   padding: 12px;
   border: 1px solid rgba(231, 70, 53, .45);
   border-radius: 10px;
@@ -418,7 +418,7 @@ body {
 
 .overdue-item-meta span {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 8px;
   color: #d7e6f5;
   font-size: .72rem;

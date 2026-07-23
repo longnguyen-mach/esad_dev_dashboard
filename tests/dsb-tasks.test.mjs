@@ -35,28 +35,28 @@ test("counts overdue open tasks from Due date before today", () => {
   );
 });
 
-test("includes key, labels, and assignee for overdue items", () => {
+test("includes key, summary, and assignee for overdue items", () => {
   // Column order matches the live sheet: A Issue Type, B Key, C Summary, D Labels, E Assignee...
   const csv = `Issue Type,Key,Summary,Labels,Assignee,Priority,Status,Updated,Due date
-Task,EE-9,Late item,ESAD;ESAF,Bruno Abousleiman,Critical,TO DO,7/20/2026 13:59:36,7/20/2026
+Task,EE-9,ESAD DIGITAL SAFETY BOARD - Requirements Locked,ESAD;ESAF,Bruno Abousleiman,Critical,TO DO,7/20/2026 13:59:36,7/20/2026
 `;
   const stats = countOpenTasksFromCsv(csv, new Date(2026, 6, 23));
   assert.deepEqual(stats.overdueItems, [
     {
       key: "EE-9",
-      labels: "ESAD;ESAF",
+      summary: "ESAD DIGITAL SAFETY BOARD - Requirements Locked",
       assignee: "Bruno Abousleiman",
       dueDate: "Jul 20, 2026",
     },
   ]);
 });
 
-test("reads overdue labels from column D even if Labels header is renamed", () => {
-  const csv = `Issue Type,Key,Summary,TagList,Assignee,Priority,Status,Updated,Due date
-Task,EE-10,Late item,BOARD;CRITICAL,Alex Rivera,Critical,TO DO,7/20/2026 13:59:36,7/20/2026
+test("reads overdue summary from column C even if Summary header is renamed", () => {
+  const csv = `Issue Type,Key,Title,Labels,Assignee,Priority,Status,Updated,Due date
+Task,EE-10,Late board bring-up,BOARD;CRITICAL,Alex Rivera,Critical,TO DO,7/20/2026 13:59:36,7/20/2026
 `;
   const stats = countOpenTasksFromCsv(csv, new Date(2026, 6, 23));
-  assert.equal(stats.overdueItems[0]?.labels, "BOARD;CRITICAL");
+  assert.equal(stats.overdueItems[0]?.summary, "Late board bring-up");
 });
 
 test("does not count due-today or done tasks as overdue", () => {

@@ -10,15 +10,6 @@ type OverdueHoverLabelProps = {
   items: DsbOverdueItem[];
 };
 
-function formatLabels(labels: string): string {
-  // Preserve Column D label tokens (commonly semicolon-separated in the sheet).
-  const cleaned = labels
-    .split(/[;|]/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return cleaned.length > 0 ? cleaned.join(", ") : "No labels";
-}
-
 export function OverdueHoverLabel({
   label,
   href,
@@ -139,8 +130,8 @@ export function OverdueHoverLabel({
                 <div className="overdue-item-key">{item.key}</div>
                 <div className="overdue-item-meta">
                   <span>
-                    <em>Labels</em>
-                    {formatLabels(item.labels)}
+                    <em>Summary</em>
+                    {item.summary || "No summary"}
                   </span>
                   <span>
                     <em>Assignee</em>
