@@ -3,6 +3,12 @@ export const DSB_SHEET_EDIT_URL =
   `https://docs.google.com/spreadsheets/d/${DSB_SHEET_ID}/edit?usp=drive_link`;
 export const DSB_SHEET_CSV_URL =
   `https://docs.google.com/spreadsheets/d/${DSB_SHEET_ID}/export?format=csv`;
+export const DSB_JIRA_BROWSE_BASE_URL = "https://mach.atlassian.net/browse";
+
+export function jiraIssueUrl(key: string): string {
+  const trimmed = key.trim();
+  return `${DSB_JIRA_BROWSE_BASE_URL}/${encodeURIComponent(trimmed)}`;
+}
 
 const DONE_STATUSES = new Set([
   "done",

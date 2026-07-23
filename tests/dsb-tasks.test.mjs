@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   countOpenTasksFromCsv,
   fetchDsbTaskStats,
+  jiraIssueUrl,
 } from "../lib/dsb-tasks.ts";
 
 const sampleCsv = `Issue Type,Key,Summary,Status,Updated,Due date
@@ -67,6 +68,13 @@ test("does not count due-today or done tasks as overdue", () => {
   const stats = countOpenTasksFromCsv(sampleCsv, new Date(2026, 6, 20));
   // On 7/20, only dates before 7/20 count. None of the open dated tasks are before 7/20.
   assert.equal(stats.overdueTasks, 0);
+});
+
+test("builds Jira browse URLs from Column B keys", () => {
+  assert.equal(
+    jiraIssueUrl("EE-2226"),
+    "https://mach.atlassian.net/browse/EE-2226",
+  );
 });
 
 test("fetchDsbTaskStats reads open and overdue tasks from the live sheet", async () => {

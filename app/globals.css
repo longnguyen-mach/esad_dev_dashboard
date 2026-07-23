@@ -424,14 +424,34 @@ body {
 }
 
 .task-hover-key {
+  display: inline-flex;
+  width: fit-content;
   color: #fff2ef;
   font-family: var(--font-geist-mono), monospace;
   font-size: .82rem;
   font-weight: 750;
   letter-spacing: .04em;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, .28);
+  text-underline-offset: 3px;
+  transition: color .2s ease, text-decoration-color .2s ease;
 }
 
 .task-hover-popover--open .task-hover-key { color: #eef7ff; }
+
+.task-hover-popover--overdue .task-hover-key:hover,
+.task-hover-popover--overdue .task-hover-key:focus-visible {
+  color: #ffd0c8;
+  text-decoration-color: var(--red);
+  outline: none;
+}
+
+.task-hover-popover--open .task-hover-key:hover,
+.task-hover-popover--open .task-hover-key:focus-visible {
+  color: #d7ecff;
+  text-decoration-color: var(--blue);
+  outline: none;
+}
 
 .task-hover-meta {
   display: grid;

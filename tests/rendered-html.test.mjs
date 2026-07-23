@@ -73,10 +73,11 @@ test("server-renders the MACH ESAD dashboard", async () => {
 });
 
 test("keeps dashboard metadata and project data in source", async () => {
-  const [page, layout, packageJson] = await Promise.all([
+  const [page, layout, packageJson, hover] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/task-hover.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /const projects: Project\[\] = \[/);
@@ -90,6 +91,7 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /detailItems: stats\.overdueItems/);
   assert.match(page, /fetchDsbTaskStats/);
   assert.match(page, /DSB_SHEET_EDIT_URL/);
+  assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
   assert.match(page, /name: "CPLD - Independent"/);

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { DsbTaskItem } from "../lib/dsb-tasks";
+import { jiraIssueUrl, type DsbTaskItem } from "../lib/dsb-tasks";
 
 type TaskHoverLabelProps = {
   label: string;
@@ -133,7 +133,14 @@ export function TaskHoverLabel({
                 className="task-hover-item"
                 style={{ animationDelay: `${80 + index * 55}ms` }}
               >
-                <div className="task-hover-key">{item.key}</div>
+                <a
+                  className="task-hover-key"
+                  href={jiraIssueUrl(item.key)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.key}
+                </a>
                 <div className="task-hover-meta">
                   <span>
                     <em>Summary</em>
