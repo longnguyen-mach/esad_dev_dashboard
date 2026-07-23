@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { DsbOverdueItem } from "../lib/dsb-tasks";
 
 type OverdueHoverLabelProps = {
@@ -27,6 +28,7 @@ export function OverdueHoverLabel({
   const triggerRef = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   function clearCloseTimer() {
@@ -40,15 +42,14 @@ export function OverdueHoverLabel({
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const panelWidth = 320;
+    const panelWidth = Math.min(320, window.innerWidth - 24);
     const left = Math.min(
       Math.max(12, rect.left),
       Math.max(12, window.innerWidth - panelWidth - 12),
     );
-    setCoords({
-      top: rect.bottom + 10,
-      left,
-    });
+    const top = Math.min(rect.bottom + 10, window.innerHeight - 24);
+
+    setCoords({ top, left });
   }
 
   function showPanel() {
@@ -59,8 +60,13 @@ export function OverdueHoverLabel({
 
   function hidePanelSoon() {
     clearCloseTimer();
-    closeTimer.current = setTimeout(() => setOpen(false), 120);
+    closeTimer.current = setTimeout(() => setOpen(false), 160);
   }
+
+  useEffect(() => {
+    setMounted(true);
+    return () => clearCloseTimer();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -83,8 +89,6 @@ export function OverdueHoverLabel({
     };
   }, [open]);
 
-  useEffect(() => () => clearCloseTimer(), []);
-
   const labelNode = href ? (
     <a
       className="metric-link overdue-trigger-link"
@@ -92,26 +96,23 @@ export function OverdueHoverLabel({
       target="_blank"
       rel="noopener noreferrer"
       aria-describedby={open ? panelId : undefined}
+      aria-expanded={open}
     >
       {label}
     </a>
   ) : (
-    <span className="overdue-trigger-link" aria-describedby={open ? panelId : undefined}>
+    <span
+      className="overdue-trigger-link"
+      aria-describedby={open ? panelId : undefined}
+      aria-expanded={open}
+    >
       {label}
     </span>
   );
 
-  return (
-    <span
-      ref={triggerRef}
-      className={`overdue-trigger${open ? " is-open" : ""}`}
-      onMouseEnter={showPanel}
-      onMouseLeave={hidePanelSoon}
-      onFocus={showPanel}
-      onBlur={hidePanelSoon}
-    >
-      {labelNode}
-
+  const popover =
+    mounted &&
+    createPortal(
       <div
         id={panelId}
         className={`overdue-popover${open ? " is-open" : ""}`}
@@ -150,7 +151,21 @@ export function OverdueHoverLabel({
             ))}
           </ul>
         )}
-      </div>
+      </div>,
+      document.body,
+    );
+
+  return (
+    <span
+      ref={triggerRef}
+      className={`overdue-trigger${open ? " is-open" : ""}`}
+      onMouseEnter={showPanel}
+      onMouseLeave={hidePanelSoon}
+      onFocus={showPanel}
+      onBlur={hidePanelSoon}
+    >
+      {labelNode}
+      {popover}
     </span>
   );
 }

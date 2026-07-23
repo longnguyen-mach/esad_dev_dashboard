@@ -319,7 +319,7 @@ body {
 
 .overdue-popover {
   position: fixed;
-  z-index: 40;
+  z-index: 1000;
   width: min(320px, calc(100vw - 24px));
   padding: 12px;
   border: 1px solid rgba(231, 70, 53, .45);
@@ -336,6 +336,15 @@ body {
     opacity .22s ease,
     transform .28s cubic-bezier(.2, .8, .2, 1),
     visibility .22s ease;
+}
+
+.overdue-popover::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  width: 100%;
+  height: 12px;
 }
 
 .overdue-popover.is-open {
