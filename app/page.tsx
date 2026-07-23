@@ -1,5 +1,5 @@
 type Board = { name: string; progress: number };
-type Metric = { value: number; label: string };
+type Metric = { value: number; label: string; href?: string };
 
 type Project = {
   name: string;
@@ -24,8 +24,12 @@ const projects: Project[] = [
       { name: "Tail Board Rev A", progress: 90 },
     ],
     metrics: [
-      { value: 35, label: "Open tasks" },
-      { value: 4, label: "Open rework" },
+      {
+        value: 35,
+        label: "Open tasks",
+        href: "https://docs.google.com/spreadsheets/d/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps/edit?usp=drive_link",
+      },
+      { value: 4, label: "Schedule" },
       { value: 2, label: "On order" },
     ],
     updated: "Jul 15, 2026",
@@ -122,7 +126,20 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             <div className="metric-row" key={metric.label}>
               <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
               <div className="metric-copy">
-                <dt>{metric.label}</dt>
+                <dt>
+                  {metric.href ? (
+                    <a
+                      className="metric-link"
+                      href={metric.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {metric.label}
+                    </a>
+                  ) : (
+                    metric.label
+                  )}
+                </dt>
                 <dd>{metric.value}</dd>
               </div>
               <div className="metric-track" aria-hidden="true">

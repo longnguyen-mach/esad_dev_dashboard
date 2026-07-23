@@ -291,6 +291,21 @@ body {
 .metric-copy dt { color: #acc0d2; font-size: .75rem; }
 .metric-copy dd { margin: 0; color: #eaf5ff; font-family: var(--font-geist-mono), monospace; font-size: .85rem; font-weight: 750; }
 
+.metric-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(36, 141, 255, .55);
+  text-underline-offset: 3px;
+  transition: color .2s ease, text-decoration-color .2s ease;
+}
+
+.metric-link:hover,
+.metric-link:focus-visible {
+  color: #d7ecff;
+  text-decoration-color: var(--blue);
+  outline: none;
+}
+
 .metric-track {
   height: 12px;
   overflow: hidden;

@@ -42,6 +42,12 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /Program status/);
   assert.match(html, /Average board progress 72 percent/);
   assert.match(html, /SYNC <!-- -->JUL 21, 2026/);
+  assert.match(
+    html,
+    /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
+  );
+  assert.match(html, />Open tasks<\/a>/);
+  assert.match(html, /Schedule/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton|Codex/i);
 });
 
@@ -54,6 +60,11 @@ test("keeps dashboard metadata and project data in source", async () => {
 
   assert.match(page, /const projects: Project\[\] = \[/);
   assert.match(page, /name: "Digital Safety Board"/);
+  assert.match(page, /label: "Schedule"/);
+  assert.match(
+    page,
+    /href: "https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
+  );
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
   assert.match(page, /name: "CPLD - Independent"/);
