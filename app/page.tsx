@@ -24,6 +24,9 @@ type Project = {
   boards: Board[];
   metrics: Metric[];
   updated: string;
+  /** When set, header progress uses Done/(Done+Open) instead of board average. */
+  taskProgressPercent?: number;
+  taskProgressCaption?: string;
 };
 
 export const dynamic = "force-dynamic";
@@ -68,6 +71,9 @@ const projects: Project[] = [
       },
       { value: 2, label: "Schedule" },
     ],
+    // Fallback when the sheet cannot be fetched: 1 done / 25 open.
+    taskProgressPercent: 3.8,
+    taskProgressCaption: "3.8% done · 1 done / 25 open",
     updated: "Jul 15, 2026",
   },
   {
@@ -125,9 +131,16 @@ const projects: Project[] = [
 const metricIcons = ["◷", "▤", "▥"];
 
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
-  const average = Math.round(
+  const boardAverage = Math.round(
     project.boards.reduce((total, board) => total + board.progress, 0) / project.boards.length,
   );
+  const progressPercent = project.taskProgressPercent ?? boardAverage;
+  const progressCaption =
+    project.taskProgressCaption ?? `${boardAverage}% average progress`;
+  const progressAriaLabel =
+    project.taskProgressPercent != null
+      ? `Task progress ${progressPercent} percent done versus open`
+      : `Average board progress ${boardAverage} percent`;
 
   return (
     <article className={`project-panel project-panel--${index + 1}`}>
@@ -140,10 +153,10 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
         <div className="panel-title">
           <p>{project.status} · {project.boards.length} board{project.boards.length === 1 ? "" : "s"}</p>
           <h2>{project.name}</h2>
-          <div className="board-summary" aria-label={`Average board progress ${average} percent`}>
-            <span style={{ width: `${average}%` }} />
+          <div className="board-summary" aria-label={progressAriaLabel}>
+            <span style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
           </div>
-          <small>{average}% average progress</small>
+          <small>{progressCaption}</small>
         </div>
         <div className="signal-lights" aria-label={`${project.status} project`}>
           <i className={project.status === "On track" ? "active" : ""} />
@@ -232,9 +245,18 @@ function applyDsbTaskStats(
   return projectList.map((project) => {
     if (project.code !== "DSB") return project;
 
+    const doneOverOpenPercent =
+      stats.openTasks + stats.doneTasks === 0
+        ? 0
+        : Math.round(
+            (stats.doneTasks / (stats.doneTasks + stats.openTasks)) * 1000,
+          ) / 10;
+
     return {
       ...project,
       updated: stats.syncedAt ?? project.updated,
+      taskProgressPercent: doneOverOpenPercent,
+      taskProgressCaption: `${doneOverOpenPercent}% done · ${stats.doneTasks} done / ${stats.openTasks} open`,
       metrics: project.metrics.map((metric) => {
         if (metric.label === "Open tasks") {
           return {
