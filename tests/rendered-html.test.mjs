@@ -55,8 +55,10 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(
     html,
-    /Digital Safety Board[\s\S]*?<dt><a class="metric-link"[^>]*>Over Due<\/a><\/dt><dd>\d+<\/dd>/,
+    /Digital Safety Board[\s\S]*?Over Due[\s\S]*?<dd>\d+<\/dd>/,
   );
+  assert.match(html, /overdue-trigger/);
+  assert.match(html, /Overdue items/);
   assert.match(
     html,
     /aria-label="\d+ of \d+ tasks done"[^>]*>[\s\S]*?class="metric-fill metric-fill--0"[^>]*style="width:\d+(?:\.\d+)?%"/,
@@ -80,6 +82,8 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /label: "Over Due"/);
   assert.match(page, /label: "Schedule"/);
   assert.match(page, /stats\.overdueTasks/);
+  assert.match(page, /OverdueHoverLabel/);
+  assert.match(page, /overdueItems: stats\.overdueItems/);
   assert.match(page, /fetchDsbTaskStats/);
   assert.match(page, /DSB_SHEET_EDIT_URL/);
   assert.match(page, /name: "High Voltage Fireset Board"/);

@@ -29,6 +29,25 @@ test("counts overdue open tasks from Due date before today", () => {
   assert.equal(stats.overdueTasks, 2);
   assert.equal(stats.openTasksWithDueDate, 4);
   assert.equal(stats.overduePercent, 50);
+  assert.deepEqual(
+    stats.overdueItems.map((item) => item.key),
+    ["EE-1", "EE-2"],
+  );
+});
+
+test("includes key, labels, and assignee for overdue items", () => {
+  const csv = `Issue Type,Key,Summary,Status,Updated,Due date,Labels,Assignee
+Task,EE-9,Late item,TO DO,7/20/2026 13:59:36,7/20/2026,ESAD;ESAF,Bruno Abousleiman
+`;
+  const stats = countOpenTasksFromCsv(csv, new Date(2026, 6, 23));
+  assert.deepEqual(stats.overdueItems, [
+    {
+      key: "EE-9",
+      labels: "ESAD;ESAF",
+      assignee: "Bruno Abousleiman",
+      dueDate: "Jul 20, 2026",
+    },
+  ]);
 });
 
 test("does not count due-today or done tasks as overdue", () => {

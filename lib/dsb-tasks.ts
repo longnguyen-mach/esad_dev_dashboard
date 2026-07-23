@@ -12,6 +12,13 @@ const DONE_STATUSES = new Set([
   "completed",
 ]);
 
+export type DsbOverdueItem = {
+  key: string;
+  labels: string;
+  assignee: string;
+  dueDate: string;
+};
+
 export type DsbTaskStats = {
   openTasks: number;
   doneTasks: number;
@@ -20,6 +27,8 @@ export type DsbTaskStats = {
   overdueTasks: number;
   /** Open tasks that have a Due date set. */
   openTasksWithDueDate: number;
+  /** Overdue rows with Key / Labels / Assignee for hover details. */
+  overdueItems: DsbOverdueItem[];
   /** Share of tasks in Done (0-100). Fill for the Open tasks status bar. */
   completionPercent: number;
   /** Share of dated open tasks that are overdue (0-100). */
@@ -158,6 +167,7 @@ export function countOpenTasksFromCsv(
       totalTasks: 0,
       overdueTasks: 0,
       openTasksWithDueDate: 0,
+      overdueItems: [],
       completionPercent: 0,
       overduePercent: 0,
       syncedAt: null,
@@ -168,6 +178,9 @@ export function countOpenTasksFromCsv(
   const statusIndex = headers.indexOf("status");
   const updatedIndex = headers.indexOf("updated");
   const dueDateIndex = headers.indexOf("due date");
+  const keyIndex = headers.indexOf("key");
+  const labelsIndex = headers.indexOf("labels");
+  const assigneeIndex = headers.indexOf("assignee");
 
   if (statusIndex < 0) {
     throw new Error("DSB sheet is missing a Status column");
@@ -175,8 +188,8 @@ export function countOpenTasksFromCsv(
 
   let openTasks = 0;
   let doneTasks = 0;
-  let overdueTasks = 0;
   let openTasksWithDueDate = 0;
+  const overdueItems: DsbOverdueItem[] = [];
   let latestUpdate: Date | null = null;
   const today = startOfLocalDay(now);
 
@@ -194,7 +207,12 @@ export function countOpenTasksFromCsv(
       if (dueDate) {
         openTasksWithDueDate += 1;
         if (startOfLocalDay(dueDate) < today) {
-          overdueTasks += 1;
+          overdueItems.push({
+            key: (keyIndex >= 0 ? row[keyIndex] : "").trim() || "Unknown",
+            labels: (labelsIndex >= 0 ? row[labelsIndex] : "").trim(),
+            assignee: (assigneeIndex >= 0 ? row[assigneeIndex] : "").trim(),
+            dueDate: formatSyncDate(dueDate),
+          });
         }
       }
     }
@@ -208,6 +226,7 @@ export function countOpenTasksFromCsv(
   }
 
   const totalTasks = rows.length - 1;
+  const overdueTasks = overdueItems.length;
   const completionPercent =
     totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 1000) / 10;
   const overduePercent =
@@ -221,6 +240,7 @@ export function countOpenTasksFromCsv(
     totalTasks,
     overdueTasks,
     openTasksWithDueDate,
+    overdueItems,
     completionPercent,
     overduePercent,
     syncedAt: latestUpdate ? formatSyncDate(latestUpdate) : null,

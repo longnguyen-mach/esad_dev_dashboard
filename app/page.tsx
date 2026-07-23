@@ -1,6 +1,8 @@
+import { OverdueHoverLabel } from "./overdue-hover";
 import {
   DSB_SHEET_EDIT_URL,
   fetchDsbTaskStats,
+  type DsbOverdueItem,
   type DsbTaskStats,
 } from "../lib/dsb-tasks";
 
@@ -12,6 +14,7 @@ type Metric = {
   /** When set, status bar uses this completion percent instead of value/scale. */
   barPercent?: number;
   barLabel?: string;
+  overdueItems?: DsbOverdueItem[];
 };
 
 type Project = {
@@ -54,6 +57,14 @@ const projects: Project[] = [
         // Fallback when the sheet cannot be fetched.
         barPercent: 20,
         barLabel: "1 of 5 dated open tasks overdue",
+        overdueItems: [
+          {
+            key: "EE-2226",
+            labels: "ESAD;ESAF",
+            assignee: "Bruno Abousleiman",
+            dueDate: "Jul 20, 2026",
+          },
+        ],
       },
       { value: 2, label: "Schedule" },
     ],
@@ -157,7 +168,13 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
               <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
               <div className="metric-copy">
                 <dt>
-                  {metric.href ? (
+                  {metric.label === "Over Due" ? (
+                    <OverdueHoverLabel
+                      label={metric.label}
+                      href={metric.href}
+                      items={metric.overdueItems ?? []}
+                    />
+                  ) : metric.href ? (
                     <a
                       className="metric-link"
                       href={metric.href}
@@ -239,6 +256,7 @@ function applyDsbTaskStats(
               stats.openTasksWithDueDate === 0
                 ? "No open tasks with due dates"
                 : `${stats.overdueTasks} of ${stats.openTasksWithDueDate} dated open tasks overdue`,
+            overdueItems: stats.overdueItems,
           };
         }
 
