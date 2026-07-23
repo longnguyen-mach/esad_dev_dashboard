@@ -1,4 +1,11 @@
+import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
+import {
+  DSB_SCHEDULE_TASK_NAME,
+  fetchDsbScheduleStats,
+  type DsbScheduleRevision,
+  type DsbScheduleStats,
+} from "../lib/dsb-schedule";
 import {
   DSB_SHEET_EDIT_URL,
   fetchDsbTaskStats,
@@ -15,6 +22,7 @@ type Metric = {
   barPercent?: number;
   barLabel?: string;
   detailItems?: DsbTaskItem[];
+  scheduleRevisions?: DsbScheduleRevision[];
 };
 
 type Project = {
@@ -76,7 +84,59 @@ const projects: Project[] = [
           },
         ],
       },
-      { value: 2, label: "Schedule" },
+      {
+        value: 2,
+        label: "Schedule",
+        href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=128284846915460",
+        barPercent: 14.5,
+        barLabel: `${DSB_SCHEDULE_TASK_NAME} · Rev A / Rev B`,
+        scheduleRevisions: [
+          {
+            id: 4631884474285956,
+            name: "Rev A",
+            start: "2026-07-02T08:00:00",
+            finish: "2026-09-29T16:59:59",
+            assignee: "George Madden",
+            permalink:
+              "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4631884474285956",
+            tasks: [
+              {
+                id: 2380084660600708,
+                name: "Detail Architecture Work",
+                start: "2026-07-02T08:00:00",
+                finish: "2026-07-16T16:59:59",
+                percentComplete: null,
+                status: null,
+                assignee: null,
+                permalink:
+                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
+              },
+            ],
+          },
+          {
+            id: 409759823626116,
+            name: "Rev B",
+            start: "2026-09-29T16:59:59",
+            finish: "2026-11-11T16:59:59",
+            assignee: null,
+            permalink:
+              "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=409759823626116",
+            tasks: [
+              {
+                id: 4913359450996612,
+                name: "Requirements",
+                start: "2026-09-29T16:59:59",
+                finish: "2026-09-29T16:59:59",
+                percentComplete: null,
+                status: null,
+                assignee: null,
+                permalink:
+                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4913359450996612",
+              },
+            ],
+          },
+        ],
+      },
     ],
     // Fallback when the sheet cannot be fetched: 1 done / 25 open.
     taskProgressPercent: 3.8,
@@ -206,6 +266,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                       emptyText="No overdue tasks"
                       tone="overdue"
                     />
+                  ) : metric.label === "Schedule" && metric.scheduleRevisions ? (
+                    <ScheduleHoverLabel
+                      label={metric.label}
+                      href={metric.href}
+                      revisions={metric.scheduleRevisions}
+                    />
                   ) : metric.href ? (
                     <a
                       className="metric-link"
@@ -258,59 +324,84 @@ function HealthCore() {
 function applyDsbTaskStats(
   projectList: Project[],
   stats: DsbTaskStats | null,
+  scheduleStats: DsbScheduleStats | null,
 ): Project[] {
-  if (!stats) return projectList;
-
   return projectList.map((project) => {
     if (project.code !== "DSB") return project;
 
-    const doneOverOpenPercent =
-      stats.openTasks + stats.doneTasks === 0
-        ? 0
-        : Math.round(
-            (stats.doneTasks / (stats.doneTasks + stats.openTasks)) * 1000,
-          ) / 10;
+    let nextProject = { ...project, metrics: [...project.metrics] };
 
-    return {
-      ...project,
-      updated: stats.syncedAt ?? project.updated,
-      taskProgressPercent: doneOverOpenPercent,
-      taskProgressCaption: `${doneOverOpenPercent}% done · ${stats.doneTasks} done / ${stats.openTasks} open`,
-      metrics: project.metrics.map((metric) => {
-        if (metric.label === "Open Tasks") {
+    if (stats) {
+      const doneOverOpenPercent =
+        stats.openTasks + stats.doneTasks === 0
+          ? 0
+          : Math.round(
+              (stats.doneTasks / (stats.doneTasks + stats.openTasks)) * 1000,
+            ) / 10;
+
+      nextProject = {
+        ...nextProject,
+        updated: stats.syncedAt ?? nextProject.updated,
+        taskProgressPercent: doneOverOpenPercent,
+        taskProgressCaption: `${doneOverOpenPercent}% done · ${stats.doneTasks} done / ${stats.openTasks} open`,
+        metrics: nextProject.metrics.map((metric) => {
+          if (metric.label === "Open Tasks") {
+            return {
+              ...metric,
+              value: stats.openTasks,
+              href: DSB_SHEET_EDIT_URL,
+              barPercent: stats.completionPercent,
+              barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
+              detailItems: stats.openItems,
+            };
+          }
+
+          if (metric.label === "Over Due") {
+            return {
+              ...metric,
+              value: stats.overdueTasks,
+              href: DSB_SHEET_EDIT_URL,
+              barPercent: stats.overduePercent,
+              barLabel:
+                stats.openTasksWithDueDate === 0
+                  ? "No open tasks with due dates"
+                  : `${stats.overdueTasks} of ${stats.openTasksWithDueDate} dated open tasks overdue`,
+              detailItems: stats.overdueItems,
+            };
+          }
+
+          return metric;
+        }),
+      };
+    }
+
+    if (scheduleStats) {
+      nextProject = {
+        ...nextProject,
+        metrics: nextProject.metrics.map((metric) => {
+          if (metric.label !== "Schedule") return metric;
           return {
             ...metric,
-            value: stats.openTasks,
-            href: DSB_SHEET_EDIT_URL,
-            barPercent: stats.completionPercent,
-            barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
-            detailItems: stats.openItems,
+            value: scheduleStats.revisionCount,
+            href: scheduleStats.href,
+            barPercent: scheduleStats.overallProgressPercent,
+            barLabel: `${scheduleStats.taskName} · Rev A / Rev B`,
+            scheduleRevisions: scheduleStats.revisions,
           };
-        }
+        }),
+      };
+    }
 
-        if (metric.label === "Over Due") {
-          return {
-            ...metric,
-            value: stats.overdueTasks,
-            href: DSB_SHEET_EDIT_URL,
-            barPercent: stats.overduePercent,
-            barLabel:
-              stats.openTasksWithDueDate === 0
-                ? "No open tasks with due dates"
-                : `${stats.overdueTasks} of ${stats.openTasksWithDueDate} dated open tasks overdue`,
-            detailItems: stats.overdueItems,
-          };
-        }
-
-        return metric;
-      }),
-    };
+    return nextProject;
   });
 }
 
 export default async function Home() {
-  const dsbStats = await fetchDsbTaskStats();
-  const dashboardProjects = applyDsbTaskStats(projects, dsbStats);
+  const [dsbStats, scheduleStats] = await Promise.all([
+    fetchDsbTaskStats(),
+    fetchDsbScheduleStats(),
+  ]);
+  const dashboardProjects = applyDsbTaskStats(projects, dsbStats, scheduleStats);
 
   return (
     <main className="dashboard-shell">

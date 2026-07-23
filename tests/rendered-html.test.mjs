@@ -60,6 +60,12 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(html, /task-hover-trigger--open/);
   assert.match(html, /task-hover-trigger--overdue/);
+  assert.match(html, /task-hover-trigger--schedule/);
+  assert.match(html, /Schedule/);
+  assert.match(
+    html,
+    /href="https:\/\/app\.smartsheet\.com\/sheets\/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1\?rowId=\d+"/,
+  );
   assert.match(html, /Over Due/);
   assert.match(
     html,
@@ -87,9 +93,11 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /label: "Schedule"/);
   assert.match(page, /stats\.overdueTasks/);
   assert.match(page, /TaskHoverLabel/);
+  assert.match(page, /ScheduleHoverLabel/);
   assert.match(page, /detailItems: stats\.openItems/);
   assert.match(page, /detailItems: stats\.overdueItems/);
   assert.match(page, /fetchDsbTaskStats/);
+  assert.match(page, /fetchDsbScheduleStats/);
   assert.match(page, /DSB_SHEET_EDIT_URL/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);

@@ -34,11 +34,24 @@ function getAccessToken(
   return trimmed;
 }
 
+function resolveAccessToken(token?: string): string {
+  if (token?.trim()) return token.trim();
+
+  const fromProcess = process.env.SMARTSHEET_ACCESS_TOKEN?.trim();
+  if (fromProcess) return fromProcess;
+
+  // Cloudflare Workers expose bindings via the global env in some runtimes;
+  // vinext/miniflare also mirrors configured vars onto process.env.
+  const fromGlobal = (globalThis as { SMARTSHEET_ACCESS_TOKEN?: string })
+    .SMARTSHEET_ACCESS_TOKEN;
+  return getAccessToken(fromGlobal);
+}
+
 async function smartsheetFetch<T>(
   path: string,
   token?: string,
 ): Promise<T> {
-  const accessToken = getAccessToken(token);
+  const accessToken = resolveAccessToken(token);
   const response = await fetch(`${SMARTSHEET_API_BASE}${path}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

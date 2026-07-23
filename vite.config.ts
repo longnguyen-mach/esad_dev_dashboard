@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
@@ -8,12 +9,34 @@ const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
 
 const { d1, r2 } = hostingConfig;
 
+function readEnvFileValue(key: string): string | undefined {
+  try {
+    const envText = readFileSync(new URL("./.env", import.meta.url), "utf8");
+    const match = envText.match(new RegExp(`^\\s*${key}\\s*=\\s*(.+)\\s*$`, "m"));
+    return match?.[1]?.trim();
+  } catch {
+    return undefined;
+  }
+}
+
+const smartsheetAccessToken =
+  process.env.SMARTSHEET_ACCESS_TOKEN ?? readEnvFileValue("SMARTSHEET_ACCESS_TOKEN");
+
+if (smartsheetAccessToken) {
+  process.env.SMARTSHEET_ACCESS_TOKEN = smartsheetAccessToken;
+}
+
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  vars: smartsheetAccessToken
+    ? {
+        SMARTSHEET_ACCESS_TOKEN: smartsheetAccessToken,
+      }
+    : {},
   d1_databases: d1
     ? [
         {
