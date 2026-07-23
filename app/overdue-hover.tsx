@@ -10,6 +10,7 @@ type OverdueHoverLabelProps = {
 };
 
 function formatLabels(labels: string): string {
+  // Preserve Column D label tokens (commonly semicolon-separated in the sheet).
   const cleaned = labels
     .split(/[;|]/)
     .map((part) => part.trim())

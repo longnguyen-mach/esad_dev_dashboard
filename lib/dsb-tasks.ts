@@ -12,6 +12,9 @@ const DONE_STATUSES = new Set([
   "completed",
 ]);
 
+/** Google Sheet column D (0-based index 3). */
+const LABELS_COLUMN_D_INDEX = 3;
+
 export type DsbOverdueItem = {
   key: string;
   labels: string;
@@ -179,8 +182,11 @@ export function countOpenTasksFromCsv(
   const updatedIndex = headers.indexOf("updated");
   const dueDateIndex = headers.indexOf("due date");
   const keyIndex = headers.indexOf("key");
-  const labelsIndex = headers.indexOf("labels");
   const assigneeIndex = headers.indexOf("assignee");
+  // Prefer header match, but always fall back to Column D for Labels.
+  const labelsHeaderIndex = headers.indexOf("labels");
+  const labelsIndex =
+    labelsHeaderIndex >= 0 ? labelsHeaderIndex : LABELS_COLUMN_D_INDEX;
 
   if (statusIndex < 0) {
     throw new Error("DSB sheet is missing a Status column");
@@ -207,9 +213,13 @@ export function countOpenTasksFromCsv(
       if (dueDate) {
         openTasksWithDueDate += 1;
         if (startOfLocalDay(dueDate) < today) {
+          // Labels always come from Column D in the DSB sheet export.
+          const labelsFromColumnD = (row[LABELS_COLUMN_D_INDEX] ?? "").trim();
           overdueItems.push({
             key: (keyIndex >= 0 ? row[keyIndex] : "").trim() || "Unknown",
-            labels: (labelsIndex >= 0 ? row[labelsIndex] : "").trim(),
+            labels:
+              labelsFromColumnD ||
+              (labelsIndex >= 0 ? row[labelsIndex] : "").trim(),
             assignee: (assigneeIndex >= 0 ? row[assigneeIndex] : "").trim(),
             dueDate: formatSyncDate(dueDate),
           });
