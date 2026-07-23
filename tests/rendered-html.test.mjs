@@ -64,7 +64,11 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /Schedule/);
   assert.match(html, /metric-row--text/);
   assert.match(html, /metric-task-name/);
-  assert.match(html, /Digital Safety Board \(DSB\)/);
+  assert.match(html, /metric-task-name-link/);
+  assert.doesNotMatch(
+    html,
+    /metric-task-name[\s\S]*?Digital Safety Board \(DSB\)/,
+  );
   assert.match(
     html,
     /href="https:\/\/app\.smartsheet\.com\/sheets\/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1\?rowId=\d+"/,
@@ -95,8 +99,8 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /label: "Open Tasks"/);
   assert.match(page, /label: "Over Due"/);
   assert.match(page, /label: "Schedule"/);
-  assert.match(page, /valueText: DSB_SCHEDULE_TASK_NAME/);
-  assert.match(page, /valueText: scheduleStats\.taskName/);
+  assert.match(page, /valueText:\s*scheduleStats\.currentTask\?\.name/);
+  assert.match(page, /valueHref:\s*scheduleStats\.currentTask\?\.permalink/);
   assert.match(page, /hideValueBar: true/);
   assert.match(page, /stats\.overdueTasks/);
   assert.match(page, /TaskHoverLabel/);

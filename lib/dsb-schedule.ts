@@ -38,6 +38,7 @@ export type DsbScheduleStats = {
   href: string;
   revisionCount: number;
   revisions: DsbScheduleRevision[];
+  currentTask: DsbScheduleTask | null;
   overallProgressPercent: number;
   syncedAt: string | null;
 };
@@ -180,12 +181,14 @@ export function buildDsbScheduleStats(
 
   const dsbStart = cellValue(dsbRow, COLUMN.start);
   const dsbFinish = cellValue(dsbRow, COLUMN.finish);
+  const currentTask = findCurrentScheduleTask(revisions, now);
 
   return {
     taskName: DSB_SCHEDULE_TASK_NAME,
     href: rowPermalink(sheetPermalink, dsbRow.id, dsbRow.permalink),
     revisionCount: revisions.length,
     revisions,
+    currentTask,
     overallProgressPercent: progressFromDates(dsbStart, dsbFinish, now),
     syncedAt: formatSyncDate(dsbFinish),
   };
@@ -203,10 +206,10 @@ function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
 }
 
 /** Pick the in-window schedule task, or the next upcoming task when none is active. */
-export function findCurrentScheduleTaskId(
+export function findCurrentScheduleTask(
   revisions: DsbScheduleRevision[],
   now: Date = new Date(),
-): number | null {
+): DsbScheduleTask | null {
   const nowMs = now.getTime();
   const tasks = revisions.flatMap((revision) => revision.tasks);
 
@@ -215,7 +218,7 @@ export function findCurrentScheduleTaskId(
       const bounds = taskTimeBounds(task);
       if (!bounds) return null;
       if (nowMs < bounds.startMs || nowMs > bounds.finishMs) return null;
-      return { id: task.id, startMs: bounds.startMs, finishMs: bounds.finishMs };
+      return { task, startMs: bounds.startMs, finishMs: bounds.finishMs };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry != null);
 
@@ -225,19 +228,26 @@ export function findCurrentScheduleTaskId(
       if (a.startMs !== b.startMs) return b.startMs - a.startMs;
       return a.finishMs - b.finishMs;
     });
-    return inProgress[0]?.id ?? null;
+    return inProgress[0]?.task ?? null;
   }
 
   const upcoming = tasks
     .map((task) => {
       const bounds = taskTimeBounds(task);
       if (!bounds || bounds.startMs < nowMs) return null;
-      return { id: task.id, startMs: bounds.startMs };
+      return { task, startMs: bounds.startMs };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry != null)
     .sort((a, b) => a.startMs - b.startMs);
 
-  return upcoming[0]?.id ?? null;
+  return upcoming[0]?.task ?? null;
+}
+
+export function findCurrentScheduleTaskId(
+  revisions: DsbScheduleRevision[],
+  now: Date = new Date(),
+): number | null {
+  return findCurrentScheduleTask(revisions, now)?.id ?? null;
 }
 
 export async function fetchDsbScheduleStats(

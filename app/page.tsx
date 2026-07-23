@@ -1,7 +1,6 @@
 import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
 import {
-  DSB_SCHEDULE_TASK_NAME,
   fetchDsbScheduleStats,
   type DsbScheduleRevision,
   type DsbScheduleStats,
@@ -23,6 +22,7 @@ type Metric = {
   barLabel?: string;
   /** Replaces the numeric value + progress bar (used by Schedule). */
   valueText?: string;
+  valueHref?: string;
   hideValueBar?: boolean;
   detailItems?: DsbTaskItem[];
   scheduleRevisions?: DsbScheduleRevision[];
@@ -91,7 +91,9 @@ const projects: Project[] = [
         value: 0,
         label: "Schedule",
         href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=128284846915460",
-        valueText: DSB_SCHEDULE_TASK_NAME,
+        valueText: "Detail Architecture Work",
+        valueHref:
+          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
         hideValueBar: true,
         scheduleRevisions: [
           {
@@ -307,11 +309,11 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                   />
                 </div>
               ) : metric.valueText ? (
-                metric.href ? (
+                metric.valueHref || metric.href ? (
                   <dd className="metric-task-name">
                     <a
                       className="metric-task-name-link"
-                      href={metric.href}
+                      href={metric.valueHref ?? metric.href}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -412,7 +414,10 @@ function applyDsbTaskStats(
             ...metric,
             value: 0,
             href: scheduleStats.href,
-            valueText: scheduleStats.taskName,
+            valueText:
+              scheduleStats.currentTask?.name ?? scheduleStats.taskName,
+            valueHref:
+              scheduleStats.currentTask?.permalink ?? scheduleStats.href,
             hideValueBar: true,
             barPercent: undefined,
             barLabel: undefined,

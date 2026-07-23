@@ -104,6 +104,8 @@ test("highlights the in-window task as current work", () => {
     findCurrentScheduleTaskId(stats.revisions, new Date("2026-07-10T12:00:00Z")),
     2380084660600708,
   );
+  assert.equal(stats.currentTask?.id, 2380084660600708);
+  assert.equal(stats.currentTask?.name, "Detail Architecture Work");
 });
 
 test("falls back to the next upcoming task when none are active", () => {
