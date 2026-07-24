@@ -1258,58 +1258,58 @@ body {
 .health-donut::after {
   position: absolute;
   /* Hole sized so .health-center sits well inside the ring. */
-  inset: 52px;
+  inset: 48px;
   border: 2px solid #3d8dcc;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #0b1d2d, #05111d 72%);
-  box-shadow: 0 0 0 7px rgba(3,13,22,.75);
+  box-shadow: 0 0 0 5px rgba(3,13,22,.75);
   content: "";
 }
 
 .health-center {
   position: relative;
   z-index: 2;
-  /* Narrower than the hole so labels/numbers stay off the ring. */
-  width: 158px;
-  max-width: 52%;
-  padding: 8px 14px;
+  /* Keep the copy block clearly inset from the colored ring. */
+  width: 136px;
+  max-width: 46%;
+  padding: 6px 10px;
   box-sizing: border-box;
   margin-inline: auto;
 }
 
 .health-center h2 {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   font-family: var(--font-geist-mono), monospace;
-  font-size: 1.05rem;
+  font-size: .98rem;
   letter-spacing: .04em;
-  line-height: 1.12;
+  line-height: 1.1;
   text-align: center;
   text-transform: uppercase;
 }
 
 .health-stat {
   display: grid;
-  grid-template-columns: 11px minmax(0, 1fr) auto;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 7px;
-  margin: 6px 0;
+  column-gap: 6px;
+  margin: 5px 0;
   font-family: var(--font-geist-mono), monospace;
 }
 
-.health-stat i { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.health-stat i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .health-stat span {
   color: #8399ae;
-  font-size: .48rem;
+  font-size: .46rem;
   letter-spacing: .02em;
   line-height: 1.15;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 .health-stat strong {
-  font-size: .95rem;
-  min-width: 4ch;
+  font-size: .9rem;
+  min-width: 3.8ch;
   text-align: right;
-  padding-left: 4px;
+  padding-left: 2px;
   justify-self: end;
 }
 .health-stat--green i { background: var(--green); }
@@ -1324,8 +1324,8 @@ body {
   .systems-grid { column-gap: 290px; }
   .health-core { width: 455px; height: 455px; }
   .health-donut { width: 366px; height: 366px; }
-  .health-donut::after { inset: 46px; }
-  .health-center { width: 142px; padding: 6px 12px; }
+  .health-donut::after { inset: 44px; }
+  .health-center { width: 124px; padding: 5px 8px; }
   .panel-header { grid-template-columns: 102px minmax(0,1fr) auto; gap: 18px; }
   .blueprint-tile { width: 102px; height: 96px; }
   .metric-row { grid-template-columns: 28px 118px minmax(70px,1fr); }
@@ -1339,8 +1339,8 @@ body {
   .systems-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
   .health-core { position: relative; top: auto; left: auto; grid-column: 1 / -1; grid-row: 2; width: 430px; height: 430px; margin: 28px auto; transform: none; }
   .health-donut { width: 345px; height: 345px; }
-  .health-donut::after { inset: 44px; }
-  .health-center { width: 134px; padding: 6px 10px; }
+  .health-donut::after { inset: 42px; }
+  .health-center { width: 118px; padding: 4px 8px; }
   .project-panel--3, .project-panel--4 { grid-row: 3; }
   .panel-header { grid-template-columns: 74px minmax(0,1fr) auto; }
   .blueprint-tile { width: 74px; height: 72px; }
@@ -1383,10 +1383,10 @@ body {
   .signal-lights i { width: 9px; height: 9px; }
   .metric-row { grid-template-columns: 26px 112px minmax(60px,1fr); gap: 8px; }
   .metric-row--text { grid-template-columns: 26px auto minmax(0,1fr); }
-  .health-center { width: 120px; padding: 4px 8px; }
-  .health-center h2 { font-size: .9rem; margin-bottom: 8px; }
-  .health-stat { margin: 4px 0; column-gap: 5px; }
-  .health-stat strong { font-size: .85rem; }
+  .health-center { width: 110px; padding: 4px 6px; }
+  .health-center h2 { font-size: .85rem; margin-bottom: 8px; }
+  .health-stat { margin: 4px 0; column-gap: 4px; }
+  .health-stat strong { font-size: .8rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1415,7 +1415,7 @@ body {
 [data-theme="light"] .health-donut::after {
   border-color: #7fa4c4;
   background: radial-gradient(circle at 50% 40%, #f7fbff, #e6f0fa 72%);
-  box-shadow: 0 0 0 7px rgba(180, 205, 225, .8);
+  box-shadow: 0 0 0 4px rgba(180, 205, 225, .75);
 }
 
 /* Hardcoded dark ink — avoids inheriting stale --text if html/body themes briefly diverge. */
@@ -1435,19 +1435,19 @@ body {
 }
 
 [data-theme="light"] .health-stat span {
-  color: #1a3f5c;
-  font-weight: 600;
+  color: #0d3558;
+  font-weight: 700;
 }
 
-[data-theme="light"] .health-stat--green strong { color: #0f6a30; }
-[data-theme="light"] .health-stat--amber strong { color: #8a5200; }
-[data-theme="light"] .health-stat--red strong { color: #a01c14; }
+[data-theme="light"] .health-stat--green strong { color: #0b5c29; }
+[data-theme="light"] .health-stat--amber strong { color: #7a4800; }
+[data-theme="light"] .health-stat--red strong { color: #8f160f; }
 
 [data-theme="light"] .panel-updated,
 [data-theme="light"] .panel-title small,
 [data-theme="light"] .responsible-engineer span,
 [data-theme="light"] .metric-copy dt {
-  color: #1a3f5c;
+  color: #0d3558;
 }
 
 /* Board nickname chip: dark text on light tile (was dark-on-dark). */
