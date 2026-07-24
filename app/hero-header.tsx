@@ -30,38 +30,13 @@ export function HeroHeader({
       </div>
       <header className="hero-header">
         <div className="hero-title-row">
-          <span className="hero-logo" role="img" aria-label="Mach Industries">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 100 100"
-              aria-hidden="true"
-            >
-              <rect
-                className="hero-logo-plate"
-                width="100"
-                height="100"
-                fill="currentColor"
-              />
-              <path
-                className="hero-logo-mark"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="11"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-                d="M22 28 L50 56 L78 28"
-              />
-              <path
-                className="hero-logo-mark"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="11"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-                d="M22 48 L50 76 L78 48"
-              />
-            </svg>
-          </span>
+          <img
+            className="hero-logo"
+            src="/mach-industries-logo.png"
+            alt="Mach Industries"
+            width={72}
+            height={72}
+          />
           <h1>{programConfig.dashboardName}</h1>
         </div>
         <div className="hero-subtitle">
