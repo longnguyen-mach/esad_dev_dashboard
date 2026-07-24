@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   LUCKY_THEME_POOL,
@@ -27,4 +28,23 @@ test("Lucky resolves only to defense / war themes", () => {
 test("validates theme ids", () => {
   assert.equal(isThemeId("futuristic"), true);
   assert.equal(isThemeId("neon"), false);
+});
+
+test("futuristic theme ships layered defense motif artwork", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /futuristic-motifs\.svg/);
+  assert.match(css, /futuristic-motifs-dense\.svg/);
+
+  const primary = await readFile(
+    new URL("../public/themes/futuristic-motifs.svg", import.meta.url),
+    "utf8",
+  );
+  const dense = await readFile(
+    new URL("../public/themes/futuristic-motifs-dense.svg", import.meta.url),
+    "utf8",
+  );
+  assert.match(primary, /Fighter jet|Stealth|Quadcopter|Ballistic|Rocket|Satellite|Radar/i);
+  assert.match(dense, /Jet|Drone|Missile|Rocket|UAV|Chevron/i);
+  assert.match(primary, /<circle/);
+  assert.match(dense, /stroke-dasharray/);
 });

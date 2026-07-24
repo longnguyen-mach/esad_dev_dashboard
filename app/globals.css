@@ -115,9 +115,10 @@ body {
   --glow-mid: rgba(20, 110, 170, .28);
   --glow-top: #061828;
   --motif-layer:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='920' height='640' viewBox='0 0 920 640'%3E%3Cg fill='none' stroke='%233ec7ff' stroke-opacity='.16' stroke-width='2'%3E%3Cpath d='M70 120l90 18 34-42 28 56 70-10-24 48 56 22-78 8-18 54-30-46-74 16z'/%3E%3Cpath d='M760 90c40 8 70 34 78 70-30-8-58-6-84 10-18-28-40-48-70-58 24-12 50-20 76-22z'/%3E%3Cpath d='M180 470l120-18 40 10 20 34-46 12-28 40-36-28-70 8z'/%3E%3Cpath d='M620 430l150 20-30 34-48-8-22 40-36-26-48 10z'/%3E%3Cpath d='M430 140l110 8 24 28-18 22-48-6-28 34-26-24-40 4z'/%3E%3Cpath d='M820 320l46 70-54 12-18-34-40 8z'/%3E%3C/g%3E%3C/svg%3E");
-  --motif-size: 920px 640px;
-  --motif-repeat: repeat;
+    url("/themes/futuristic-motifs.svg"),
+    url("/themes/futuristic-motifs-dense.svg");
+  --motif-size: 1400px 900px, 900px 700px;
+  --motif-repeat: repeat, repeat;
 }
 
 .dashboard-shell {
@@ -1433,6 +1434,29 @@ body {
   background: radial-gradient(circle, rgba(4, 10, 16, .98) 0 63%, rgba(1, 4, 8, .98) 64% 100%);
 }
 
+[data-theme="futuristic"] body,
+body[data-theme="futuristic"] {
+  background-position: 0 0, 180px 120px, 0 0, 0 0, 50% 54%, 50% -15%;
+}
+
+[data-theme="futuristic"] .dashboard-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 12% 18%, rgba(62, 199, 255, .08), transparent 22%),
+    radial-gradient(circle at 88% 72%, rgba(71, 224, 160, .06), transparent 24%),
+    radial-gradient(circle at 70% 20%, rgba(255, 200, 87, .05), transparent 18%);
+  animation: futuristic-glow 14s ease-in-out infinite alternate;
+}
+
+[data-theme="futuristic"] .dashboard-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
 [data-theme="futuristic"] .project-panel {
   border-color: rgba(62, 199, 255, .45);
   box-shadow: inset 0 0 42px rgba(40, 160, 220, .14), 0 0 24px rgba(40, 160, 220, .12);
@@ -1441,6 +1465,21 @@ body {
 [data-theme="futuristic"] .health-core {
   border-color: #3ec7ff;
   box-shadow: 0 0 0 10px rgba(3, 18, 31, .9), 0 0 0 11px #1d6f9c, 0 0 70px rgba(50, 190, 255, .28);
+}
+
+[data-theme="futuristic"] .hero-header h1 {
+  text-shadow: 0 0 24px rgba(62, 199, 255, .22), 0 0 48px rgba(62, 199, 255, .1);
+}
+
+@keyframes futuristic-glow {
+  from { opacity: .7; transform: translate3d(0, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, -8px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="futuristic"] .dashboard-shell::before {
+    animation: none;
+  }
 }
 
 .admin-login-hint,
