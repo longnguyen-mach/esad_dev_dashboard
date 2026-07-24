@@ -193,9 +193,44 @@ test("keeps dashboard metadata and project data in source", async () => {
   );
   assert.match(heroHeader, /AdminLogin/);
   assert.match(heroHeader, /ProgramConfigWindow/);
+  assert.match(heroHeader, /ThemePicker/);
+  assert.match(heroHeader, /AdminAccountPanel/);
   assert.match(heroHeader, /admin-toolbar/);
   assert.match(heroHeader, /programConfig\.dashboardName/);
   assert.match(heroHeader, /programConfig\.programLead/);
+
+  const themePicker = await readFile(
+    new URL("../app/theme-picker.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(themePicker, /THEME_OPTIONS/);
+  assert.match(themePicker, /writeThemeSelection/);
+
+  const themesSource = await readFile(
+    new URL("../lib/themes.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(themesSource, /Theme Default/);
+  assert.match(themesSource, /Theme 1: Light/);
+  assert.match(themesSource, /Theme 2: Dark/);
+  assert.match(themesSource, /Theme 3: Futuristic/);
+  assert.match(themesSource, /Theme 4: Lucky/);
+  assert.match(themesSource, /LUCKY_THEME_POOL/);
+
+  const adminAccount = await readFile(
+    new URL("../app/admin-account-panel.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(adminAccount, /Change password/);
+  assert.match(adminAccount, /Reset password/);
+  assert.match(adminAccount, /Recovery email/);
+
+  const adminLogin = await readFile(
+    new URL("../app/admin-login.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(adminLogin, /Reset password/);
+  assert.match(adminLogin, /resetAdminPassword/);
 
   const projectPanel = await readFile(
     new URL("../app/project-panel.tsx", import.meta.url),

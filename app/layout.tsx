@@ -44,9 +44,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="default" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { const s = localStorage.getItem("esad-dashboard-theme-resolved") || localStorage.getItem("esad-dashboard-theme") || "default"; const theme = s === "lucky" ? "default" : s; document.documentElement.dataset.theme = theme; } catch (_) {} })();`,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        data-theme="default"
+        suppressHydrationWarning
       >
         {children}
       </body>

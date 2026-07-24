@@ -24,11 +24,100 @@ body {
   color: var(--text);
   font-family: var(--font-geist-sans), Arial, sans-serif;
   background:
-    linear-gradient(rgba(25, 108, 180, .09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(25, 108, 180, .09) 1px, transparent 1px),
-    radial-gradient(circle at 50% 54%, rgba(10, 55, 91, .34), transparent 31rem),
-    radial-gradient(circle at 50% -15%, #0a1727, var(--void) 45%);
-  background-size: 40px 40px, 40px 40px, auto, auto;
+    var(--motif-layer, none),
+    linear-gradient(var(--grid-line, rgba(25, 108, 180, .09)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line, rgba(25, 108, 180, .09)) 1px, transparent 1px),
+    radial-gradient(circle at 50% 54%, var(--glow-mid, rgba(10, 55, 91, .34)), transparent 31rem),
+    radial-gradient(circle at 50% -15%, var(--glow-top, #0a1727), var(--void) 45%);
+  background-size:
+    var(--motif-size, auto),
+    40px 40px,
+    40px 40px,
+    auto,
+    auto;
+  background-repeat:
+    var(--motif-repeat, no-repeat),
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+:root,
+[data-theme="default"] {
+  --void: #020913;
+  --panel: #0b1724;
+  --panel-2: #101d2a;
+  --line: #294b6e;
+  --line-bright: #258cf7;
+  --text: #f5f7f9;
+  --muted: #7892ad;
+  --blue: #248dff;
+  --green: #43bf68;
+  --amber: #f3aa26;
+  --red: #e74635;
+  --grid-line: rgba(25, 108, 180, .09);
+  --glow-mid: rgba(10, 55, 91, .34);
+  --glow-top: #0a1727;
+  --motif-layer: none;
+}
+
+[data-theme="light"] {
+  --void: #e8eef5;
+  --panel: #f7fbff;
+  --panel-2: #eef5fc;
+  --line: #9db7d1;
+  --line-bright: #1c6fbf;
+  --text: #132033;
+  --muted: #4f6780;
+  --blue: #1c6fbf;
+  --green: #1f8a45;
+  --amber: #c27a08;
+  --red: #c23028;
+  --grid-line: rgba(40, 90, 140, .08);
+  --glow-mid: rgba(120, 170, 220, .22);
+  --glow-top: #d7e6f5;
+  --motif-layer: none;
+}
+
+[data-theme="dark"] {
+  --void: #000408;
+  --panel: #050b12;
+  --panel-2: #081018;
+  --line: #1a334d;
+  --line-bright: #1767c2;
+  --text: #dce7f2;
+  --muted: #5d738a;
+  --blue: #1568c4;
+  --green: #2f9a52;
+  --amber: #d89114;
+  --red: #c7372c;
+  --grid-line: rgba(20, 70, 120, .07);
+  --glow-mid: rgba(4, 24, 42, .55);
+  --glow-top: #030910;
+  --motif-layer: none;
+}
+
+[data-theme="futuristic"] {
+  --void: #030b14;
+  --panel: #071521;
+  --panel-2: #0a1a29;
+  --line: #2a628f;
+  --line-bright: #3ec7ff;
+  --text: #eaf7ff;
+  --muted: #7ea9c8;
+  --blue: #2fc3ff;
+  --green: #47e0a0;
+  --amber: #ffc857;
+  --red: #ff5d6c;
+  --grid-line: rgba(60, 180, 255, .1);
+  --glow-mid: rgba(20, 110, 170, .28);
+  --glow-top: #061828;
+  --motif-layer:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='920' height='640' viewBox='0 0 920 640'%3E%3Cg fill='none' stroke='%233ec7ff' stroke-opacity='.16' stroke-width='2'%3E%3Cpath d='M70 120l90 18 34-42 28 56 70-10-24 48 56 22-78 8-18 54-30-46-74 16z'/%3E%3Cpath d='M760 90c40 8 70 34 78 70-30-8-58-6-84 10-18-28-40-48-70-58 24-12 50-20 76-22z'/%3E%3Cpath d='M180 470l120-18 40 10 20 34-46 12-28 40-36-28-70 8z'/%3E%3Cpath d='M620 430l150 20-30 34-48-8-22 40-36-26-48 10z'/%3E%3Cpath d='M430 140l110 8 24 28-18 22-48-6-28 34-26-24-40 4z'/%3E%3Cpath d='M820 320l46 70-54 12-18-34-40 8z'/%3E%3C/g%3E%3C/svg%3E");
+  --motif-size: 920px 640px;
+  --motif-repeat: repeat;
 }
 
 .dashboard-shell {
@@ -1286,3 +1375,179 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; }
 }
+
+/* Theme-aware surface remaps (layout unchanged). */
+[data-theme="light"] .project-panel {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, .96), rgba(232, 241, 250, .96)),
+    var(--panel);
+  box-shadow: inset 0 0 38px rgba(70, 120, 170, .08), 0 12px 28px rgba(40, 70, 100, .12);
+}
+
+[data-theme="light"] .health-core {
+  background: radial-gradient(circle, rgba(247, 251, 255, .98) 0 63%, rgba(230, 240, 250, .97) 64% 100%);
+  box-shadow: 0 0 0 10px rgba(220, 232, 244, .9), 0 0 0 11px #9db7d1, 0 0 50px rgba(80, 130, 180, .18);
+}
+
+[data-theme="light"] .hero-header h1,
+[data-theme="light"] .health-center h2,
+[data-theme="light"] .panel-title h2,
+[data-theme="light"] .panel-title p,
+[data-theme="light"] .metric-copy dt,
+[data-theme="light"] .metric-copy dd,
+[data-theme="light"] .metric-task-name,
+[data-theme="light"] .metric-task-name-link,
+[data-theme="light"] .responsible-engineer strong,
+[data-theme="light"] .blueprint-tile span,
+[data-theme="light"] .panel-updated,
+[data-theme="light"] .health-stat span,
+[data-theme="light"] .health-stat strong {
+  color: var(--text);
+}
+
+[data-theme="light"] .hero-subtitle { color: #1c6fbf; }
+[data-theme="light"] .responsible-engineer span,
+[data-theme="light"] .panel-title small { color: var(--muted); }
+
+[data-theme="light"] .admin-login-button,
+[data-theme="light"] .config-window-trigger,
+[data-theme="light"] .config-window-close,
+[data-theme="light"] .config-window-save,
+[data-theme="light"] .admin-login-submit {
+  background: rgba(255, 255, 255, .92);
+  color: #17324d;
+}
+
+[data-theme="light"] .config-window {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .98), rgba(236, 244, 252, .98));
+}
+
+[data-theme="dark"] .project-panel {
+  background:
+    linear-gradient(120deg, rgba(8, 14, 22, .98), rgba(2, 6, 10, .98)),
+    var(--panel);
+  box-shadow: inset 0 0 38px rgba(10, 40, 70, .16), 0 15px 40px rgba(0, 0, 0, .45);
+}
+
+[data-theme="dark"] .health-core {
+  background: radial-gradient(circle, rgba(4, 10, 16, .98) 0 63%, rgba(1, 4, 8, .98) 64% 100%);
+}
+
+[data-theme="futuristic"] .project-panel {
+  border-color: rgba(62, 199, 255, .45);
+  box-shadow: inset 0 0 42px rgba(40, 160, 220, .14), 0 0 24px rgba(40, 160, 220, .12);
+}
+
+[data-theme="futuristic"] .health-core {
+  border-color: #3ec7ff;
+  box-shadow: 0 0 0 10px rgba(3, 18, 31, .9), 0 0 0 11px #1d6f9c, 0 0 70px rgba(50, 190, 255, .28);
+}
+
+.admin-login-hint,
+.admin-login-link {
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .62rem;
+  letter-spacing: .04em;
+}
+
+.admin-login-hint { color: var(--muted); }
+
+.admin-login-link {
+  border: 0;
+  background: transparent;
+  color: #9fd0ff;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.admin-login-link:hover { color: #fff; }
+
+.theme-picker-window,
+.admin-account-window { width: min(560px, 100%); }
+
+.theme-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 18px 18px;
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+}
+
+.theme-picker-option {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid #3b79ae;
+  background: rgba(8, 22, 36, .9);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.theme-picker-option strong {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.theme-picker-option span,
+.theme-picker-option em {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .66rem;
+  font-style: normal;
+}
+
+.theme-picker-option--active,
+.theme-picker-option:hover {
+  border-color: #74b7ff;
+  background: rgba(18, 48, 74, .96);
+}
+
+.admin-account-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 18px 10px;
+}
+
+.admin-account-mode {
+  border: 1px solid #3b79ae;
+  background: rgba(8, 22, 36, .9);
+  color: #d7ecff;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 9px 10px;
+}
+
+.admin-account-mode--active,
+.admin-account-mode:hover {
+  border-color: #74b7ff;
+  background: rgba(18, 48, 74, .96);
+  color: #fff;
+}
+
+.admin-account-form {
+  display: grid;
+  gap: 12px;
+  padding: 0 18px 18px;
+}
+
+[data-theme="light"] .theme-picker-option,
+[data-theme="light"] .admin-account-mode {
+  background: rgba(255, 255, 255, .92);
+  color: #17324d;
+}
+
+[data-theme="light"] .admin-login-link { color: #1c6fbf; }
+[data-theme="light"] .admin-login-link:hover { color: #0d3f74; }
