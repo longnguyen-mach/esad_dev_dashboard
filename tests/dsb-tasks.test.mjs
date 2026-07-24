@@ -32,7 +32,7 @@ test("counts non-done DSB sheet rows as open tasks", () => {
 test("maps overdue counts to indicator light status", () => {
   assert.equal(statusFromOverdueCount(0), "On track");
   assert.equal(statusFromOverdueCount(1), "On track");
-  assert.equal(statusFromOverdueCount(2), "On track");
+  assert.equal(statusFromOverdueCount(2), "At risk");
   assert.equal(statusFromOverdueCount(3), "At risk");
   assert.equal(statusFromOverdueCount(5), "At risk");
   assert.equal(statusFromOverdueCount(6), "Critical");
