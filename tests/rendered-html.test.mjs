@@ -225,6 +225,10 @@ test("keeps dashboard metadata and project data in source", async () => {
   );
   assert.match(themePicker, /THEME_OPTIONS/);
   assert.match(themePicker, /writeThemeSelection/);
+  // Themes are available without admin login.
+  assert.doesNotMatch(themePicker, /useAdminAuthenticated/);
+  assert.doesNotMatch(themePicker, /if \(!authenticated\) return null/);
+  assert.match(themePicker, /no admin login required/i);
 
   const themesSource = await readFile(
     new URL("../lib/themes.ts", import.meta.url),

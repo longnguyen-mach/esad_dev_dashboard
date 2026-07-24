@@ -2,12 +2,11 @@
 
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
-import { useAdminAuthenticated } from "./admin-auth";
 import { useThemeState, writeThemeSelection } from "./theme-store";
 import { THEME_OPTIONS, type ThemeId } from "../lib/themes";
 
+/** Theme picker is available to all visitors (no admin login required). */
 export function ThemePicker() {
-  const authenticated = useAdminAuthenticated();
   const theme = useThemeState();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -18,10 +17,6 @@ export function ThemePicker() {
   }, []);
 
   useEffect(() => {
-    if (!authenticated) setOpen(false);
-  }, [authenticated]);
-
-  useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
@@ -29,8 +24,6 @@ export function ThemePicker() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
-
-  if (!authenticated) return null;
 
   return (
     <>
