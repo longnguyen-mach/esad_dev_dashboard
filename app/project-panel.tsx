@@ -4,10 +4,17 @@ import { ConfigWindow } from "./config-window";
 import { useDashboardConfig } from "./dashboard-config-store";
 import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
-import type { DashboardConfig } from "../lib/dashboard-config";
+import {
+  overdueThresholdsFromConfig,
+  type DashboardConfig,
+} from "../lib/dashboard-config";
 import type { EsadProjectCode } from "../lib/esad-projects";
 import type { DsbScheduleRevision } from "../lib/dsb-schedule";
-import type { DsbTaskItem } from "../lib/dsb-tasks";
+import {
+  statusFromOverdueCount,
+  type DsbIndicatorStatus,
+  type DsbTaskItem,
+} from "../lib/dsb-tasks";
 
 type Board = { name: string; progress: number };
 type Metric = {
@@ -30,7 +37,7 @@ export type ProjectPanelProject = {
   name: string;
   /** Fixed board code, or custom board nickname. */
   code: EsadProjectCode | string;
-  status: "Critical" | "At risk" | "On track";
+  status: DsbIndicatorStatus;
   boards: Board[];
   metrics: Metric[];
   updated: string;
@@ -40,6 +47,14 @@ export type ProjectPanelProject = {
 };
 
 const metricIcons = ["◷", "▤", "▥", "▸"];
+
+function overdueCountFromMetrics(metrics: Metric[]): number {
+  const overdueMetric = metrics.find((metric) => metric.label === "Over Due");
+  const value = overdueMetric?.value;
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, value)
+    : 0;
+}
 
 export function ProjectPanel({
   project,
@@ -52,6 +67,11 @@ export function ProjectPanel({
   layout?: "fixed" | "custom";
 }) {
   const config = useDashboardConfig(project.config.dashboardId);
+  const overdueTasks = overdueCountFromMetrics(project.metrics);
+  const status = statusFromOverdueCount(
+    overdueTasks,
+    overdueThresholdsFromConfig(config),
+  );
   const boardAverage = Math.round(
     project.boards.reduce((total, board) => total + board.progress, 0) /
       Math.max(1, project.boards.length),
@@ -87,7 +107,14 @@ export function ProjectPanel({
           </p>
         </div>
         <div className="panel-title">
-          <p>{project.status}</p>
+          <div className="panel-status-block">
+            <div className="signal-lights" aria-label={`${status} project`}>
+              <i className={status === "On Track" ? "active" : ""} />
+              <i className={status === "Delayed" ? "active" : ""} />
+              <i className={status === "At Risk" ? "active" : ""} />
+            </div>
+            <p>{status}</p>
+          </div>
           <h2 title={config.boardName}>{config.boardName}</h2>
           <div className="board-summary" aria-label={progressAriaLabel}>
             <span
@@ -100,14 +127,6 @@ export function ProjectPanel({
         </div>
         <div className="panel-header-actions">
           <ConfigWindow config={config} />
-          <div
-            className="signal-lights"
-            aria-label={`${project.status} project`}
-          >
-            <i className={project.status === "On track" ? "active" : ""} />
-            <i className={project.status === "At risk" ? "active" : ""} />
-            <i className={project.status === "Critical" ? "active" : ""} />
-          </div>
         </div>
       </header>
 

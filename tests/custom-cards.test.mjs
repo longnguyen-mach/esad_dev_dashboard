@@ -26,6 +26,9 @@ test("custom card config uses the same Configuration field format", () => {
       'Board Nickname: "NB2"',
       'JIRA Epic Link: ""',
       'Smartsheet Link: ""',
+      'Green: "< 1"',
+      'Yellow: "> 2"',
+      'Red: "> 5"',
     ].join("\n"),
   );
 });

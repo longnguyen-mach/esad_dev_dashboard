@@ -56,18 +56,37 @@ export type DsbTaskStats = {
   syncedAt: string | null;
 };
 
-export type DsbIndicatorStatus = "On track" | "At risk" | "Critical";
+export type DsbIndicatorStatus = "On Track" | "Delayed" | "At Risk";
+
+/** Per-card overdue thresholds that drive LED + status text. */
+export type OverdueLedThresholds = {
+  /** On Track when overdue count is &lt; this value. */
+  greenLessThan: number;
+  /** Delayed when overdue count is &gt; this value (and not red). */
+  yellowGreaterThan: number;
+  /** At Risk when overdue count is &gt; this value. */
+  redGreaterThan: number;
+};
+
+export const DEFAULT_OVERDUE_LED_THRESHOLDS: OverdueLedThresholds = {
+  greenLessThan: 1,
+  yellowGreaterThan: 2,
+  redGreaterThan: 5,
+};
 
 /**
- * Indicator lights from overdue count:
- * green (On track) when overdue is 0-2,
- * yellow (At risk) when overdue > 2,
- * red (Critical) when overdue > 5.
+ * Indicator lights from overdue count + configurable thresholds.
+ * Precedence: Red (&gt; red) → Yellow (&gt; yellow) → Green (&lt; green) → Delayed.
  */
-export function statusFromOverdueCount(overdueTasks: number): DsbIndicatorStatus {
-  if (overdueTasks > 5) return "Critical";
-  if (overdueTasks > 2) return "At risk";
-  return "On track";
+export function statusFromOverdueCount(
+  overdueTasks: number,
+  thresholds: OverdueLedThresholds = DEFAULT_OVERDUE_LED_THRESHOLDS,
+): DsbIndicatorStatus {
+  const overdue = Math.max(0, Number.isFinite(overdueTasks) ? overdueTasks : 0);
+  if (overdue > thresholds.redGreaterThan) return "At Risk";
+  if (overdue > thresholds.yellowGreaterThan) return "Delayed";
+  if (overdue < thresholds.greenLessThan) return "On Track";
+  return "Delayed";
 }
 
 /** Aggregated Program Status totals across every board card. */

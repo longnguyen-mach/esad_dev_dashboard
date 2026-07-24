@@ -254,6 +254,12 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(projectPanel, /ConfigWindow/);
   assert.match(projectPanel, /layout = "fixed"/);
   assert.match(projectPanel, /project-panel--custom/);
+  assert.match(projectPanel, /panel-status-block/);
+  assert.match(projectPanel, /statusFromOverdueCount/);
+  assert.match(projectPanel, /overdueThresholdsFromConfig/);
+  assert.match(projectPanel, /"On Track"/);
+  assert.match(projectPanel, /"Delayed"/);
+  assert.match(projectPanel, /"At Risk"/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
@@ -267,6 +273,10 @@ test("keeps dashboard metadata and project data in source", async () => {
   );
   assert.match(configSource, /Bruno Abousleiman/);
   assert.match(configSource, /EE-2220/);
+  assert.match(configSource, /ledGreenLessThan/);
+  assert.match(configSource, /Green: "/);
+  assert.match(configSource, /Yellow: "/);
+  assert.match(configSource, /Red: "/);
   assert.match(configSource, /DEFAULT_ADMIN_USERNAME = "admin"/);
   assert.match(configSource, /DEFAULT_ADMIN_PASSWORD = "esad"/);
   assert.match(page, /function HealthCore\(/);

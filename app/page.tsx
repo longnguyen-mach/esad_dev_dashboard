@@ -189,8 +189,8 @@ const projects: Project[] = [
     name: "Digital Safety Board",
     code: "DSB",
     config: DASHBOARD_CONFIGS["1"],
-    // Fallback overdue count is 1 → green / On track.
-    status: "On track",
+    // Fallback overdue count is 1 → Delayed with default LED thresholds.
+    status: "Delayed",
     boards: [
       { name: "Main Carrier Board Rev B", progress: 70 },
       { name: "Main Carrier Board Rev C", progress: 50 },
@@ -261,8 +261,8 @@ const projects: Project[] = [
     name: "High Voltage Fireset Board",
     code: "HVFB",
     config: DASHBOARD_CONFIGS["2"],
-    // Fallback until Google Sheet overdue count is available.
-    status: "Critical",
+    // Fallback overdue count is 5 → Delayed with default LED thresholds.
+    status: "Delayed",
     boards: [
       { name: "IO Board Rev A", progress: 100 },
       { name: "GSE Board Rev A", progress: 92 },
@@ -315,7 +315,8 @@ const projects: Project[] = [
     name: "CPLD - Primary",
     code: "PRI",
     config: DASHBOARD_CONFIGS["3"],
-    status: "Critical",
+    // Fallback overdue count is 0 → On Track.
+    status: "On Track",
     boards: [{ name: "Servo Board", progress: 5 }],
     metrics: [
       {
@@ -361,7 +362,8 @@ const projects: Project[] = [
     name: "CPLD - Independent",
     code: "IND",
     config: DASHBOARD_CONFIGS["4"],
-    status: "At risk",
+    // Fallback overdue count is 1 → Delayed with default LED thresholds.
+    status: "Delayed",
     boards: [
       { name: "Carrier Board Rev A", progress: 50 },
       { name: "Autofill Board Rev A", progress: 73 },

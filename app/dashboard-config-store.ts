@@ -5,6 +5,7 @@ import {
   DASHBOARD_CONFIGS,
   FIXED_DASHBOARD_IDS,
   isFixedDashboardId,
+  withDefaultLedThresholds,
   type DashboardConfig,
   type DashboardId,
   type FixedDashboardId,
@@ -30,8 +31,10 @@ function mergeEntry(
   entry: Partial<DashboardConfig> | undefined,
   fallback: DashboardConfig,
 ): DashboardConfig {
-  if (!entry || typeof entry !== "object") return { ...fallback, dashboardId: id };
-  return {
+  if (!entry || typeof entry !== "object") {
+    return withDefaultLedThresholds({ ...fallback, dashboardId: id });
+  }
+  return withDefaultLedThresholds({
     dashboardId: id,
     responsibleEngineer:
       typeof entry.responsibleEngineer === "string"
@@ -51,7 +54,33 @@ function mergeEntry(
       typeof entry.smartsheetLink === "string"
         ? entry.smartsheetLink
         : fallback.smartsheetLink,
-  };
+    ledGreenLessThan:
+      typeof entry.ledGreenLessThan === "number" &&
+      Number.isFinite(entry.ledGreenLessThan)
+        ? entry.ledGreenLessThan
+        : fallback.ledGreenLessThan,
+    ledYellowGreaterThan:
+      typeof entry.ledYellowGreaterThan === "number" &&
+      Number.isFinite(entry.ledYellowGreaterThan)
+        ? entry.ledYellowGreaterThan
+        : fallback.ledYellowGreaterThan,
+    ledRedGreaterThan:
+      typeof entry.ledRedGreaterThan === "number" &&
+      Number.isFinite(entry.ledRedGreaterThan)
+        ? entry.ledRedGreaterThan
+        : fallback.ledRedGreaterThan,
+  });
+}
+
+function emptyCustomFallback(id: DashboardId): DashboardConfig {
+  return withDefaultLedThresholds({
+    dashboardId: id,
+    responsibleEngineer: "",
+    boardName: "New Board",
+    boardNickname: "NEW",
+    jiraEpicLink: "",
+    smartsheetLink: "",
+  });
 }
 
 function mergeStored(raw: unknown): ConfigMap {
@@ -66,15 +95,7 @@ function mergeStored(raw: unknown): ConfigMap {
   for (const [id, entry] of Object.entries(stored)) {
     if (isFixedDashboardId(id)) continue;
     if (!isCustomCardId(id)) continue;
-    const fallback: DashboardConfig = {
-      dashboardId: id,
-      responsibleEngineer: "",
-      boardName: "New Board",
-      boardNickname: "NEW",
-      jiraEpicLink: "",
-      smartsheetLink: "",
-    };
-    defaults[id] = mergeEntry(id, entry, fallback);
+    defaults[id] = mergeEntry(id, entry, emptyCustomFallback(id));
   }
 
   return defaults;
@@ -93,7 +114,10 @@ export function readDashboardConfigs(): ConfigMap {
 
 export function writeDashboardConfig(config: DashboardConfig): ConfigMap {
   const next = readDashboardConfigs();
-  next[config.dashboardId] = { ...config, dashboardId: config.dashboardId };
+  next[config.dashboardId] = withDefaultLedThresholds({
+    ...config,
+    dashboardId: config.dashboardId,
+  });
   if (typeof window !== "undefined") {
     window.localStorage.setItem(
       DASHBOARD_CONFIG_STORAGE_KEY,
@@ -112,16 +136,7 @@ function defaultConfigForId(dashboardId: DashboardId): DashboardConfig {
   if (isFixedDashboardId(dashboardId)) {
     return { ...DASHBOARD_CONFIGS[dashboardId as FixedDashboardId] };
   }
-  return (
-    readDashboardConfigs()[dashboardId] ?? {
-      dashboardId,
-      responsibleEngineer: "",
-      boardName: "New Board",
-      boardNickname: "NEW",
-      jiraEpicLink: "",
-      smartsheetLink: "",
-    }
-  );
+  return readDashboardConfigs()[dashboardId] ?? emptyCustomFallback(dashboardId);
 }
 
 export function useDashboardConfig(dashboardId: DashboardId): DashboardConfig {

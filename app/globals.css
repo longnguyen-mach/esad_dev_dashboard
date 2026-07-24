@@ -362,6 +362,13 @@ body {
   gap: 10px;
 }
 
+.panel-status-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 0 8px;
+}
+
 .panel-identity {
   display: flex;
   flex-direction: column;
@@ -665,14 +672,16 @@ body {
 
 .panel-title { min-width: 0; }
 
+.panel-status-block > p,
 .panel-title > p {
-  margin: 0 0 8px;
+  margin: 0;
   color: #72aeea;
   font-family: var(--font-geist-mono), monospace;
   font-size: .62rem;
   font-weight: 650;
   letter-spacing: .13em;
   text-transform: uppercase;
+  text-align: center;
 }
 
 .panel-title h2 {
@@ -707,9 +716,11 @@ body {
 
 .signal-lights {
   display: flex;
-  align-self: start;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding-top: 13px;
+  margin: 0 0 6px;
+  padding: 0;
 }
 
 .signal-lights i {
@@ -1471,6 +1482,7 @@ body {
 [data-theme="light"] .hero-header h1,
 [data-theme="light"] .panel-title h2,
 [data-theme="light"] .panel-title p,
+[data-theme="light"] .panel-status-block > p,
 [data-theme="light"] .metric-copy dt,
 [data-theme="light"] .metric-copy dd,
 [data-theme="light"] .metric-task-name,

@@ -32,13 +32,27 @@ test("counts non-done DSB sheet rows as open tasks", () => {
 });
 
 test("maps overdue counts to indicator light status", () => {
-  assert.equal(statusFromOverdueCount(0), "On track");
-  assert.equal(statusFromOverdueCount(1), "On track");
-  assert.equal(statusFromOverdueCount(2), "On track");
-  assert.equal(statusFromOverdueCount(3), "At risk");
-  assert.equal(statusFromOverdueCount(5), "At risk");
-  assert.equal(statusFromOverdueCount(6), "Critical");
-  assert.equal(statusFromOverdueCount(12), "Critical");
+  // Defaults: Green < 1, Yellow > 2, Red > 5
+  assert.equal(statusFromOverdueCount(0), "On Track");
+  assert.equal(statusFromOverdueCount(1), "Delayed");
+  assert.equal(statusFromOverdueCount(2), "Delayed");
+  assert.equal(statusFromOverdueCount(3), "Delayed");
+  assert.equal(statusFromOverdueCount(5), "Delayed");
+  assert.equal(statusFromOverdueCount(6), "At Risk");
+  assert.equal(statusFromOverdueCount(12), "At Risk");
+});
+
+test("maps overdue counts with custom LED thresholds", () => {
+  const thresholds = {
+    greenLessThan: 2,
+    yellowGreaterThan: 4,
+    redGreaterThan: 8,
+  };
+  assert.equal(statusFromOverdueCount(0, thresholds), "On Track");
+  assert.equal(statusFromOverdueCount(1, thresholds), "On Track");
+  assert.equal(statusFromOverdueCount(2, thresholds), "Delayed");
+  assert.equal(statusFromOverdueCount(5, thresholds), "Delayed");
+  assert.equal(statusFromOverdueCount(9, thresholds), "At Risk");
 });
 
 test("aggregates Completed / Open / Overdue across all cards for Program Status", () => {

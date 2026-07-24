@@ -8,7 +8,7 @@ export function customCardToProject(
   return {
     name: card.config.boardName,
     code: card.config.boardNickname,
-    status: "On track",
+    status: "On Track",
     boards: [{ name: card.config.boardName, progress: 0 }],
     metrics: [
       {

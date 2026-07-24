@@ -1,4 +1,8 @@
-import type { DashboardConfig, DashboardId } from "./dashboard-config.ts";
+import {
+  withDefaultLedThresholds,
+  type DashboardConfig,
+  type DashboardId,
+} from "./dashboard-config.ts";
 
 /** Persisted admin-created card (appended below the fixed top 4). */
 export type CustomCardRecord = {
@@ -18,14 +22,14 @@ export function createDefaultCustomCardConfig(
   sequence: number,
 ): DashboardConfig {
   const n = Math.max(1, sequence);
-  return {
+  return withDefaultLedThresholds({
     dashboardId: id,
     responsibleEngineer: "",
     boardName: `New Board ${n}`,
     boardNickname: `NB${n}`,
     jiraEpicLink: "",
     smartsheetLink: "",
-  };
+  });
 }
 
 export function createCustomCardRecord(sequence: number): CustomCardRecord {

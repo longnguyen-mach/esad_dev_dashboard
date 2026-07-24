@@ -7,6 +7,7 @@ import {
   DEFAULT_ADMIN_USERNAME,
   formatDashboardConfigText,
   getDashboardConfigForCode,
+  overdueThresholdsFromConfig,
   parseDashboardConfigText,
   validateDashboardConfigSyntax,
 } from "../lib/dashboard-config.ts";
@@ -22,7 +23,7 @@ test("maps dashboard slots to board nicknames", () => {
   assert.equal(DASHBOARD_ID_BY_CODE.IND, "4");
 });
 
-test("formats DSB configuration text without Dash Board ID", () => {
+test("formats DSB configuration text with LED overdue thresholds", () => {
   const text = formatDashboardConfigText(DASHBOARD_CONFIGS["1"]);
   assert.equal(
     text,
@@ -32,9 +33,17 @@ test("formats DSB configuration text without Dash Board ID", () => {
       'Board Nickname: "DSB"',
       'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
       'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+      'Green: "< 1"',
+      'Yellow: "> 2"',
+      'Red: "> 5"',
     ].join("\n"),
   );
   assert.doesNotMatch(text, /Dash Board ID/);
+  assert.deepEqual(overdueThresholdsFromConfig(DASHBOARD_CONFIGS["1"]), {
+    greenLessThan: 1,
+    yellowGreaterThan: 2,
+    redGreaterThan: 5,
+  });
 });
 
 test("parses editable configuration text back into card fields", () => {
@@ -44,6 +53,9 @@ test("parses editable configuration text back into card fields", () => {
     'Board Nickname: "DSB-C"',
     'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+    'Green: "< 2"',
+    'Yellow: "> 4"',
+    'Red: "> 9"',
   ].join("\n");
 
   const parsed = parseDashboardConfigText(edited, DASHBOARD_CONFIGS["1"]);
@@ -52,6 +64,9 @@ test("parses editable configuration text back into card fields", () => {
   assert.equal(parsed.config.responsibleEngineer, "Alex Rivera");
   assert.equal(parsed.config.boardName, "Digital Safety Board Rev C");
   assert.equal(parsed.config.boardNickname, "DSB-C");
+  assert.equal(parsed.config.ledGreenLessThan, 2);
+  assert.equal(parsed.config.ledYellowGreaterThan, 4);
+  assert.equal(parsed.config.ledRedGreaterThan, 9);
 });
 
 test("rejects malformed configuration text", () => {
@@ -69,6 +84,9 @@ test("flags syntax errors when values are not inside quotes", () => {
     'Board Nickname: "DSB"',
     'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+    'Green: "< 1"',
+    'Yellow: "> 2"',
+    'Red: "> 5"',
   ].join("\n");
 
   const errors = validateDashboardConfigSyntax(text);
@@ -80,6 +98,22 @@ test("flags syntax errors when values are not inside quotes", () => {
   assert.match(parsed.error, /must be inside " "/);
 });
 
+test("flags invalid LED threshold syntax", () => {
+  const text = [
+    'Responsible Engineer: "Bruno Abousleiman"',
+    'Board Name: "Digital Safety Board"',
+    'Board Nickname: "DSB"',
+    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+    'Green: "1"',
+    'Yellow: "> 2"',
+    'Red: "> 5"',
+  ].join("\n");
+
+  const errors = validateDashboardConfigSyntax(text);
+  assert.ok(errors.some((error) => /Green must use Green: "< N"/i.test(error)));
+});
+
 test("flags missing closing quote as a syntax error", () => {
   const text = [
     'Responsible Engineer: "Bruno Abousleiman"',
@@ -87,6 +121,9 @@ test("flags missing closing quote as a syntax error", () => {
     'Board Nickname: "DSB"',
     'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+    'Green: "< 1"',
+    'Yellow: "> 2"',
+    'Red: "> 5"',
   ].join("\n");
 
   const errors = validateDashboardConfigSyntax(text);
