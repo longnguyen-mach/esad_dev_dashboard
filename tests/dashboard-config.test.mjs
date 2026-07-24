@@ -8,6 +8,7 @@ import {
   formatDashboardConfigText,
   getDashboardConfigForCode,
   parseDashboardConfigText,
+  validateDashboardConfigSyntax,
 } from "../lib/dashboard-config.ts";
 
 test("maps dashboard slots to board nicknames", () => {
@@ -59,6 +60,37 @@ test("rejects malformed configuration text", () => {
     DASHBOARD_CONFIGS["1"],
   );
   assert.ok("error" in parsed);
+});
+
+test("flags syntax errors when values are not inside quotes", () => {
+  const text = [
+    "Responsible Engineer: Bruno Abousleiman",
+    'Board Name: "Digital Safety Board"',
+    'Board Nickname: "DSB"',
+    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+  ].join("\n");
+
+  const errors = validateDashboardConfigSyntax(text);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Responsible Engineer value must be inside " "/);
+
+  const parsed = parseDashboardConfigText(text, DASHBOARD_CONFIGS["1"]);
+  assert.ok("error" in parsed);
+  assert.match(parsed.error, /must be inside " "/);
+});
+
+test("flags missing closing quote as a syntax error", () => {
+  const text = [
+    'Responsible Engineer: "Bruno Abousleiman"',
+    'Board Name: "Digital Safety Board',
+    'Board Nickname: "DSB"',
+    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
+  ].join("\n");
+
+  const errors = validateDashboardConfigSyntax(text);
+  assert.ok(errors.some((error) => /missing a closing "/i.test(error)));
 });
 
 test("resolves dashboard config by project code", () => {

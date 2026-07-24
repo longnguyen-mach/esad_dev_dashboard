@@ -8,6 +8,7 @@ import type { DashboardConfig } from "../lib/dashboard-config";
 import {
   formatDashboardConfigText,
   parseDashboardConfigText,
+  validateDashboardConfigSyntax,
 } from "../lib/dashboard-config";
 
 type ConfigWindowProps = {
@@ -19,9 +20,10 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [draft, setDraft] = useState(() => formatDashboardConfigText(config));
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const titleId = useId();
+  const errorId = useId();
 
   useEffect(() => {
     setMounted(true);
@@ -33,8 +35,9 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
 
   useEffect(() => {
     if (!open) return;
-    setDraft(formatDashboardConfigText(config));
-    setError(null);
+    const nextDraft = formatDashboardConfigText(config);
+    setDraft(nextDraft);
+    setErrors(validateDashboardConfigSyntax(nextDraft));
     setSaved(false);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
@@ -43,20 +46,37 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, config]);
 
+  function handleDraftChange(value: string) {
+    setDraft(value);
+    setSaved(false);
+    setErrors(validateDashboardConfigSyntax(value));
+  }
+
   function handleSave() {
-    const parsed = parseDashboardConfigText(draft, config);
-    if ("error" in parsed) {
-      setError(parsed.error);
+    const syntaxErrors = validateDashboardConfigSyntax(draft);
+    if (syntaxErrors.length > 0) {
+      setErrors(syntaxErrors);
       setSaved(false);
       return;
     }
+
+    const parsed = parseDashboardConfigText(draft, config);
+    if ("error" in parsed) {
+      setErrors(parsed.errors);
+      setSaved(false);
+      return;
+    }
+
     writeDashboardConfig(parsed.config);
-    setDraft(formatDashboardConfigText(parsed.config));
-    setError(null);
+    const savedText = formatDashboardConfigText(parsed.config);
+    setDraft(savedText);
+    setErrors([]);
     setSaved(true);
   }
 
   if (!authenticated) return null;
+
+  const hasSyntaxErrors = errors.length > 0;
 
   return (
     <>
@@ -81,6 +101,7 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
+                aria-describedby={hasSyntaxErrors ? errorId : undefined}
               >
                 <header className="config-window-header">
                   <div>
@@ -94,6 +115,7 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
                       type="button"
                       className="config-window-save"
                       onClick={handleSave}
+                      disabled={hasSyntaxErrors}
                     >
                       Save
                     </button>
@@ -107,22 +129,31 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
                   </div>
                 </header>
                 <p className="config-window-help">
-                  Edit values inside quotes. Board Nickname, Board Name, and
-                  Responsible Engineer update the card.
+                  Each value must be inside quotes, e.g. Board Name: "Digital
+                  Safety Board".
                 </p>
                 <textarea
-                  className="config-window-editor"
+                  className={`config-window-editor${
+                    hasSyntaxErrors ? " config-window-editor--error" : ""
+                  }`}
                   value={draft}
                   spellCheck={false}
+                  aria-invalid={hasSyntaxErrors}
                   aria-label={`Configuration for ${config.boardNickname}`}
-                  onChange={(event) => {
-                    setDraft(event.target.value);
-                    setSaved(false);
-                    setError(null);
-                  }}
+                  onChange={(event) => handleDraftChange(event.target.value)}
                 />
-                {error ? <p className="config-window-error">{error}</p> : null}
-                {saved ? (
+                {hasSyntaxErrors ? (
+                  <ul
+                    id={errorId}
+                    className="config-window-errors"
+                    role="alert"
+                  >
+                    {errors.map((error) => (
+                      <li key={error}>{error}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {saved && !hasSyntaxErrors ? (
                   <p className="config-window-saved">Configuration saved</p>
                 ) : null}
               </div>

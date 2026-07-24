@@ -147,13 +147,33 @@ body {
 }
 
 .config-window-error,
+.config-window-errors,
 .config-window-saved {
   margin: 10px 18px 0;
   font-family: var(--font-geist-mono), monospace;
   font-size: .68rem;
 }
 
-.config-window-error { color: #ff8f8f; }
+.config-window-error,
+.config-window-errors { color: #ff8f8f; }
+
+.config-window-errors {
+  padding: 0 0 14px 18px;
+  list-style: disc;
+}
+
+.config-window-errors li { margin: 4px 0; }
+
+.config-window-editor--error {
+  border-color: #c45b5b;
+  box-shadow: 0 0 0 1px rgba(196, 91, 91, .35);
+}
+
+.config-window-save:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
 .config-window-saved { color: #8fe0b0; padding-bottom: 14px; }
 
 .admin-login-panel {

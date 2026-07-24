@@ -77,6 +77,16 @@ export const DASHBOARD_ID_BY_CODE: Record<EsadProjectCode, DashboardId> = {
   IND: "4",
 };
 
+export const CONFIG_FIELD_LABELS = [
+  "Responsible Engineer",
+  "Board Name",
+  "Board Nickname",
+  "JIRA Epic Link",
+  "Smartsheet Link",
+] as const;
+
+export type ConfigFieldLabel = (typeof CONFIG_FIELD_LABELS)[number];
+
 /** Text-based configuration content shown/edited in the Configuration Window. */
 export function formatDashboardConfigText(config: DashboardConfig): string {
   return [
@@ -88,12 +98,79 @@ export function formatDashboardConfigText(config: DashboardConfig): string {
   ].join("\n");
 }
 
-function readQuotedField(text: string, label: string): string | null {
-  const pattern = new RegExp(
-    `${label}:\\s*"([^"]*)"`,
-    "i",
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function findFieldLine(
+  text: string,
+  label: ConfigFieldLabel,
+): { line: string; lineNumber: number } | null {
+  const lines = text.split(/\r?\n/);
+  const pattern = new RegExp(`^\\s*${escapeRegExp(label)}\\s*:`, "i");
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
+    if (pattern.test(line)) {
+      return { line, lineNumber: index + 1 };
+    }
+  }
+  return null;
+}
+
+/**
+ * Validate that each configuration value is wrapped in double quotes.
+ * Returns one syntax-error message per invalid/missing field.
+ */
+export function validateDashboardConfigSyntax(text: string): string[] {
+  const errors: string[] = [];
+
+  for (const label of CONFIG_FIELD_LABELS) {
+    const found = findFieldLine(text, label);
+    if (!found) {
+      errors.push(`Syntax error: missing ${label}: "value"`);
+      continue;
+    }
+
+    const { line, lineNumber } = found;
+    const quoted = line.match(
+      new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"([^"]*)"\\s*$`, "i"),
+    );
+    if (quoted) continue;
+
+    const opensQuote = line.match(
+      new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"`, "i"),
+    );
+    if (opensQuote) {
+      errors.push(
+        `Syntax error on line ${lineNumber}: ${label} is missing a closing "`,
+      );
+      continue;
+    }
+
+    const bareValue = line.match(
+      new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*(.+)\\s*$`, "i"),
+    );
+    if (bareValue && bareValue[1].trim() !== "") {
+      errors.push(
+        `Syntax error on line ${lineNumber}: ${label} value must be inside " "`,
+      );
+      continue;
+    }
+
+    errors.push(
+      `Syntax error on line ${lineNumber}: ${label} must use ${label}: "value"`,
+    );
+  }
+
+  return errors;
+}
+
+function readQuotedField(text: string, label: ConfigFieldLabel): string | null {
+  const found = findFieldLine(text, label);
+  if (!found) return null;
+  const match = found.line.match(
+    new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"([^"]*)"\\s*$`, "i"),
   );
-  const match = text.match(pattern);
   return match ? match[1] : null;
 }
 
@@ -104,13 +181,19 @@ function readQuotedField(text: string, label: string): string | null {
 export function parseDashboardConfigText(
   text: string,
   base: DashboardConfig,
-): { config: DashboardConfig } | { error: string } {
+): { config: DashboardConfig } | { error: string; errors: string[] } {
+  const syntaxErrors = validateDashboardConfigSyntax(text);
+  if (syntaxErrors.length > 0) {
+    return { error: syntaxErrors[0] ?? "Syntax error", errors: syntaxErrors };
+  }
+
   const responsibleEngineer = readQuotedField(text, "Responsible Engineer");
   const boardName = readQuotedField(text, "Board Name");
   const boardNickname = readQuotedField(text, "Board Nickname");
   const jiraEpicLink = readQuotedField(text, "JIRA Epic Link");
   const smartsheetLink = readQuotedField(text, "Smartsheet Link");
 
+  // validateDashboardConfigSyntax already guarantees quoted fields exist.
   if (
     responsibleEngineer == null ||
     boardName == null ||
@@ -119,16 +202,20 @@ export function parseDashboardConfigText(
     smartsheetLink == null
   ) {
     return {
-      error:
-        'Keep each field on its own line as Label: "value" (Board Name, Board Nickname, Responsible Engineer, JIRA Epic Link, Smartsheet Link).',
+      error: 'Syntax error: each field must use Label: "value"',
+      errors: ['Syntax error: each field must use Label: "value"'],
     };
   }
 
+  const valueErrors: string[] = [];
   if (!boardName.trim()) {
-    return { error: "Board Name cannot be empty." };
+    valueErrors.push("Board Name cannot be empty.");
   }
   if (!boardNickname.trim()) {
-    return { error: "Board Nickname cannot be empty." };
+    valueErrors.push("Board Nickname cannot be empty.");
+  }
+  if (valueErrors.length > 0) {
+    return { error: valueErrors[0] ?? "Invalid configuration", errors: valueErrors };
   }
 
   return {
