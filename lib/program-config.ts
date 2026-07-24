@@ -99,16 +99,38 @@ export function formatLedThresholdValue(
 export const CARD_LED_THRESHOLD_SECTION =
   "Card LED Threshold Configuration:";
 
-export function formatProgramConfigText(config: ProgramConfig): string {
+/** Dashboard Name + Program Lead lines for the identity editor. */
+export function formatProgramIdentityText(config: ProgramConfig): string {
   return [
     `Dashboard Name: "${config.dashboardName}"`,
     `Program Lead: "${config.programLead}"`,
-    "",
+  ].join("\n");
+}
+
+/** Card LED Threshold Configuration block for the LED editor. */
+export function formatProgramLedThresholdText(config: ProgramConfig): string {
+  return [
     CARD_LED_THRESHOLD_SECTION,
     `Green: "${formatLedThresholdValue("<", config.ledGreenLessThan)}"`,
     `Yellow: "${formatLedThresholdValue(">", config.ledYellowGreaterThan)}"`,
     `Red: "${formatLedThresholdValue(">", config.ledRedGreaterThan)}"`,
   ].join("\n");
+}
+
+export function formatProgramConfigText(config: ProgramConfig): string {
+  return [
+    formatProgramIdentityText(config),
+    "",
+    formatProgramLedThresholdText(config),
+  ].join("\n");
+}
+
+/** Combine the two Dashboard Configuration editors into one parseable text blob. */
+export function combineProgramConfigEditors(
+  identityText: string,
+  ledText: string,
+): string {
+  return `${identityText.trimEnd()}\n\n${ledText.trim()}\n`;
 }
 
 function escapeRegExp(value: string): string {

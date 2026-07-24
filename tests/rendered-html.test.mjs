@@ -293,6 +293,8 @@ test("keeps dashboard metadata and project data in source", async () => {
     "utf8",
   );
   assert.match(programConfigWindow, /Card LED Threshold/);
+  assert.match(programConfigWindow, /formatProgramLedThresholdText/);
+  assert.match(programConfigWindow, /config-window-editor--led/);
   assert.match(programConfigWindow, /status LED/);
   assert.match(page, /function HealthCore\(/);
   assert.match(page, /programStatusFromProjects/);

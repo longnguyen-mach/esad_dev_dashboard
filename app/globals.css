@@ -248,6 +248,17 @@ body {
   letter-spacing: .04em;
 }
 
+.config-window-section-label {
+  display: block;
+  margin: 4px 18px 8px;
+  color: #8eb8e0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .68rem;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
 .config-window-editor {
   margin: 0 18px;
   min-height: 280px;
@@ -260,6 +271,16 @@ body {
   line-height: 1.65;
   resize: vertical;
   white-space: pre;
+}
+
+.config-window-editor--identity {
+  min-height: 96px;
+  margin-bottom: 14px;
+}
+
+.config-window-editor--led {
+  min-height: 140px;
+  margin-bottom: 14px;
 }
 
 .config-window-editor:focus {

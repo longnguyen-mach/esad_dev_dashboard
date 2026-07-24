@@ -3,7 +3,10 @@ import test from "node:test";
 import {
   CARD_LED_THRESHOLD_SECTION,
   DEFAULT_PROGRAM_CONFIG,
+  combineProgramConfigEditors,
   formatProgramConfigText,
+  formatProgramIdentityText,
+  formatProgramLedThresholdText,
   overdueThresholdsFromProgramConfig,
   parseProgramConfigText,
   validateProgramConfigSyntax,
@@ -11,6 +14,22 @@ import {
 import { statusFromOverdueCount } from "../lib/dsb-tasks.ts";
 
 test("formats Dashboard Configuration text with Card LED Threshold section", () => {
+  assert.equal(
+    formatProgramIdentityText(DEFAULT_PROGRAM_CONFIG),
+    [
+      'Dashboard Name: "MACH ESAD Development Dashboard"',
+      'Program Lead: "Engineering Program Office"',
+    ].join("\n"),
+  );
+  assert.equal(
+    formatProgramLedThresholdText(DEFAULT_PROGRAM_CONFIG),
+    [
+      "Card LED Threshold Configuration:",
+      'Green: "< 1"',
+      'Yellow: "> 2"',
+      'Red: "> 5"',
+    ].join("\n"),
+  );
   assert.equal(
     formatProgramConfigText(DEFAULT_PROGRAM_CONFIG),
     [
@@ -29,6 +48,18 @@ test("formats Dashboard Configuration text with Card LED Threshold section", () 
     yellowGreaterThan: 2,
     redGreaterThan: 5,
   });
+});
+
+test("combines identity and LED editors for parsing", () => {
+  const combined = combineProgramConfigEditors(
+    formatProgramIdentityText(DEFAULT_PROGRAM_CONFIG),
+    formatProgramLedThresholdText(DEFAULT_PROGRAM_CONFIG),
+  );
+  const parsed = parseProgramConfigText(combined);
+  assert.ok("config" in parsed);
+  assert.equal(parsed.config.ledGreenLessThan, 1);
+  assert.equal(parsed.config.ledYellowGreaterThan, 2);
+  assert.equal(parsed.config.ledRedGreaterThan, 5);
 });
 
 test("parses Dashboard Configuration text including LED thresholds", () => {
