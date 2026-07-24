@@ -26,8 +26,8 @@ type Metric = {
   hideValueBar?: boolean;
   detailItems?: DsbTaskItem[];
   scheduleRevisions?: DsbScheduleRevision[];
-  /** Keeps Current Task popup highlight aligned with valueText. */
-  currentTaskId?: number;
+  /** Keeps Current/Next Task popup highlight aligned with valueText. */
+  focusTaskId?: number;
 };
 
 type Project = {
@@ -43,6 +43,64 @@ type Project = {
 };
 
 export const dynamic = "force-dynamic";
+
+const dsbScheduleFallbackRevisions: DsbScheduleRevision[] = [
+  {
+    id: 4631884474285956,
+    name: "Rev A",
+    start: "2026-07-02T08:00:00",
+    finish: "2026-09-29T16:59:59",
+    assignee: "George Madden",
+    permalink:
+      "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4631884474285956",
+    tasks: [
+      {
+        id: 2380084660600708,
+        name: "Detail Architecture Work",
+        start: "2026-07-02T08:00:00",
+        finish: "2026-07-16T16:59:59",
+        percentComplete: null,
+        status: null,
+        assignee: null,
+        permalink:
+          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
+      },
+      {
+        id: 6602209311260999,
+        name: "Block Diagram + Review",
+        start: "2026-07-17T08:00:00",
+        finish: "2026-07-23T16:59:59",
+        percentComplete: null,
+        status: null,
+        assignee: null,
+        permalink:
+          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+      },
+    ],
+  },
+  {
+    id: 409759823626116,
+    name: "Rev B",
+    start: "2026-09-29T16:59:59",
+    finish: "2026-11-11T16:59:59",
+    assignee: null,
+    permalink:
+      "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=409759823626116",
+    tasks: [
+      {
+        id: 4913359450996612,
+        name: "Requirements",
+        start: "2026-09-29T16:59:59",
+        finish: "2026-09-29T16:59:59",
+        percentComplete: null,
+        status: null,
+        assignee: null,
+        permalink:
+          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4913359450996612",
+      },
+    ],
+  },
+];
 
 const projects: Project[] = [
   {
@@ -96,65 +154,9 @@ const projects: Project[] = [
         valueText: "Detail Architecture Work",
         valueHref:
           "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
-        currentTaskId: 2380084660600708,
+        focusTaskId: 2380084660600708,
         hideValueBar: true,
-        scheduleRevisions: [
-          {
-            id: 4631884474285956,
-            name: "Rev A",
-            start: "2026-07-02T08:00:00",
-            finish: "2026-09-29T16:59:59",
-            assignee: "George Madden",
-            permalink:
-              "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4631884474285956",
-            tasks: [
-              {
-                id: 2380084660600708,
-                name: "Detail Architecture Work",
-                start: "2026-07-02T08:00:00",
-                finish: "2026-07-16T16:59:59",
-                percentComplete: null,
-                status: null,
-                assignee: null,
-                permalink:
-                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
-              },
-              {
-                id: 6602209311260999,
-                name: "Block Diagram + Review",
-                start: "2026-07-17T08:00:00",
-                finish: "2026-07-23T16:59:59",
-                percentComplete: null,
-                status: null,
-                assignee: null,
-                permalink:
-                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
-              },
-            ],
-          },
-          {
-            id: 409759823626116,
-            name: "Rev B",
-            start: "2026-09-29T16:59:59",
-            finish: "2026-11-11T16:59:59",
-            assignee: null,
-            permalink:
-              "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=409759823626116",
-            tasks: [
-              {
-                id: 4913359450996612,
-                name: "Requirements",
-                start: "2026-09-29T16:59:59",
-                finish: "2026-09-29T16:59:59",
-                percentComplete: null,
-                status: null,
-                assignee: null,
-                permalink:
-                  "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4913359450996612",
-              },
-            ],
-          },
-        ],
+        scheduleRevisions: dsbScheduleFallbackRevisions,
       },
       {
         value: 0,
@@ -163,7 +165,9 @@ const projects: Project[] = [
         valueText: "Block Diagram + Review",
         valueHref:
           "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+        focusTaskId: 6602209311260999,
         hideValueBar: true,
+        scheduleRevisions: dsbScheduleFallbackRevisions,
       },
     ],
     // Fallback when the sheet cannot be fetched: 1 done / 25 open.
@@ -299,13 +303,17 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                       emptyText="No overdue tasks"
                       tone="overdue"
                     />
-                  ) : metric.label === "Current Task" &&
+                  ) : (metric.label === "Current Task" ||
+                      metric.label === "Next Task") &&
                     metric.scheduleRevisions ? (
                     <ScheduleHoverLabel
                       label={metric.label}
                       href={metric.href}
                       revisions={metric.scheduleRevisions}
-                      currentTaskId={metric.currentTaskId}
+                      focus={
+                        metric.label === "Next Task" ? "next" : "current"
+                      }
+                      focusTaskId={metric.focusTaskId}
                     />
                   ) : metric.href ? (
                     <a
@@ -442,7 +450,7 @@ function applyDsbTaskStats(
               valueText: scheduleStats.currentTask?.name ?? "—",
               valueHref:
                 scheduleStats.currentTask?.permalink ?? scheduleStats.href,
-              currentTaskId: scheduleStats.currentTask?.id,
+              focusTaskId: scheduleStats.currentTask?.id,
               hideValueBar: true,
               barPercent: undefined,
               barLabel: undefined,
@@ -458,9 +466,11 @@ function applyDsbTaskStats(
               valueText: scheduleStats.nextTask?.name ?? "—",
               valueHref:
                 scheduleStats.nextTask?.permalink ?? scheduleStats.href,
+              focusTaskId: scheduleStats.nextTask?.id,
               hideValueBar: true,
               barPercent: undefined,
               barLabel: undefined,
+              scheduleRevisions: scheduleStats.revisions,
             };
           }
 

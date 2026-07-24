@@ -507,16 +507,20 @@ body {
   text-decoration-color: var(--amber);
 }
 
-.schedule-revision.is-current .schedule-revision-title {
+.schedule-revision.is-focused .schedule-revision-title {
   color: #fff1c8;
 }
 
-.task-hover-item.is-current-work {
+.task-hover-item.is-current-work,
+.task-hover-item.is-next-work {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 10px;
   align-items: start;
+}
+
+.task-hover-item.is-current-work {
   border-color: rgba(243, 170, 38, .72);
   background:
     linear-gradient(120deg, rgba(243, 170, 38, .22), rgba(243, 170, 38, .05) 42%, rgba(7, 18, 29, .78)),
@@ -526,29 +530,39 @@ body {
     0 0 0 1px rgba(243, 170, 38, .18);
 }
 
-.schedule-current-arrow {
+.task-hover-item.is-next-work {
+  border-color: rgba(36, 141, 255, .72);
+  background:
+    linear-gradient(120deg, rgba(36, 141, 255, .22), rgba(36, 141, 255, .05) 42%, rgba(7, 18, 29, .78)),
+    rgba(8, 18, 32, .92);
+  box-shadow:
+    inset 3px 0 0 var(--blue),
+    0 0 0 1px rgba(36, 141, 255, .18);
+}
+
+.schedule-focus-arrow {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   margin-top: 2px;
-  color: #ffd089;
   animation: schedule-current-pulse 1.6s ease-in-out infinite;
 }
 
-.schedule-current-arrow em {
+.schedule-focus-arrow--current { color: #ffd089; }
+.schedule-focus-arrow--next { color: #9ec9ff; }
+
+.schedule-focus-arrow em {
   font-family: var(--font-geist-mono), monospace;
   font-size: .58rem;
   font-style: normal;
   font-weight: 700;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: #ffe3b0;
 }
 
-.schedule-current-arrow-head {
-  transform-origin: 18px 10px;
-}
+.schedule-focus-arrow--current em { color: #ffe3b0; }
+.schedule-focus-arrow--next em { color: #d7ecff; }
 
 .schedule-task-body {
   min-width: 0;
@@ -556,6 +570,10 @@ body {
 
 .task-hover-item.is-current-work .task-hover-key {
   color: #fff6df;
+}
+
+.task-hover-item.is-next-work .task-hover-key {
+  color: #eef7ff;
 }
 
 .visually-hidden {
@@ -679,7 +697,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .task-hover-popover,
   .task-hover-popover.is-open .task-hover-item,
-  .schedule-current-arrow {
+  .schedule-focus-arrow {
     animation: none;
     transition: none;
   }
@@ -693,7 +711,7 @@ body {
     transform: none;
   }
 
-  .schedule-current-arrow {
+  .schedule-focus-arrow {
     opacity: 1;
     transform: none;
   }

@@ -159,5 +159,12 @@ test("fetches live DSB schedule from Smartsheet when token is configured", async
     /^2026-07-/,
   );
   assert.ok(stats.nextTask?.name);
+  assert.equal(stats.nextTask?.name, "Schematic");
   assert.notEqual(stats.currentTask?.id, stats.nextTask?.id);
+
+  const sheetOrder = stats.revisions.flatMap((revision) => revision.tasks);
+  const currentIndex = sheetOrder.findIndex(
+    (task) => task.id === stats.currentTask?.id,
+  );
+  assert.equal(sheetOrder[currentIndex + 1]?.id, stats.nextTask?.id);
 });

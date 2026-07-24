@@ -4,15 +4,20 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   findCurrentScheduleTaskId,
+  findNextScheduleTaskId,
   type DsbScheduleRevision,
 } from "../lib/dsb-schedule";
+
+type ScheduleFocus = "current" | "next";
 
 type ScheduleHoverLabelProps = {
   label: string;
   href?: string;
   revisions: DsbScheduleRevision[];
-  /** When set, popup highlight matches the Current Task display value. */
-  currentTaskId?: number;
+  /** Which schedule step this label represents. */
+  focus?: ScheduleFocus;
+  /** When set, popup highlight matches the metric display value. */
+  focusTaskId?: number;
 };
 
 function formatDate(value: string | null): string {
@@ -26,12 +31,15 @@ function formatDate(value: string | null): string {
   });
 }
 
-function CurrentWorkArrow() {
+function FocusArrow({ kind }: { kind: ScheduleFocus }) {
+  const label = kind === "next" ? "Next" : "Now";
   return (
-    <span className="schedule-current-arrow" aria-hidden="true">
+    <span
+      className={`schedule-focus-arrow schedule-focus-arrow--${kind}`}
+      aria-hidden="true"
+    >
       <svg viewBox="0 0 28 20" width="28" height="20" focusable="false">
         <path
-          className="schedule-current-arrow-shaft"
           d="M2 10h16"
           fill="none"
           stroke="currentColor"
@@ -39,7 +47,6 @@ function CurrentWorkArrow() {
           strokeLinecap="round"
         />
         <path
-          className="schedule-current-arrow-head"
           d="M16 3.5 25 10l-9 6.5"
           fill="none"
           stroke="currentColor"
@@ -48,7 +55,7 @@ function CurrentWorkArrow() {
           strokeLinejoin="round"
         />
       </svg>
-      <em>Now</em>
+      <em>{label}</em>
     </span>
   );
 }
@@ -57,17 +64,21 @@ export function ScheduleHoverLabel({
   label,
   href,
   revisions,
-  currentTaskId: currentTaskIdProp,
+  focus = "current",
+  focusTaskId: focusTaskIdProp,
 }: ScheduleHoverLabelProps) {
   const panelId = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const currentItemRef = useRef<HTMLLIElement>(null);
+  const focusItemRef = useRef<HTMLLIElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const currentTaskId =
-    currentTaskIdProp ?? findCurrentScheduleTaskId(revisions);
+  const focusTaskId =
+    focusTaskIdProp ??
+    (focus === "next"
+      ? findNextScheduleTaskId(revisions)
+      : findCurrentScheduleTaskId(revisions));
 
   function clearCloseTimer() {
     if (closeTimer.current) {
@@ -128,12 +139,12 @@ export function ScheduleHoverLabel({
   }, [open]);
 
   useEffect(() => {
-    if (!open || currentTaskId == null) return;
-    currentItemRef.current?.scrollIntoView({
+    if (!open || focusTaskId == null) return;
+    focusItemRef.current?.scrollIntoView({
       block: "nearest",
       behavior: "smooth",
     });
-  }, [open, currentTaskId]);
+  }, [open, focusTaskId]);
 
   const labelNode = href ? (
     <a
@@ -161,14 +172,14 @@ export function ScheduleHoverLabel({
     createPortal(
       <div
         id={panelId}
-        className={`task-hover-popover task-hover-popover--schedule${open ? " is-open" : ""}`}
+        className={`task-hover-popover task-hover-popover--schedule task-hover-popover--${focus}${open ? " is-open" : ""}`}
         style={{ top: coords.top, left: coords.left }}
         role="tooltip"
         onMouseEnter={showPanel}
         onMouseLeave={hidePanelSoon}
       >
         <header className="task-hover-header">
-          <span>DSB schedule</span>
+          <span>{focus === "next" ? "Next step" : "DSB schedule"}</span>
           <strong>{revisions.length}</strong>
         </header>
 
@@ -177,14 +188,14 @@ export function ScheduleHoverLabel({
         ) : (
           <div className="schedule-revision-stack">
             {revisions.map((revision, revisionIndex) => {
-              const revisionHasCurrent = revision.tasks.some(
-                (task) => task.id === currentTaskId,
+              const revisionHasFocus = revision.tasks.some(
+                (task) => task.id === focusTaskId,
               );
 
               return (
                 <section
                   key={revision.id}
-                  className={`schedule-revision${revisionHasCurrent ? " is-current" : ""}`}
+                  className={`schedule-revision${revisionHasFocus ? " is-focused" : ""}`}
                   style={{ animationDelay: `${70 + revisionIndex * 60}ms` }}
                 >
                   <header className="schedule-revision-header">
@@ -203,18 +214,18 @@ export function ScheduleHoverLabel({
 
                   <ul className="task-hover-list">
                     {revision.tasks.map((task, taskIndex) => {
-                      const isCurrent = task.id === currentTaskId;
+                      const isFocused = task.id === focusTaskId;
 
                       return (
                         <li
                           key={task.id}
-                          ref={isCurrent ? currentItemRef : undefined}
-                          className={`task-hover-item${isCurrent ? " is-current-work" : ""}`}
+                          ref={isFocused ? focusItemRef : undefined}
+                          className={`task-hover-item${isFocused ? ` is-${focus}-work` : ""}`}
                           style={{
                             animationDelay: `${110 + revisionIndex * 60 + taskIndex * 40}ms`,
                           }}
                         >
-                          {isCurrent ? <CurrentWorkArrow /> : null}
+                          {isFocused ? <FocusArrow kind={focus} /> : null}
                           <div className="schedule-task-body">
                             <a
                               className="task-hover-key"
@@ -223,8 +234,12 @@ export function ScheduleHoverLabel({
                               rel="noopener noreferrer"
                             >
                               {task.name}
-                              {isCurrent ? (
-                                <span className="visually-hidden"> (current work)</span>
+                              {isFocused ? (
+                                <span className="visually-hidden">
+                                  {focus === "next"
+                                    ? " (next step)"
+                                    : " (current work)"}
+                                </span>
                               ) : null}
                             </a>
                             <div className="task-hover-meta">
@@ -258,7 +273,7 @@ export function ScheduleHoverLabel({
   return (
     <span
       ref={triggerRef}
-      className={`task-hover-trigger task-hover-trigger--schedule${open ? " is-open" : ""}`}
+      className={`task-hover-trigger task-hover-trigger--schedule task-hover-trigger--${focus}${open ? " is-open" : ""}`}
       onMouseEnter={showPanel}
       onMouseLeave={hidePanelSoon}
       onFocus={showPanel}

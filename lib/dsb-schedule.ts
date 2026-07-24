@@ -277,43 +277,45 @@ export function findCurrentScheduleTaskId(
   return findCurrentScheduleTask(revisions, now)?.id ?? null;
 }
 
-function orderedScheduleTasks(
-  revisions: DsbScheduleRevision[],
-): Array<{ task: DsbScheduleTask; startMs: number; finishMs: number }> {
-  return revisions
-    .flatMap((revision) => revision.tasks)
-    .map((task) => {
-      const bounds = taskTimeBounds(task);
-      if (!bounds) return null;
-      return { task, startMs: bounds.startMs, finishMs: bounds.finishMs };
-    })
-    .filter((entry): entry is NonNullable<typeof entry> => entry != null)
-    .sort((a, b) => {
-      if (a.startMs !== b.startMs) return a.startMs - b.startMs;
-      return a.finishMs - b.finishMs;
-    });
+/** Tasks in Smartsheet order: Rev A then Rev B, each in sheet row order. */
+function sheetOrderedTasks(revisions: DsbScheduleRevision[]): DsbScheduleTask[] {
+  return revisions.flatMap((revision) => revision.tasks);
 }
 
-/** Task immediately after the current schedule task (or first future task). */
+/**
+ * Next step in the Smartsheet schedule after today's current task.
+ * Uses sheet order so the displayed Next Task matches the following row.
+ */
 export function findNextScheduleTask(
   revisions: DsbScheduleRevision[],
   now: Date = new Date(),
 ): DsbScheduleTask | null {
-  const ordered = orderedScheduleTasks(revisions);
+  const ordered = sheetOrderedTasks(revisions);
   if (ordered.length === 0) return null;
 
   const current = findCurrentScheduleTask(revisions, now);
   if (current) {
-    const currentIndex = ordered.findIndex((entry) => entry.task.id === current.id);
+    const currentIndex = ordered.findIndex((task) => task.id === current.id);
     if (currentIndex < 0) return null;
-    return ordered[currentIndex + 1]?.task ?? null;
+    return ordered[currentIndex + 1] ?? null;
   }
 
+  // No task covers today: next step is the first future-dated Smartsheet row.
   const todayStartMs = utcDayStartMs(now.getTime());
-  const upcoming = ordered.find(
-    (entry) => utcDayStartMs(entry.startMs) > todayStartMs,
+  return (
+    ordered.find((task) => {
+      const bounds = taskTimeBounds(task);
+      if (!bounds) return false;
+      return utcDayStartMs(bounds.startMs) > todayStartMs;
+    }) ?? null
   );
-  return upcoming?.task ?? null;
+}
+
+export function findNextScheduleTaskId(
+  revisions: DsbScheduleRevision[],
+  now: Date = new Date(),
+): number | null {
+  return findNextScheduleTask(revisions, now)?.id ?? null;
 }
 
 export async function fetchDsbScheduleStats(
