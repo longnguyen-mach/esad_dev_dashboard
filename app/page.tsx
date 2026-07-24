@@ -107,7 +107,7 @@ const projects: Project[] = [
   {
     name: "Digital Safety Board",
     code: "DSB",
-    // Fallback overdue count is 1 → green / On track (<=1).
+    // Fallback overdue count is 1 → green / On track.
     status: "On track",
     boards: [
       { name: "Main Carrier Board Rev B", progress: 70 },

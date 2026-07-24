@@ -54,13 +54,13 @@ export type DsbIndicatorStatus = "On track" | "At risk" | "Critical";
 
 /**
  * Indicator lights from overdue count:
- * green (On track) when overdue is 0-1,
- * yellow (At risk) when overdue > 1,
+ * green (On track) when overdue is 0-2,
+ * yellow (At risk) when overdue > 2,
  * red (Critical) when overdue > 5.
  */
 export function statusFromOverdueCount(overdueTasks: number): DsbIndicatorStatus {
   if (overdueTasks > 5) return "Critical";
-  if (overdueTasks > 1) return "At risk";
+  if (overdueTasks > 2) return "At risk";
   return "On track";
 }
 
