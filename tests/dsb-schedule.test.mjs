@@ -9,6 +9,7 @@ import {
   findCurrentScheduleTaskId,
   findNextScheduleTask,
   formatSchedulePercentComplete,
+  formatScheduleStartDate,
   parsePercentCompleteCell,
 } from "../lib/dsb-schedule.ts";
 
@@ -134,6 +135,9 @@ test("parses Smartsheet % Complete display and fraction values", () => {
   assert.equal(formatSchedulePercentComplete(45), "45%");
   assert.equal(formatSchedulePercentComplete(45.5), "45.5%");
   assert.equal(formatSchedulePercentComplete(null), null);
+  assert.equal(formatScheduleStartDate("2026-07-02T08:00:00"), "Jul 2, 2026");
+  assert.equal(formatScheduleStartDate(null), null);
+  assert.equal(formatScheduleStartDate(""), null);
 });
 
 test("does not select a future Smartsheet task as current", () => {

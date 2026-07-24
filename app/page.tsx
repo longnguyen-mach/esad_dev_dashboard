@@ -14,6 +14,7 @@ import {
 import {
   fetchAllProjectScheduleStats,
   formatSchedulePercentComplete,
+  formatScheduleStartDate,
   type DsbScheduleRevision,
   type DsbScheduleStats,
 } from "../lib/dsb-schedule";
@@ -236,6 +237,8 @@ const projects: Project[] = [
         label: "Current Task",
         href: smartsheetRowUrl(128284846915460),
         valueText: "Detail Architecture Work",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-02T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(2380084660600708),
         focusTaskId: 2380084660600708,
         hideValueBar: true,
@@ -246,6 +249,8 @@ const projects: Project[] = [
         label: "Next Task",
         href: smartsheetRowUrl(6883684287971204),
         valueText: "Block Diagram + Review",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-17T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(6883684287971204),
         focusTaskId: 6883684287971204,
         hideValueBar: true,
@@ -293,6 +298,8 @@ const projects: Project[] = [
         label: "Current Task",
         href: smartsheetRowUrl(269022335270788),
         valueText: "Detail Architecture Work",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-02T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(2520822148956036),
         focusTaskId: 2520822148956036,
         hideValueBar: true,
@@ -303,6 +310,8 @@ const projects: Project[] = [
         label: "Next Task",
         href: smartsheetRowUrl(7024421776326532),
         valueText: "Block Diagram + Review",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-17T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(7024421776326532),
         focusTaskId: 7024421776326532,
         hideValueBar: true,
@@ -340,6 +349,8 @@ const projects: Project[] = [
         label: "Current Task",
         href: smartsheetRowUrl(3398599580516228),
         valueText: "Requirements",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-02T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(7902199207886724),
         focusTaskId: 7902199207886724,
         hideValueBar: true,
@@ -350,6 +361,8 @@ const projects: Project[] = [
         label: "Next Task",
         href: smartsheetRowUrl(583849813409668),
         valueText: "Block Diagram Review",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-24T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(583849813409668),
         focusTaskId: 583849813409668,
         hideValueBar: true,
@@ -394,6 +407,8 @@ const projects: Project[] = [
         label: "Current Task",
         href: smartsheetRowUrl(221931156930436),
         valueText: "Requirements",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-02T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(4725530784300932),
         focusTaskId: 4725530784300932,
         hideValueBar: true,
@@ -404,6 +419,8 @@ const projects: Project[] = [
         label: "Next Task",
         href: smartsheetRowUrl(2473730970615684),
         valueText: "Block Diagram Review",
+        valueStartDateLabel:
+          formatScheduleStartDate("2026-07-24T08:00:00") ?? undefined,
         valueHref: smartsheetRowUrl(2473730970615684),
         focusTaskId: 2473730970615684,
         hideValueBar: true,
@@ -568,6 +585,8 @@ function applyLiveProjectStats(
               value: 0,
               href: scheduleStats.href,
               valueText: current?.name ?? "—",
+              valueStartDateLabel:
+                formatScheduleStartDate(current?.start) ?? undefined,
               valueHref: current?.permalink ?? scheduleStats.href,
               valuePercentLabel: percentLabel ?? undefined,
               focusTaskId: current?.id,
@@ -584,6 +603,9 @@ function applyLiveProjectStats(
               value: 0,
               href: scheduleStats.nextTask?.permalink ?? scheduleStats.href,
               valueText: scheduleStats.nextTask?.name ?? "—",
+              valueStartDateLabel:
+                formatScheduleStartDate(scheduleStats.nextTask?.start) ??
+                undefined,
               valueHref:
                 scheduleStats.nextTask?.permalink ?? scheduleStats.href,
               focusTaskId: scheduleStats.nextTask?.id,
