@@ -129,8 +129,8 @@ export function ProgramConfigWindow({ config }: ProgramConfigWindowProps) {
                   </div>
                 </header>
                 <p className="config-window-help">
-                  Each value must be inside quotes, e.g. Lead: "Engineering
-                  Program Office".
+                  Each value must be inside quotes, e.g. Dashboard Name: "MACH
+                  ESAD Development Dashboard".
                 </p>
                 <textarea
                   className={`config-window-editor${
