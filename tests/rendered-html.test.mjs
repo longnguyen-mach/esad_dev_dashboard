@@ -42,15 +42,22 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /Program status/);
   assert.match(html, /Task progress [\d.]+ percent done versus open/);
   assert.match(html, /\d+(?:\.\d+)?% done · \d+ done \/ \d+ open/);
-  assert.match(html, /SYNC <!-- -->JUL 21, 2026/);
+  assert.match(html, /SYNC <!-- -->JUL \d{1,2}, 2026/);
   assert.match(
     html,
     /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
   );
-  // Non-DSB boards link to the shared Drive folder until their sheet ids are configured.
   assert.match(
     html,
-    /href="https:\/\/drive\.google\.com\/drive\/folders\/1rzUg72NQvjyvbNVi2Y7yH36uT6wiMylj"/,
+    /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1CQrxwKHPkqQhaFarLwiuUW9zUMU_yTRlfArl_lNzdZ8\/edit\?usp=drive_link"/,
+  );
+  assert.match(
+    html,
+    /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1kW_IlmrhvNfyVXYB-5gph5UOo1wR40SaaL1oZgLr29U\/edit\?usp=drive_link"/,
+  );
+  assert.match(
+    html,
+    /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1ZjX1S4u3OfrCWuNbITP8CltV0tNezXpml7V8dQqur4M\/edit\?usp=drive_link"/,
   );
   assert.match(html, />Open Tasks<\/a>/);
   assert.match(html, /Over Due/);

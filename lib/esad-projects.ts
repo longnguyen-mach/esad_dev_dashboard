@@ -27,12 +27,12 @@ function envSheetId(code: EsadProjectCode): string | null {
   return fromGlobal?.trim() || null;
 }
 
-/** Known public DSB sheet; other boards read from env until their ids are configured. */
+/** Public Google Sheets for each ESAD board (override with ESAD_GOOGLE_SHEET_ID_<CODE>). */
 const DEFAULT_GOOGLE_SHEET_IDS: Record<EsadProjectCode, string | null> = {
   DSB: "1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps",
-  HVFB: null,
-  PRI: null,
-  IND: null,
+  HVFB: "1CQrxwKHPkqQhaFarLwiuUW9zUMU_yTRlfArl_lNzdZ8",
+  PRI: "1kW_IlmrhvNfyVXYB-5gph5UOo1wR40SaaL1oZgLr29U",
+  IND: "1ZjX1S4u3OfrCWuNbITP8CltV0tNezXpml7V8dQqur4M",
 };
 
 export const ESAD_PROJECT_INTEGRATIONS: Record<
