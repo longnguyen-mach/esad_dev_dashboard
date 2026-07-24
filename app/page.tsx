@@ -16,9 +16,11 @@ import {
   type DsbScheduleStats,
 } from "../lib/dsb-schedule";
 import {
+  aggregateProgramTaskStats,
   fetchAllProjectTaskStats,
   statusFromOverdueCount,
   type DsbTaskStats,
+  type ProgramTaskTotals,
 } from "../lib/dsb-tasks";
 
 type Project = ProjectPanelProject;
@@ -407,17 +409,67 @@ const projects: Project[] = [
   },
 ];
 
-function HealthCore() {
+function doneTasksFromProject(project: Project): number {
+  const openMetric = project.metrics.find((metric) => metric.label === "Open Tasks");
+  const fromBar = openMetric?.barLabel?.match(/^(\d+)\s+of\s+\d+\s+tasks\s+done$/i);
+  if (fromBar) return Number(fromBar[1]);
+  const fromCaption = project.taskProgressCaption?.match(
+    /(\d+)\s+done\s*\/\s*(\d+)\s+open/i,
+  );
+  if (fromCaption) return Number(fromCaption[1]);
+  return 0;
+}
+
+function programStatusFromProjects(projectList: Project[]): ProgramTaskTotals {
+  return aggregateProgramTaskStats(
+    projectList.map((project) => {
+      const openTasks =
+        project.metrics.find((metric) => metric.label === "Open Tasks")?.value ??
+        0;
+      const overdueTasks =
+        project.metrics.find((metric) => metric.label === "Over Due")?.value ??
+        0;
+      return {
+        doneTasks: doneTasksFromProject(project),
+        openTasks,
+        overdueTasks,
+      };
+    }),
+  );
+}
+
+function HealthCore({ status }: { status: ProgramTaskTotals }) {
+  const openOnTimeEnd = status.completedPercent + status.openOnTimePercent;
+  const donutBackground =
+    status.totalTasks === 0
+      ? "conic-gradient(#1e3a52 0 100%)"
+      : `conic-gradient(var(--green) 0 ${status.completedPercent}%, var(--amber) ${status.completedPercent}% ${openOnTimeEnd}%, var(--red) ${openOnTimeEnd}% 100%)`;
+
   return (
-    <aside className="health-core" aria-label="Program status: 60 percent on track, 25 percent at risk, 15 percent critical">
+    <aside
+      className="health-core"
+      aria-label={`Program status: ${status.completedTasks} completed tasks, ${status.openTasks} open tasks, ${status.overdueTasks} overdue tasks`}
+    >
       <div className="orbit orbit--outer" aria-hidden="true"><i /><i /><i /><i /></div>
       <div className="orbit orbit--inner" aria-hidden="true" />
-      <div className="health-donut">
+      <div className="health-donut" style={{ background: donutBackground }}>
         <div className="health-center">
           <h2>Program<br />status</h2>
-          <div className="health-stat health-stat--green"><i /><span>On track</span><strong>60%</strong></div>
-          <div className="health-stat health-stat--amber"><i /><span>At risk</span><strong>25%</strong></div>
-          <div className="health-stat health-stat--red"><i /><span>Critical</span><strong>15%</strong></div>
+          <div className="health-stat health-stat--green">
+            <i />
+            <span>Completed Tasks</span>
+            <strong>{status.completedTasks}</strong>
+          </div>
+          <div className="health-stat health-stat--amber">
+            <i />
+            <span>Open Tasks</span>
+            <strong>{status.openTasks}</strong>
+          </div>
+          <div className="health-stat health-stat--red">
+            <i />
+            <span>Overdue Tasks</span>
+            <strong>{status.overdueTasks}</strong>
+          </div>
         </div>
       </div>
     </aside>
@@ -548,6 +600,7 @@ export default async function Home() {
     taskStatsByCode,
     scheduleStatsByCode,
   );
+  const programStatus = programStatusFromProjects(dashboardProjects);
   const adminCredentials = getAdminCredentials();
 
   return (
@@ -561,7 +614,7 @@ export default async function Home() {
         {dashboardProjects.map((project, index) => (
           <ProjectPanel key={project.name} project={project} index={index} />
         ))}
-        <HealthCore />
+        <HealthCore status={programStatus} />
       </section>
     </main>
   );

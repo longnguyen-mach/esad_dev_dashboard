@@ -1107,7 +1107,8 @@ body {
   place-items: center;
   border: 2px solid #2c92e8;
   border-radius: 50%;
-  background: conic-gradient(var(--amber) 0 25%, var(--red) 25% 40%, var(--green) 40% 100%);
+  /* Fallback ring; live slices are set inline from aggregated card stats. */
+  background: conic-gradient(var(--green) 0 70%, var(--amber) 70% 95%, var(--red) 95% 100%);
   box-shadow: inset 0 0 22px rgba(255,255,255,.16), 0 0 24px rgba(21,123,204,.2);
 }
 
@@ -1139,16 +1140,22 @@ body {
 
 .health-stat {
   display: grid;
-  grid-template-columns: 18px 1fr auto;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin: 10px 0;
   font-family: var(--font-geist-mono), monospace;
 }
 
-.health-stat i { width: 17px; height: 17px; border-radius: 50%; }
-.health-stat span { color: #8399ae; font-size: .63rem; text-transform: uppercase; }
-.health-stat strong { font-size: 1.22rem; }
+.health-stat i { width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0; }
+.health-stat span {
+  color: #8399ae;
+  font-size: .58rem;
+  letter-spacing: .04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.health-stat strong { font-size: 1.22rem; min-width: 1.6ch; text-align: right; }
 .health-stat--green i { background: var(--green); }
 .health-stat--amber i { background: var(--amber); }
 .health-stat--red i { background: var(--red); }

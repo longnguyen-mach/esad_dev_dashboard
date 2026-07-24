@@ -70,6 +70,93 @@ export function statusFromOverdueCount(overdueTasks: number): DsbIndicatorStatus
   return "On track";
 }
 
+/** Aggregated Program Status totals across every board card. */
+export type ProgramTaskTotals = {
+  completedTasks: number;
+  openTasks: number;
+  overdueTasks: number;
+  /** completed + open */
+  totalTasks: number;
+  /** Exclusive donut slice: completed / total (0-100). */
+  completedPercent: number;
+  /** Exclusive donut slice: open and not overdue / total (0-100). */
+  openOnTimePercent: number;
+  /** Exclusive donut slice: overdue / total (0-100). */
+  overduePercent: number;
+};
+
+function roundOneDecimal(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+/**
+ * Sum Completed / Open / Overdue across all cards for Program Status.
+ * Donut percentages are mutually exclusive slices of (completed + open).
+ */
+export function aggregateProgramTaskStats(
+  statsList: ReadonlyArray<{
+    doneTasks: number;
+    openTasks: number;
+    overdueTasks: number;
+  }>,
+): ProgramTaskTotals {
+  let completedTasks = 0;
+  let openTasks = 0;
+  let overdueTasks = 0;
+
+  for (const stats of statsList) {
+    completedTasks += Math.max(0, stats.doneTasks);
+    openTasks += Math.max(0, stats.openTasks);
+    overdueTasks += Math.max(0, stats.overdueTasks);
+  }
+
+  overdueTasks = Math.min(overdueTasks, openTasks);
+  const openOnTimeTasks = Math.max(0, openTasks - overdueTasks);
+  const totalTasks = completedTasks + openTasks;
+
+  if (totalTasks === 0) {
+    return {
+      completedTasks,
+      openTasks,
+      overdueTasks,
+      totalTasks,
+      completedPercent: 0,
+      openOnTimePercent: 0,
+      overduePercent: 0,
+    };
+  }
+
+  let completedPercent = roundOneDecimal((completedTasks / totalTasks) * 100);
+  let openOnTimePercent = roundOneDecimal((openOnTimeTasks / totalTasks) * 100);
+  let overduePercent = roundOneDecimal((overdueTasks / totalTasks) * 100);
+  const drift = roundOneDecimal(
+    100 - (completedPercent + openOnTimePercent + overduePercent),
+  );
+  if (drift !== 0) {
+    // Absorb rounding drift into the largest slice.
+    if (
+      completedPercent >= openOnTimePercent &&
+      completedPercent >= overduePercent
+    ) {
+      completedPercent = roundOneDecimal(completedPercent + drift);
+    } else if (openOnTimePercent >= overduePercent) {
+      openOnTimePercent = roundOneDecimal(openOnTimePercent + drift);
+    } else {
+      overduePercent = roundOneDecimal(overduePercent + drift);
+    }
+  }
+
+  return {
+    completedTasks,
+    openTasks,
+    overdueTasks,
+    totalTasks,
+    completedPercent,
+    openOnTimePercent,
+    overduePercent,
+  };
+}
+
 function parseCsvRows(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];

@@ -49,6 +49,14 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /data-dashboard-id="3"/);
   assert.match(html, /data-dashboard-id="4"/);
   assert.match(html, /Program status/);
+  assert.match(html, /Completed Tasks/);
+  assert.match(html, /Open Tasks/);
+  assert.match(html, /Overdue Tasks/);
+  assert.match(
+    html,
+    /Program status: \d+ completed tasks, \d+ open tasks, \d+ overdue tasks/,
+  );
+  assert.doesNotMatch(html, /60 percent on track/);
   assert.match(html, /Task progress [\d.]+ percent done versus open/);
   assert.match(html, /\d+(?:\.\d+)?% done · \d+ done \/ \d+ open/);
   assert.match(html, /SYNC <!-- -->JUL \d{1,2}, 2026/);
@@ -195,7 +203,11 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(configSource, /EE-2220/);
   assert.match(configSource, /DEFAULT_ADMIN_USERNAME = "admin"/);
   assert.match(configSource, /DEFAULT_ADMIN_PASSWORD = "esad"/);
-  assert.match(page, /function HealthCore\(\)/);
+  assert.match(page, /function HealthCore\(/);
+  assert.match(page, /programStatusFromProjects/);
+  assert.match(page, /aggregateProgramTaskStats/);
+  assert.match(page, /Completed Tasks/);
+  assert.match(page, /Overdue Tasks/);
   assert.match(layout, /title: "MACH ESAD Development Dashboard"/);
   assert.match(layout, /og\.png/);
   assert.match(packageJson, /"name": "site-creator-vinext-starter"/);

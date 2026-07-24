@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  aggregateProgramTaskStats,
   countOpenTasksFromCsv,
   fetchDsbTaskStats,
   jiraIssueUrl,
@@ -37,6 +38,39 @@ test("maps overdue counts to indicator light status", () => {
   assert.equal(statusFromOverdueCount(5), "At risk");
   assert.equal(statusFromOverdueCount(6), "Critical");
   assert.equal(statusFromOverdueCount(12), "Critical");
+});
+
+test("aggregates Completed / Open / Overdue across all cards for Program Status", () => {
+  const totals = aggregateProgramTaskStats([
+    { doneTasks: 1, openTasks: 25, overdueTasks: 2 },
+    { doneTasks: 1, openTasks: 25, overdueTasks: 0 },
+    { doneTasks: 1, openTasks: 4, overdueTasks: 0 },
+    { doneTasks: 1, openTasks: 4, overdueTasks: 0 },
+  ]);
+  assert.equal(totals.completedTasks, 4);
+  assert.equal(totals.openTasks, 58);
+  assert.equal(totals.overdueTasks, 2);
+  assert.equal(totals.totalTasks, 62);
+  assert.equal(
+    Math.round(
+      (totals.completedPercent +
+        totals.openOnTimePercent +
+        totals.overduePercent) *
+        10,
+    ) / 10,
+    100,
+  );
+  assert.equal(totals.completedPercent, 6.5);
+  assert.equal(totals.openOnTimePercent, 90.3);
+  assert.equal(totals.overduePercent, 3.2);
+});
+
+test("Program Status aggregation handles empty boards", () => {
+  const totals = aggregateProgramTaskStats([]);
+  assert.equal(totals.completedTasks, 0);
+  assert.equal(totals.openTasks, 0);
+  assert.equal(totals.overdueTasks, 0);
+  assert.equal(totals.completedPercent, 0);
 });
 
 test("counts overdue open tasks from Due date before today", () => {
