@@ -42,6 +42,16 @@ for (const key of googleSheetEnvKeys) {
   }
 }
 
+const adminEnvKeys = ["ADMIN_USERNAME", "ADMIN_PASSWORD"] as const;
+const adminVars: Record<string, string> = {};
+for (const key of adminEnvKeys) {
+  const value = process.env[key] ?? readEnvFileValue(key);
+  if (value) {
+    process.env[key] = value;
+    adminVars[key] = value;
+  }
+}
+
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
@@ -53,6 +63,7 @@ const localBindingConfig = {
       ? { SMARTSHEET_ACCESS_TOKEN: smartsheetAccessToken }
       : {}),
     ...googleSheetVars,
+    ...adminVars,
   },
   d1_databases: d1
     ? [

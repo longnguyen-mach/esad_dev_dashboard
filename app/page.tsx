@@ -1,5 +1,13 @@
+import { AdminLogin } from "./admin-login";
+import { ConfigWindow } from "./config-window";
 import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
+import {
+  DASHBOARD_CONFIGS,
+  getAdminCredentials,
+  getDashboardConfigForCode,
+  type DashboardConfig,
+} from "../lib/dashboard-config";
 import {
   ESAD_PROJECT_INTEGRATIONS,
   googleSheetEditUrl,
@@ -46,6 +54,8 @@ type Project = {
   /** When set, header progress uses Done/(Done+Open) instead of board average. */
   taskProgressPercent?: number;
   taskProgressCaption?: string;
+  /** Text Configuration Window payload for this dashboard slot. */
+  config: DashboardConfig;
 };
 
 function sheetEditUrlFor(code: EsadProjectCode): string {
@@ -208,6 +218,7 @@ const projects: Project[] = [
   {
     name: "Digital Safety Board",
     code: "DSB",
+    config: DASHBOARD_CONFIGS["1"],
     // Fallback overdue count is 1 → green / On track.
     status: "On track",
     boards: [
@@ -279,6 +290,7 @@ const projects: Project[] = [
   {
     name: "High Voltage Fireset Board",
     code: "HVFB",
+    config: DASHBOARD_CONFIGS["2"],
     // Fallback until Google Sheet overdue count is available.
     status: "Critical",
     boards: [
@@ -332,6 +344,7 @@ const projects: Project[] = [
   {
     name: "CPLD - Primary",
     code: "PRI",
+    config: DASHBOARD_CONFIGS["3"],
     status: "Critical",
     boards: [{ name: "Servo Board", progress: 5 }],
     metrics: [
@@ -377,6 +390,7 @@ const projects: Project[] = [
   {
     name: "CPLD - Independent",
     code: "IND",
+    config: DASHBOARD_CONFIGS["4"],
     status: "At risk",
     boards: [
       { name: "Carrier Board Rev A", progress: 50 },
@@ -441,9 +455,13 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
     project.taskProgressPercent != null
       ? `Task progress ${progressPercent} percent done versus open`
       : `Average board progress ${boardAverage} percent`;
+  const config = project.config ?? getDashboardConfigForCode(project.code);
 
   return (
-    <article className={`project-panel project-panel--${index + 1}`}>
+    <article
+      className={`project-panel project-panel--${index + 1}`}
+      data-dashboard-id={config.dashboardId}
+    >
       <div className="panel-topline" aria-hidden="true" />
       <header className="panel-header">
         <div className="blueprint-tile" aria-hidden="true">
@@ -458,10 +476,13 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           </div>
           <small>{progressCaption}</small>
         </div>
-        <div className="signal-lights" aria-label={`${project.status} project`}>
-          <i className={project.status === "On track" ? "active" : ""} />
-          <i className={project.status === "At risk" ? "active" : ""} />
-          <i className={project.status === "Critical" ? "active" : ""} />
+        <div className="panel-header-actions">
+          <ConfigWindow config={config} />
+          <div className="signal-lights" aria-label={`${project.status} project`}>
+            <i className={project.status === "On track" ? "active" : ""} />
+            <i className={project.status === "At risk" ? "active" : ""} />
+            <i className={project.status === "Critical" ? "active" : ""} />
+          </div>
         </div>
       </header>
 
@@ -709,10 +730,15 @@ export default async function Home() {
     taskStatsByCode,
     scheduleStatsByCode,
   );
+  const adminCredentials = getAdminCredentials();
 
   return (
     <main className="dashboard-shell">
       <header className="hero-header">
+        <AdminLogin
+          username={adminCredentials.username}
+          password={adminCredentials.password}
+        />
         <h1>MACH ESAD Development Dashboard</h1>
         <div className="hero-subtitle"><span />Engineering Program Office<span /></div>
       </header>

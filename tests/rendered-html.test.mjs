@@ -35,10 +35,15 @@ test("server-renders the MACH ESAD dashboard", async () => {
     /<meta(?=[^>]*\bname=["']description["'])(?=[^>]*\bcontent=["']Engineering project health, progress, and work tracking at a glance\.["'])[^>]*>/i,
   );
   assert.match(html, /Engineering Program Office/);
+  assert.match(html, /Admin login/);
   assert.match(html, /Digital Safety Board/);
   assert.match(html, /High Voltage Fireset Board/);
   assert.match(html, /CPLD - Primary/);
   assert.match(html, /CPLD - Independent/);
+  assert.match(html, /data-dashboard-id="1"/);
+  assert.match(html, /data-dashboard-id="2"/);
+  assert.match(html, /data-dashboard-id="3"/);
+  assert.match(html, /data-dashboard-id="4"/);
   assert.match(html, /Program status/);
   assert.match(html, /Task progress [\d.]+ percent done versus open/);
   assert.match(html, /\d+(?:\.\d+)?% done · \d+ done \/ \d+ open/);
@@ -149,12 +154,24 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /fetchAllProjectScheduleStats/);
   assert.match(page, /ESAD_PROJECT_INTEGRATIONS/);
   assert.match(page, /sheetEditUrlFor/);
+  assert.match(page, /AdminLogin/);
+  assert.match(page, /ConfigWindow/);
+  assert.match(page, /DASHBOARD_CONFIGS/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
   assert.match(page, /name: "CPLD - Independent"/);
   assert.doesNotMatch(page, /label: "Open rework"/);
   assert.doesNotMatch(page, /label: "On order"/);
+
+  const configSource = await readFile(
+    new URL("../lib/dashboard-config.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(configSource, /Bruno Abousleiman/);
+  assert.match(configSource, /EE-2220/);
+  assert.match(configSource, /DEFAULT_ADMIN_USERNAME = "admin"/);
+  assert.match(configSource, /DEFAULT_ADMIN_PASSWORD = "esad"/);
   assert.match(page, /function HealthCore\(\)/);
   assert.match(layout, /title: "MACH ESAD Development Dashboard"/);
   assert.match(layout, /og\.png/);
