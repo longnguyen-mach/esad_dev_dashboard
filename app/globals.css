@@ -123,8 +123,8 @@ body {
   --motif-repeat: repeat, repeat;
 }
 
-/* Warm brass / olive field-command look — distinct from cool cyan Futuristic. */
-[data-theme="lucky"] {
+/* Feeling Lucky look 1: warm brass / olive field-command. */
+[data-theme="lucky-brass"] {
   --void: #140e08;
   --panel: #1c150c;
   --panel-2: #241c10;
@@ -144,6 +144,82 @@ body {
     url("/themes/lucky-motifs-dense.svg");
   --motif-size: 1400px 900px, 900px 700px;
   --motif-repeat: repeat, repeat;
+}
+
+/* Feeling Lucky look 2: copper / ember. */
+[data-theme="lucky-ember"] {
+  --void: #140806;
+  --panel: #22100c;
+  --panel-2: #2c1610;
+  --line: #8f4530;
+  --line-bright: #e8784a;
+  --text: #ffe8dc;
+  --muted: #c4927a;
+  --blue: #d4653c;
+  --green: #c4a24a;
+  --amber: #f0a050;
+  --red: #ff5a48;
+  --grid-line: rgba(220, 100, 60, .1);
+  --glow-mid: rgba(140, 50, 24, .36);
+  --glow-top: #2a120c;
+  --motif-layer: none;
+}
+
+/* Feeling Lucky look 3: cool slate steel. */
+[data-theme="lucky-slate"] {
+  --void: #0a1018;
+  --panel: #121a24;
+  --panel-2: #1a2430;
+  --line: #4a6278;
+  --line-bright: #9eb6cc;
+  --text: #e8f0f6;
+  --muted: #8aa0b4;
+  --blue: #7a96b0;
+  --green: #6aaa8a;
+  --amber: #d0a86a;
+  --red: #d06068;
+  --grid-line: rgba(140, 170, 200, .08);
+  --glow-mid: rgba(40, 70, 100, .34);
+  --glow-top: #101820;
+  --motif-layer: none;
+}
+
+/* Feeling Lucky look 4: deep forest ops. */
+[data-theme="lucky-forest"] {
+  --void: #07120c;
+  --panel: #0f1c14;
+  --panel-2: #16261a;
+  --line: #3f6a48;
+  --line-bright: #8fd49a;
+  --text: #e8f6ea;
+  --muted: #8aaf90;
+  --blue: #6a9a72;
+  --green: #5ecf78;
+  --amber: #d0b050;
+  --red: #d06050;
+  --grid-line: rgba(100, 170, 110, .09);
+  --glow-mid: rgba(30, 80, 45, .36);
+  --glow-top: #0c1a10;
+  --motif-layer: none;
+}
+
+/* Feeling Lucky look 5: desert sand / khaki. */
+[data-theme="lucky-sand"] {
+  --void: #1a140c;
+  --panel: #241c12;
+  --panel-2: #2e2418;
+  --line: #8a7040;
+  --line-bright: #e0c48a;
+  --text: #f7efd8;
+  --muted: #b8a478;
+  --blue: #c0a060;
+  --green: #9aaa60;
+  --amber: #f0c060;
+  --red: #d07050;
+  --grid-line: rgba(200, 170, 100, .1);
+  --glow-mid: rgba(120, 90, 40, .34);
+  --glow-top: #2a2010;
+  --motif-layer: none;
 }
 
 .dashboard-shell {
@@ -1757,12 +1833,17 @@ body[data-theme="futuristic"] {
   to { opacity: 1; transform: translate3d(0, -8px, 0); }
 }
 
-[data-theme="lucky"] body,
-body[data-theme="lucky"] {
+[data-theme^="lucky-"] .dashboard-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="lucky-brass"] body,
+body[data-theme="lucky-brass"] {
   background-position: 0 0, 120px 80px, 0 0, 0 0, 50% 54%, 50% -15%;
 }
 
-[data-theme="lucky"] .dashboard-shell::before {
+[data-theme="lucky-brass"] .dashboard-shell::before {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -1775,26 +1856,21 @@ body[data-theme="lucky"] {
   animation: lucky-glow 16s ease-in-out infinite alternate;
 }
 
-[data-theme="lucky"] .dashboard-shell > * {
-  position: relative;
-  z-index: 1;
-}
-
-[data-theme="lucky"] .project-panel {
+[data-theme="lucky-brass"] .project-panel {
   border-color: rgba(224, 180, 90, .42);
   box-shadow: inset 0 0 42px rgba(180, 120, 40, .14), 0 0 22px rgba(160, 100, 30, .12);
 }
 
-[data-theme="lucky"] .health-core {
+[data-theme="lucky-brass"] .health-core {
   border-color: #e0b45a;
   box-shadow: 0 0 0 10px rgba(20, 14, 8, .9), 0 0 0 11px #8a6a32, 0 0 70px rgba(224, 180, 90, .22);
 }
 
-[data-theme="lucky"] .hero-header h1 {
+[data-theme="lucky-brass"] .hero-header h1 {
   text-shadow: 0 0 22px rgba(224, 180, 90, .24), 0 0 44px rgba(200, 150, 58, .12);
 }
 
-[data-theme="lucky"] .blueprint-tile {
+[data-theme="lucky-brass"] .blueprint-tile {
   border-color: #c8963a;
   background:
     linear-gradient(rgba(200, 150, 58, .1) 1px, transparent 1px),
@@ -1803,10 +1879,158 @@ body[data-theme="lucky"] {
   background-size: 12px 12px;
 }
 
-[data-theme="lucky"] .blueprint-tile span {
+[data-theme="lucky-brass"] .blueprint-tile span {
   border-color: #e0b45a;
   background: #18110a;
   color: #f0d9a0;
+}
+
+[data-theme="lucky-ember"] .dashboard-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 22% 20%, rgba(232, 120, 74, .12), transparent 26%),
+    radial-gradient(circle at 78% 75%, rgba(255, 90, 72, .08), transparent 28%);
+  animation: lucky-glow 15s ease-in-out infinite alternate;
+}
+
+[data-theme="lucky-ember"] .project-panel {
+  border-color: rgba(232, 120, 74, .45);
+  box-shadow: inset 0 0 40px rgba(160, 50, 30, .16), 0 0 22px rgba(180, 60, 30, .12);
+}
+
+[data-theme="lucky-ember"] .health-core {
+  border-color: #e8784a;
+  box-shadow: 0 0 0 10px rgba(20, 8, 6, .9), 0 0 0 11px #8f4530, 0 0 60px rgba(232, 120, 74, .22);
+}
+
+[data-theme="lucky-ember"] .blueprint-tile {
+  border-color: #e8784a;
+  background:
+    linear-gradient(rgba(232, 120, 74, .1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 120, 74, .1) 1px, transparent 1px),
+    #1c0e0a;
+  background-size: 12px 12px;
+}
+
+[data-theme="lucky-ember"] .blueprint-tile span {
+  border-color: #e8784a;
+  background: #160a08;
+  color: #ffd0bc;
+}
+
+[data-theme="lucky-slate"] .dashboard-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 16% 18%, rgba(158, 182, 204, .1), transparent 26%),
+    radial-gradient(circle at 84% 72%, rgba(80, 120, 160, .08), transparent 28%);
+  animation: lucky-glow 17s ease-in-out infinite alternate;
+}
+
+[data-theme="lucky-slate"] .project-panel {
+  border-color: rgba(158, 182, 204, .4);
+  box-shadow: inset 0 0 40px rgba(40, 70, 100, .16), 0 0 20px rgba(60, 90, 120, .12);
+}
+
+[data-theme="lucky-slate"] .health-core {
+  border-color: #9eb6cc;
+  box-shadow: 0 0 0 10px rgba(10, 16, 24, .9), 0 0 0 11px #4a6278, 0 0 55px rgba(158, 182, 204, .18);
+}
+
+[data-theme="lucky-slate"] .blueprint-tile {
+  border-color: #9eb6cc;
+  background:
+    linear-gradient(rgba(158, 182, 204, .08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(158, 182, 204, .08) 1px, transparent 1px),
+    #101820;
+  background-size: 12px 12px;
+}
+
+[data-theme="lucky-slate"] .blueprint-tile span {
+  border-color: #9eb6cc;
+  background: #0c1218;
+  color: #dce8f2;
+}
+
+[data-theme="lucky-forest"] .dashboard-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 20% 22%, rgba(143, 212, 154, .1), transparent 26%),
+    radial-gradient(circle at 80% 70%, rgba(60, 140, 80, .08), transparent 28%);
+  animation: lucky-glow 16s ease-in-out infinite alternate;
+}
+
+[data-theme="lucky-forest"] .project-panel {
+  border-color: rgba(143, 212, 154, .4);
+  box-shadow: inset 0 0 40px rgba(30, 90, 50, .16), 0 0 20px rgba(40, 110, 60, .12);
+}
+
+[data-theme="lucky-forest"] .health-core {
+  border-color: #8fd49a;
+  box-shadow: 0 0 0 10px rgba(7, 18, 12, .9), 0 0 0 11px #3f6a48, 0 0 55px rgba(143, 212, 154, .18);
+}
+
+[data-theme="lucky-forest"] .blueprint-tile {
+  border-color: #8fd49a;
+  background:
+    linear-gradient(rgba(143, 212, 154, .08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 212, 154, .08) 1px, transparent 1px),
+    #0c1810;
+  background-size: 12px 12px;
+}
+
+[data-theme="lucky-forest"] .blueprint-tile span {
+  border-color: #8fd49a;
+  background: #08120c;
+  color: #d8f5dc;
+}
+
+[data-theme="lucky-sand"] .dashboard-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 18% 20%, rgba(224, 196, 138, .1), transparent 26%),
+    radial-gradient(circle at 82% 74%, rgba(180, 140, 70, .08), transparent 28%);
+  animation: lucky-glow 15s ease-in-out infinite alternate;
+}
+
+[data-theme="lucky-sand"] .project-panel {
+  border-color: rgba(224, 196, 138, .42);
+  box-shadow: inset 0 0 40px rgba(120, 90, 40, .14), 0 0 20px rgba(140, 110, 50, .12);
+}
+
+[data-theme="lucky-sand"] .health-core {
+  border-color: #e0c48a;
+  box-shadow: 0 0 0 10px rgba(26, 20, 12, .9), 0 0 0 11px #8a7040, 0 0 55px rgba(224, 196, 138, .18);
+}
+
+[data-theme="lucky-sand"] .blueprint-tile {
+  border-color: #e0c48a;
+  background:
+    linear-gradient(rgba(224, 196, 138, .1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 196, 138, .1) 1px, transparent 1px),
+    #1e1810;
+  background-size: 12px 12px;
+}
+
+[data-theme="lucky-sand"] .blueprint-tile span {
+  border-color: #e0c48a;
+  background: #16120c;
+  color: #f5e8c8;
 }
 
 @keyframes lucky-glow {
@@ -1816,7 +2040,7 @@ body[data-theme="lucky"] {
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme="futuristic"] .dashboard-shell::before,
-  [data-theme="lucky"] .dashboard-shell::before {
+  [data-theme^="lucky-"] .dashboard-shell::before {
     animation: none;
   }
 }

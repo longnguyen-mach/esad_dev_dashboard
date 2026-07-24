@@ -238,8 +238,13 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(themesSource, /Theme 1: Light/);
   assert.match(themesSource, /Theme 2: Dark/);
   assert.match(themesSource, /Theme 3: Futuristic/);
-  assert.match(themesSource, /Theme 4: Lucky/);
+  assert.match(themesSource, /Theme 4: Feeling Lucky/);
   assert.match(themesSource, /LUCKY_THEME_POOL/);
+  assert.match(themesSource, /lucky-brass/);
+  assert.match(themesSource, /lucky-ember/);
+  assert.match(themesSource, /lucky-slate/);
+  assert.match(themesSource, /lucky-forest/);
+  assert.match(themesSource, /lucky-sand/);
 
   const adminAccount = await readFile(
     new URL("../app/admin-account-panel.tsx", import.meta.url),

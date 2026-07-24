@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  isConcreteThemeId,
   isThemeId,
   resolveThemeId,
   type ConcreteThemeId,
@@ -35,9 +36,20 @@ export function readThemeState(): ThemeState {
     const resolvedRaw = window.localStorage.getItem(THEME_RESOLVED_STORAGE_KEY);
     const selection =
       selectionRaw && isThemeId(selectionRaw) ? selectionRaw : "default";
+
+    if (selection === "lucky") {
+      // Keep a prior Feeling Lucky roll when still valid; otherwise roll again.
+      if (resolvedRaw && isConcreteThemeId(resolvedRaw) && resolvedRaw.startsWith("lucky-")) {
+        return { selection, resolved: resolvedRaw };
+      }
+      const resolved = resolveThemeId("lucky");
+      window.localStorage.setItem(THEME_RESOLVED_STORAGE_KEY, resolved);
+      return { selection, resolved };
+    }
+
     const resolved =
-      resolvedRaw && isThemeId(resolvedRaw)
-        ? (resolvedRaw as ConcreteThemeId)
+      resolvedRaw && isConcreteThemeId(resolvedRaw) && resolvedRaw === selection
+        ? resolvedRaw
         : resolveThemeId(selection);
     return { selection, resolved };
   } catch {
@@ -46,6 +58,7 @@ export function readThemeState(): ThemeState {
 }
 
 export function writeThemeSelection(selection: ThemeId): ThemeState {
+  // Feeling Lucky always re-rolls on selection so users can “try again”.
   const resolved = resolveThemeId(selection);
   const next: ThemeState = { selection, resolved };
   if (typeof window !== "undefined") {

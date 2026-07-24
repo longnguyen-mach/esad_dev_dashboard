@@ -3,7 +3,12 @@
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useThemeState, writeThemeSelection } from "./theme-store";
-import { THEME_OPTIONS, type ThemeId } from "../lib/themes";
+import {
+  FEELING_LUCKY_LOOK_LABELS,
+  THEME_OPTIONS,
+  isFeelingLuckyLookId,
+  type ThemeId,
+} from "../lib/themes";
 
 /** Theme picker is available to all visitors (no admin login required). */
 export function ThemePicker() {
@@ -85,6 +90,14 @@ export function ThemePicker() {
                         >
                           <strong>{option.label}</strong>
                           <span>{option.description}</span>
+                          {option.id === "lucky" &&
+                          selected &&
+                          isFeelingLuckyLookId(theme.resolved) ? (
+                            <em>
+                              Active look:{" "}
+                              {FEELING_LUCKY_LOOK_LABELS[theme.resolved]}
+                            </em>
+                          ) : null}
                         </button>
                       </li>
                     );

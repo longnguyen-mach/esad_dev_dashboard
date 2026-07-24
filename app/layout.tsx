@@ -48,7 +48,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(() => { try { const allowed = new Set(["default","light","dark","futuristic","lucky"]); const s = localStorage.getItem("esad-dashboard-theme-resolved") || localStorage.getItem("esad-dashboard-theme") || "default"; const theme = allowed.has(s) ? s : "default"; const apply = () => { document.documentElement.dataset.theme = theme; if (document.body) document.body.dataset.theme = theme; }; apply(); document.addEventListener("DOMContentLoaded", apply); } catch (_) {} })();`,
+            __html: `(() => { try { const allowed = new Set(["default","light","dark","futuristic","lucky-brass","lucky-ember","lucky-slate","lucky-forest","lucky-sand"]); let s = localStorage.getItem("esad-dashboard-theme-resolved") || localStorage.getItem("esad-dashboard-theme") || "default"; if (s === "lucky") s = "lucky-brass"; const theme = allowed.has(s) ? s : "default"; const apply = () => { document.documentElement.dataset.theme = theme; if (document.body) document.body.dataset.theme = theme; }; apply(); document.addEventListener("DOMContentLoaded", apply); } catch (_) {} })();`,
           }}
         />
       </head>

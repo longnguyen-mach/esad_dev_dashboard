@@ -6,8 +6,17 @@ export type ThemeId =
   | "futuristic"
   | "lucky";
 
-/** Every selectable theme maps 1:1 to a concrete look (including Lucky). */
-export type ConcreteThemeId = ThemeId;
+/** Five randomized looks used by Feeling Lucky. */
+export type FeelingLuckyLookId =
+  | "lucky-brass"
+  | "lucky-ember"
+  | "lucky-slate"
+  | "lucky-forest"
+  | "lucky-sand";
+
+export type ConcreteThemeId =
+  | Exclude<ThemeId, "lucky">
+  | FeelingLuckyLookId;
 
 export const THEME_OPTIONS: ReadonlyArray<{
   id: ThemeId;
@@ -36,24 +45,49 @@ export const THEME_OPTIONS: ReadonlyArray<{
   },
   {
     id: "lucky",
-    label: "Theme 4: Lucky",
-    description: "Warm brass field-command look",
+    label: "Theme 4: Feeling Lucky",
+    description: "Randomizes among 5 distinct looks",
   },
 ];
 
-/**
- * @deprecated Lucky is now its own concrete theme (no longer rolls into others).
- * Kept for tests / callers that still import the pool name.
- */
-export const LUCKY_THEME_POOL: readonly ConcreteThemeId[] = ["lucky"] as const;
+/** Feeling Lucky rolls into one of these five concrete looks. */
+export const LUCKY_THEME_POOL: readonly FeelingLuckyLookId[] = [
+  "lucky-brass",
+  "lucky-ember",
+  "lucky-slate",
+  "lucky-forest",
+  "lucky-sand",
+] as const;
+
+export const FEELING_LUCKY_LOOK_LABELS: Record<FeelingLuckyLookId, string> = {
+  "lucky-brass": "Brass",
+  "lucky-ember": "Ember",
+  "lucky-slate": "Slate",
+  "lucky-forest": "Forest",
+  "lucky-sand": "Sand",
+};
 
 export function isThemeId(value: string): value is ThemeId {
   return THEME_OPTIONS.some((option) => option.id === value);
 }
 
+export function isFeelingLuckyLookId(value: string): value is FeelingLuckyLookId {
+  return (LUCKY_THEME_POOL as readonly string[]).includes(value);
+}
+
+export function isConcreteThemeId(value: string): value is ConcreteThemeId {
+  if (value === "lucky") return false;
+  return (
+    isThemeId(value) ||
+    isFeelingLuckyLookId(value)
+  );
+}
+
 export function resolveThemeId(
   themeId: ThemeId,
-  _random: () => number = Math.random,
+  random: () => number = Math.random,
 ): ConcreteThemeId {
-  return themeId;
+  if (themeId !== "lucky") return themeId;
+  const index = Math.floor(random() * LUCKY_THEME_POOL.length);
+  return LUCKY_THEME_POOL[index] ?? "lucky-brass";
 }
