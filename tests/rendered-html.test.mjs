@@ -54,7 +54,15 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /Overdue Tasks/);
   assert.match(
     html,
-    /Program status: \d+ completed tasks, \d+ open tasks, \d+ overdue tasks/,
+    /Program status: \d+(?:\.\d+)?% completed tasks, \d+(?:\.\d+)?% open tasks, \d+(?:\.\d+)?% overdue tasks/,
+  );
+  assert.match(
+    html,
+    /Completed Tasks<\/span><strong>\d+(?:\.\d+)?%<\/strong>/,
+  );
+  assert.match(
+    html,
+    /Overdue Tasks<\/span><strong>\d+(?:\.\d+)?%<\/strong>/,
   );
   assert.doesNotMatch(html, /60 percent on track/);
   assert.match(html, /Task progress [\d.]+ percent done versus open/);

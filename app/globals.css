@@ -1155,7 +1155,7 @@ body {
   line-height: 1.2;
   text-transform: uppercase;
 }
-.health-stat strong { font-size: 1.22rem; min-width: 1.6ch; text-align: right; }
+.health-stat strong { font-size: 1.15rem; min-width: 4.5ch; text-align: right; }
 .health-stat--green i { background: var(--green); }
 .health-stat--amber i { background: var(--amber); }
 .health-stat--red i { background: var(--red); }

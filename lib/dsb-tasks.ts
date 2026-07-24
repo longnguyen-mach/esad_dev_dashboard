@@ -77,13 +77,25 @@ export type ProgramTaskTotals = {
   overdueTasks: number;
   /** completed + open */
   totalTasks: number;
-  /** Exclusive donut slice: completed / total (0-100). */
+  /** Completed / total (0-100). */
   completedPercent: number;
+  /** Open / total (0-100), includes overdue. */
+  openPercent: number;
   /** Exclusive donut slice: open and not overdue / total (0-100). */
   openOnTimePercent: number;
-  /** Exclusive donut slice: overdue / total (0-100). */
+  /** Overdue / total (0-100). */
   overduePercent: number;
 };
+
+/** Format a 0-100 program metric for display, e.g. 6.5 → "6.5%". */
+export function formatProgramPercent(value: number): string {
+  const rounded = roundOneDecimal(Math.max(0, value));
+  const text =
+    Number.isInteger(rounded) || Math.abs(rounded - Math.round(rounded)) < 1e-9
+      ? String(Math.round(rounded))
+      : rounded.toFixed(1);
+  return `${text}%`;
+}
 
 function roundOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
@@ -121,6 +133,7 @@ export function aggregateProgramTaskStats(
       overdueTasks,
       totalTasks,
       completedPercent: 0,
+      openPercent: 0,
       openOnTimePercent: 0,
       overduePercent: 0,
     };
@@ -146,12 +159,15 @@ export function aggregateProgramTaskStats(
     }
   }
 
+  const openPercent = roundOneDecimal(openOnTimePercent + overduePercent);
+
   return {
     completedTasks,
     openTasks,
     overdueTasks,
     totalTasks,
     completedPercent,
+    openPercent,
     openOnTimePercent,
     overduePercent,
   };

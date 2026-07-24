@@ -18,6 +18,7 @@ import {
 import {
   aggregateProgramTaskStats,
   fetchAllProjectTaskStats,
+  formatProgramPercent,
   statusFromOverdueCount,
   type DsbTaskStats,
   type ProgramTaskTotals,
@@ -444,11 +445,14 @@ function HealthCore({ status }: { status: ProgramTaskTotals }) {
     status.totalTasks === 0
       ? "conic-gradient(#1e3a52 0 100%)"
       : `conic-gradient(var(--green) 0 ${status.completedPercent}%, var(--amber) ${status.completedPercent}% ${openOnTimeEnd}%, var(--red) ${openOnTimeEnd}% 100%)`;
+  const completedLabel = formatProgramPercent(status.completedPercent);
+  const openLabel = formatProgramPercent(status.openPercent);
+  const overdueLabel = formatProgramPercent(status.overduePercent);
 
   return (
     <aside
       className="health-core"
-      aria-label={`Program status: ${status.completedTasks} completed tasks, ${status.openTasks} open tasks, ${status.overdueTasks} overdue tasks`}
+      aria-label={`Program status: ${completedLabel} completed tasks, ${openLabel} open tasks, ${overdueLabel} overdue tasks`}
     >
       <div className="orbit orbit--outer" aria-hidden="true"><i /><i /><i /><i /></div>
       <div className="orbit orbit--inner" aria-hidden="true" />
@@ -458,17 +462,17 @@ function HealthCore({ status }: { status: ProgramTaskTotals }) {
           <div className="health-stat health-stat--green">
             <i />
             <span>Completed Tasks</span>
-            <strong>{status.completedTasks}</strong>
+            <strong>{completedLabel}</strong>
           </div>
           <div className="health-stat health-stat--amber">
             <i />
             <span>Open Tasks</span>
-            <strong>{status.openTasks}</strong>
+            <strong>{openLabel}</strong>
           </div>
           <div className="health-stat health-stat--red">
             <i />
             <span>Overdue Tasks</span>
-            <strong>{status.overdueTasks}</strong>
+            <strong>{overdueLabel}</strong>
           </div>
         </div>
       </div>

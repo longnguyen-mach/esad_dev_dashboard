@@ -4,6 +4,7 @@ import {
   aggregateProgramTaskStats,
   countOpenTasksFromCsv,
   fetchDsbTaskStats,
+  formatProgramPercent,
   jiraIssueUrl,
   statusFromOverdueCount,
 } from "../lib/dsb-tasks.ts";
@@ -61,8 +62,13 @@ test("aggregates Completed / Open / Overdue across all cards for Program Status"
     100,
   );
   assert.equal(totals.completedPercent, 6.5);
+  assert.equal(totals.openPercent, 93.5);
   assert.equal(totals.openOnTimePercent, 90.3);
   assert.equal(totals.overduePercent, 3.2);
+  assert.equal(formatProgramPercent(totals.completedPercent), "6.5%");
+  assert.equal(formatProgramPercent(totals.openPercent), "93.5%");
+  assert.equal(formatProgramPercent(totals.overduePercent), "3.2%");
+  assert.equal(formatProgramPercent(60), "60%");
 });
 
 test("Program Status aggregation handles empty boards", () => {
@@ -71,6 +77,7 @@ test("Program Status aggregation handles empty boards", () => {
   assert.equal(totals.openTasks, 0);
   assert.equal(totals.overdueTasks, 0);
   assert.equal(totals.completedPercent, 0);
+  assert.equal(totals.openPercent, 0);
 });
 
 test("counts overdue open tasks from Due date before today", () => {
