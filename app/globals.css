@@ -85,11 +85,11 @@ body {
   --void: #000408;
   --panel: #050b12;
   --panel-2: #081018;
-  --line: #1a334d;
-  --line-bright: #1767c2;
+  --line: #4a78a8;
+  --line-bright: #3d8de0;
   --text: #dce7f2;
   --muted: #5d738a;
-  --blue: #1568c4;
+  --blue: #3d8de0;
   --green: #2f9a52;
   --amber: #d89114;
   --red: #c7372c;
@@ -1379,6 +1379,7 @@ body {
 
 /* Theme-aware surface remaps (layout unchanged). */
 [data-theme="light"] .project-panel {
+  border-color: #7fa4c4;
   background:
     linear-gradient(120deg, rgba(255, 255, 255, .96), rgba(232, 241, 250, .96)),
     var(--panel);
@@ -1399,11 +1400,37 @@ body {
 [data-theme="light"] .metric-task-name,
 [data-theme="light"] .metric-task-name-link,
 [data-theme="light"] .responsible-engineer strong,
-[data-theme="light"] .blueprint-tile span,
 [data-theme="light"] .panel-updated,
 [data-theme="light"] .health-stat span,
 [data-theme="light"] .health-stat strong {
   color: var(--text);
+}
+
+/* Board nickname chip: dark text on light tile (was dark-on-dark). */
+[data-theme="light"] .blueprint-tile {
+  border-color: #1c6fbf;
+  background:
+    linear-gradient(rgba(28, 111, 191, .1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 111, 191, .1) 1px, transparent 1px),
+    #e7f1fb;
+  background-size: 12px 12px;
+  box-shadow: inset 0 0 18px rgba(28, 111, 191, .08);
+}
+
+[data-theme="light"] .blueprint-tile span {
+  border-color: #1c6fbf;
+  background: #ffffff;
+  color: #0a3a6e;
+}
+
+[data-theme="light"] .blueprint-tile::before,
+[data-theme="light"] .blueprint-tile::after {
+  background: #1c6fbf;
+  box-shadow: 0 0 8px rgba(28, 111, 191, .45);
+}
+
+[data-theme="light"] .blueprint-tile i {
+  border-color: rgba(28, 111, 191, .45);
 }
 
 [data-theme="light"] .hero-subtitle { color: #1c6fbf; }
@@ -1424,14 +1451,33 @@ body {
 }
 
 [data-theme="dark"] .project-panel {
+  border: 1px solid #5a8fc4;
   background:
     linear-gradient(120deg, rgba(8, 14, 22, .98), rgba(2, 6, 10, .98)),
     var(--panel);
-  box-shadow: inset 0 0 38px rgba(10, 40, 70, .16), 0 15px 40px rgba(0, 0, 0, .45);
+  box-shadow:
+    inset 0 0 0 1px rgba(90, 143, 196, .35),
+    inset 0 0 38px rgba(10, 40, 70, .16),
+    0 0 0 1px rgba(90, 143, 196, .25),
+    0 15px 40px rgba(0, 0, 0, .45);
+}
+
+[data-theme="dark"] .project-panel:hover {
+  border-color: #7eb6ff;
+  box-shadow:
+    inset 0 0 0 1px rgba(126, 182, 255, .45),
+    inset 0 0 38px rgba(20, 60, 100, .2),
+    0 0 0 1px rgba(126, 182, 255, .35),
+    0 15px 40px rgba(0, 0, 0, .5);
 }
 
 [data-theme="dark"] .health-core {
+  border-color: #5a8fc4;
   background: radial-gradient(circle, rgba(4, 10, 16, .98) 0 63%, rgba(1, 4, 8, .98) 64% 100%);
+  box-shadow:
+    0 0 0 10px rgba(0, 0, 0, .9),
+    0 0 0 11px #5a8fc4,
+    0 0 50px rgba(60, 120, 180, .2);
 }
 
 [data-theme="futuristic"] body,
