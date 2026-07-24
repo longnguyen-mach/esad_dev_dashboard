@@ -197,21 +197,106 @@ export function buildDsbScheduleStats(
   };
 }
 
-/** Parse Smartsheet datetimes consistently as UTC when no timezone is present. */
-function parseSmartsheetDate(value: string): number {
+/** Business calendar for DSB schedule dates (Smartsheet wall times). */
+export const DSB_SCHEDULE_TIME_ZONE =
+  process.env.DSB_SCHEDULE_TIMEZONE?.trim() || "America/Los_Angeles";
+
+type ZonedParts = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function getZonedParts(date: Date, timeZone: string): ZonedParts {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const map = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+    second: Number(map.second),
+  };
+}
+
+function zonedDayKey(ms: number, timeZone = DSB_SCHEDULE_TIME_ZONE): string {
+  const parts = getZonedParts(new Date(ms), timeZone);
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+}
+
+/** Convert a Smartsheet wall-time string into a UTC instant in the schedule timezone. */
+function zonedWallTimeToUtcMs(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  timeZone: string,
+): number {
+  // Guess UTC, then nudge until the zoned wall clock matches.
+  let utcMs = Date.UTC(year, month - 1, day, hour, minute, second);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const parts = getZonedParts(new Date(utcMs), timeZone);
+    const asUtc = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second,
+    );
+    const desired = Date.UTC(year, month - 1, day, hour, minute, second);
+    const delta = desired - asUtc;
+    if (delta === 0) break;
+    utcMs += delta;
+  }
+  return utcMs;
+}
+
+function parseSmartsheetDate(
+  value: string,
+  timeZone = DSB_SCHEDULE_TIME_ZONE,
+): number {
   const trimmed = value.trim();
   if (!trimmed) return Number.NaN;
   if (/[zZ]|[+-]\d{2}:?\d{2}$/.test(trimmed)) {
     return Date.parse(trimmed);
   }
-  // Smartsheet returns local-wall values like 2026-07-24T08:00:00 with no zone.
-  // Anchor them as UTC so server display and client popup use the same instant.
-  return Date.parse(`${trimmed}Z`);
-}
 
-function utcDayStartMs(ms: number): number {
-  const date = new Date(ms);
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const match = trimmed.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/,
+  );
+  if (!match) return Date.parse(trimmed);
+
+  return zonedWallTimeToUtcMs(
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4] ?? "0"),
+    Number(match[5] ?? "0"),
+    Number(match[6] ?? "0"),
+    timeZone,
+  );
 }
 
 function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
@@ -225,36 +310,30 @@ function taskTimeBounds(task: Pick<DsbScheduleTask, "start" | "finish">): {
   return { startMs, finishMs };
 }
 
-function overlapsCalendarDay(
-  startMs: number,
-  finishMs: number,
-  dayStartMs: number,
-): boolean {
-  const startDay = utcDayStartMs(startMs);
-  const finishDay = utcDayStartMs(finishMs);
-  return startDay <= dayStartMs && finishDay >= dayStartMs;
-}
-
 /**
- * Pick the schedule task that covers today's calendar date.
- * Never selects a future-dated task that has not started yet.
+ * Pick the schedule task that covers today's calendar date in the schedule TZ.
+ * Never selects a Smartsheet task whose start is still in the future.
  */
 export function findCurrentScheduleTask(
   revisions: DsbScheduleRevision[],
   now: Date = new Date(),
 ): DsbScheduleTask | null {
-  const todayStartMs = utcDayStartMs(now.getTime());
+  const nowMs = now.getTime();
+  const todayKey = zonedDayKey(nowMs);
   const tasks = revisions.flatMap((revision) => revision.tasks);
 
   const todaysTasks = tasks
     .map((task) => {
       const bounds = taskTimeBounds(task);
       if (!bounds) return null;
-      // Exclude future work that starts after today.
-      if (utcDayStartMs(bounds.startMs) > todayStartMs) return null;
-      if (!overlapsCalendarDay(bounds.startMs, bounds.finishMs, todayStartMs)) {
-        return null;
-      }
+
+      // Never treat a future-dated/future-timed Smartsheet row as current.
+      if (bounds.startMs > nowMs) return null;
+
+      const startKey = zonedDayKey(bounds.startMs);
+      const finishKey = zonedDayKey(bounds.finishMs);
+      if (startKey > todayKey || finishKey < todayKey) return null;
+
       return { task, startMs: bounds.startMs, finishMs: bounds.finishMs };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry != null);
@@ -301,12 +380,12 @@ export function findNextScheduleTask(
   }
 
   // No task covers today: next step is the first future-dated Smartsheet row.
-  const todayStartMs = utcDayStartMs(now.getTime());
+  const nowMs = now.getTime();
   return (
     ordered.find((task) => {
       const bounds = taskTimeBounds(task);
       if (!bounds) return false;
-      return utcDayStartMs(bounds.startMs) > todayStartMs;
+      return bounds.startMs > nowMs;
     }) ?? null
   );
 }

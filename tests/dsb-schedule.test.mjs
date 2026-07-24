@@ -126,6 +126,7 @@ test("does not select a future Smartsheet task as current", () => {
 });
 
 test("keeps current task on today's calendar date even after finish time", () => {
+  // 16:30 America/Los_Angeles on Jul 16 — after business hours but same local day.
   const stats = buildDsbScheduleStats(
     fixtureSheet,
     new Date("2026-07-16T23:30:00Z"),
@@ -135,6 +136,18 @@ test("keeps current task on today's calendar date even after finish time", () =>
   assert.equal(stats.nextTask?.name, "Requirements");
 });
 
+test("does not select a same-calendar-day task before its Smartsheet start time", () => {
+  // Jul 24 00:02 UTC == Jul 23 17:02 America/Los_Angeles.
+  // Schematic starts Jul 24 locally, so it must not become Current Task yet.
+  const stats = buildDsbScheduleStats(
+    fixtureSheet,
+    new Date("2026-07-24T00:02:00Z"),
+  );
+  assert.ok(stats);
+  assert.notEqual(stats.currentTask?.name, "Schematic");
+  assert.notEqual(stats.currentTask?.name, "Block Diagram + Review");
+});
+
 test("fetches live DSB schedule from Smartsheet when token is configured", async () => {
   const token = await loadEnvToken();
   if (!token) {
@@ -142,7 +155,11 @@ test("fetches live DSB schedule from Smartsheet when token is configured", async
     return;
   }
 
-  const stats = await fetchDsbScheduleStats(token, new Date("2026-07-23T12:00:00Z"));
+  // Jul 23 17:05 America/Los_Angeles — Design Analyses has started; Schematic has not.
+  const stats = await fetchDsbScheduleStats(
+    token,
+    new Date("2026-07-24T00:05:00Z"),
+  );
   assert.ok(stats, "expected live DSB schedule stats");
   assert.equal(stats.taskName, DSB_SCHEDULE_TASK_NAME);
   assert.equal(stats.revisionCount, 2);
@@ -152,13 +169,7 @@ test("fetches live DSB schedule from Smartsheet when token is configured", async
   );
   assert.ok(stats.revisions[0].tasks.length > 0);
   assert.ok(stats.revisions[1].tasks.length > 0);
-  assert.ok(stats.currentTask?.name);
-  assert.notEqual(stats.currentTask?.name, "Schematic");
-  assert.match(
-    stats.currentTask.start ?? "",
-    /^2026-07-/,
-  );
-  assert.ok(stats.nextTask?.name);
+  assert.equal(stats.currentTask?.name, "Design Analyses (SI/PI/Thermal/EMC)");
   assert.equal(stats.nextTask?.name, "Schematic");
   assert.notEqual(stats.currentTask?.id, stats.nextTask?.id);
 
