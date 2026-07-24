@@ -151,6 +151,30 @@ body {
   text-align: center;
 }
 
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 28px);
+  max-width: min(96%, 1180px);
+  padding-inline: 8px;
+}
+
+.hero-logo {
+  display: grid;
+  flex: 0 0 auto;
+  width: clamp(48px, 6.2vw, 72px);
+  height: clamp(48px, 6.2vw, 72px);
+  place-items: center;
+  color: #f5f7f9;
+}
+
+.hero-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .admin-login {
   position: relative;
   top: auto;
@@ -448,11 +472,13 @@ body {
 
 .hero-header h1 {
   margin: 0;
+  min-width: 0;
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(2rem, 4.25vw, 4.2rem);
+  font-size: clamp(1.85rem, 3.9vw, 3.9rem);
   font-weight: 800;
   letter-spacing: .025em;
   line-height: .98;
+  text-align: left;
   text-shadow: 0 0 24px rgba(255,255,255,.08);
   text-transform: uppercase;
 }
@@ -1257,59 +1283,59 @@ body {
 
 .health-donut::after {
   position: absolute;
-  /* Hole sized so .health-center sits well inside the ring. */
-  inset: 48px;
+  /* Larger hole gives room for bigger Program Status type. */
+  inset: 62px;
   border: 2px solid #3d8dcc;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #0b1d2d, #05111d 72%);
-  box-shadow: 0 0 0 5px rgba(3,13,22,.75);
+  box-shadow: 0 0 0 6px rgba(3,13,22,.75);
   content: "";
 }
 
 .health-center {
   position: relative;
   z-index: 2;
-  /* Keep the copy block clearly inset from the colored ring. */
-  width: 136px;
-  max-width: 46%;
-  padding: 6px 10px;
+  /* Stay inside the hole with clear ring clearance. */
+  width: 188px;
+  max-width: 58%;
+  padding: 8px 12px;
   box-sizing: border-box;
   margin-inline: auto;
 }
 
 .health-center h2 {
-  margin: 0 0 10px;
+  margin: 0 0 14px;
   font-family: var(--font-geist-mono), monospace;
-  font-size: .98rem;
+  font-size: 1.28rem;
   letter-spacing: .04em;
-  line-height: 1.1;
+  line-height: 1.12;
   text-align: center;
   text-transform: uppercase;
 }
 
 .health-stat {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 6px;
-  margin: 5px 0;
+  column-gap: 8px;
+  margin: 8px 0;
   font-family: var(--font-geist-mono), monospace;
 }
 
-.health-stat i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.health-stat i { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .health-stat span {
   color: #8399ae;
-  font-size: .46rem;
-  letter-spacing: .02em;
-  line-height: 1.15;
+  font-size: .62rem;
+  letter-spacing: .03em;
+  line-height: 1.2;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 .health-stat strong {
-  font-size: .9rem;
-  min-width: 3.8ch;
+  font-size: 1.15rem;
+  min-width: 4.2ch;
   text-align: right;
-  padding-left: 2px;
+  padding-left: 4px;
   justify-self: end;
 }
 .health-stat--green i { background: var(--green); }
@@ -1324,8 +1350,11 @@ body {
   .systems-grid { column-gap: 290px; }
   .health-core { width: 455px; height: 455px; }
   .health-donut { width: 366px; height: 366px; }
-  .health-donut::after { inset: 44px; }
-  .health-center { width: 124px; padding: 5px 8px; }
+  .health-donut::after { inset: 54px; }
+  .health-center { width: 168px; padding: 6px 10px; }
+  .health-center h2 { font-size: 1.15rem; }
+  .health-stat span { font-size: .56rem; }
+  .health-stat strong { font-size: 1.05rem; }
   .panel-header { grid-template-columns: 102px minmax(0,1fr) auto; gap: 18px; }
   .blueprint-tile { width: 102px; height: 96px; }
   .metric-row { grid-template-columns: 28px 118px minmax(70px,1fr); }
@@ -1339,8 +1368,11 @@ body {
   .systems-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
   .health-core { position: relative; top: auto; left: auto; grid-column: 1 / -1; grid-row: 2; width: 430px; height: 430px; margin: 28px auto; transform: none; }
   .health-donut { width: 345px; height: 345px; }
-  .health-donut::after { inset: 42px; }
-  .health-center { width: 118px; padding: 4px 8px; }
+  .health-donut::after { inset: 50px; }
+  .health-center { width: 156px; padding: 6px 10px; }
+  .health-center h2 { font-size: 1.08rem; }
+  .health-stat span { font-size: .54rem; }
+  .health-stat strong { font-size: 1rem; }
   .project-panel--3, .project-panel--4 { grid-row: 3; }
   .panel-header { grid-template-columns: 74px minmax(0,1fr) auto; }
   .blueprint-tile { width: 74px; height: 72px; }
@@ -1355,7 +1387,9 @@ body {
 @media (max-width: 720px) {
   .dashboard-shell { padding: 18px 14px 28px; }
   .hero-header { min-height: 102px; }
-  .hero-header h1 { max-width: 570px; font-size: clamp(1.7rem, 8vw, 2.5rem); line-height: 1.05; }
+  .hero-title-row { gap: 12px; }
+  .hero-logo { width: 44px; height: 44px; }
+  .hero-header h1 { max-width: 570px; font-size: clamp(1.55rem, 7vw, 2.35rem); line-height: 1.05; }
   .hero-subtitle { width: 100%; gap: 10px; font-size: .62rem; letter-spacing: .18em; white-space: normal; }
   .admin-toolbar { margin-bottom: 6px; gap: 8px; }
   .admin-login-button,
@@ -1383,10 +1417,11 @@ body {
   .signal-lights i { width: 9px; height: 9px; }
   .metric-row { grid-template-columns: 26px 112px minmax(60px,1fr); gap: 8px; }
   .metric-row--text { grid-template-columns: 26px auto minmax(0,1fr); }
-  .health-center { width: 110px; padding: 4px 6px; }
-  .health-center h2 { font-size: .85rem; margin-bottom: 8px; }
-  .health-stat { margin: 4px 0; column-gap: 4px; }
-  .health-stat strong { font-size: .8rem; }
+  .health-center { width: 150px; padding: 6px 8px; }
+  .health-center h2 { font-size: 1.05rem; margin-bottom: 10px; }
+  .health-stat { margin: 6px 0; column-gap: 6px; }
+  .health-stat span { font-size: .52rem; }
+  .health-stat strong { font-size: .95rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1420,6 +1455,7 @@ body {
 
 /* Hardcoded dark ink — avoids inheriting stale --text if html/body themes briefly diverge. */
 [data-theme="light"] .hero-header h1,
+[data-theme="light"] .hero-logo,
 [data-theme="light"] .panel-title h2,
 [data-theme="light"] .panel-title p,
 [data-theme="light"] .metric-copy dt,

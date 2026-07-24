@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 111" fill="none" role="img" aria-label="Mach Industries">
+  <!-- Official-style nested downward chevrons -->
+  <path
+    d="M1 0 L21 0 L55 34 L89 0 L109 0 L55 54 Z"
+    fill="currentColor"
+  />
+  <path
+    d="M1 46 L21 46 L55 80 L89 46 L109 46 L55 100 Z"
+    fill="currentColor"
+  />
+</svg>
