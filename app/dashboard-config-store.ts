@@ -45,10 +45,12 @@ function mergeEntry(
       typeof entry.boardNickname === "string"
         ? entry.boardNickname
         : fallback.boardNickname,
-    jiraEpicLink:
-      typeof entry.jiraEpicLink === "string"
-        ? entry.jiraEpicLink
-        : fallback.jiraEpicLink,
+    googleDriveLink:
+      typeof entry.googleDriveLink === "string"
+        ? entry.googleDriveLink
+        : typeof (entry as { jiraEpicLink?: unknown }).jiraEpicLink === "string"
+          ? ((entry as { jiraEpicLink: string }).jiraEpicLink)
+          : fallback.googleDriveLink,
     smartsheetLink:
       typeof entry.smartsheetLink === "string"
         ? entry.smartsheetLink
@@ -62,7 +64,7 @@ function emptyCustomFallback(id: DashboardId): DashboardConfig {
     responsibleEngineer: "",
     boardName: "New Board",
     boardNickname: "NEW",
-    jiraEpicLink: "",
+    googleDriveLink: "",
     smartsheetLink: "",
   };
 }

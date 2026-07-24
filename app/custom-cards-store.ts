@@ -43,8 +43,13 @@ function sanitizeRecord(raw: unknown): CustomCardRecord | null {
         typeof config.boardNickname === "string" && config.boardNickname.trim()
           ? config.boardNickname
           : "NEW",
-      jiraEpicLink:
-        typeof config.jiraEpicLink === "string" ? config.jiraEpicLink : "",
+      googleDriveLink:
+        typeof config.googleDriveLink === "string"
+          ? config.googleDriveLink
+          : typeof (config as { jiraEpicLink?: unknown }).jiraEpicLink ===
+              "string"
+            ? (config as { jiraEpicLink: string }).jiraEpicLink
+            : "",
       smartsheetLink:
         typeof config.smartsheetLink === "string" ? config.smartsheetLink : "",
     },

@@ -24,7 +24,7 @@ test("custom card config uses the same Configuration field format", () => {
       'Responsible Engineer: ""',
       'Board Name: "New Board 2"',
       'Board Nickname: "NB2"',
-      'JIRA Epic Link: ""',
+      'Google Drive Link: ""',
       'Smartsheet Link: ""',
     ].join("\n"),
   );

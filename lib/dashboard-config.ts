@@ -24,7 +24,7 @@ export type DashboardConfig = {
   responsibleEngineer: string;
   boardName: string;
   boardNickname: string;
-  jiraEpicLink: string;
+  googleDriveLink: string;
   smartsheetLink: string;
 };
 
@@ -55,7 +55,7 @@ export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
     responsibleEngineer: "Bruno Abousleiman",
     boardName: "Digital Safety Board",
     boardNickname: "DSB",
-    jiraEpicLink: "https://mach-industries.atlassian.net/browse/EE-2220",
+    googleDriveLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
   },
   "2": {
@@ -63,7 +63,7 @@ export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
     responsibleEngineer: "Bruno Abousleiman",
     boardName: "High Voltage Fireset Board",
     boardNickname: "HVFB",
-    jiraEpicLink: "",
+    googleDriveLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
   },
   "3": {
@@ -71,7 +71,7 @@ export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
     responsibleEngineer: "Shane Olson",
     boardName: "CPLD - Primary",
     boardNickname: "PRI",
-    jiraEpicLink: "",
+    googleDriveLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
   },
   "4": {
@@ -79,7 +79,7 @@ export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
     responsibleEngineer: "Gary Mejia Martinez",
     boardName: "CPLD - Independent",
     boardNickname: "IND",
-    jiraEpicLink: "",
+    googleDriveLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
   },
 };
@@ -95,7 +95,7 @@ export const CONFIG_FIELD_LABELS = [
   "Responsible Engineer",
   "Board Name",
   "Board Nickname",
-  "JIRA Epic Link",
+  "Google Drive Link",
   "Smartsheet Link",
 ] as const;
 
@@ -107,7 +107,7 @@ export function formatDashboardConfigText(config: DashboardConfig): string {
     `Responsible Engineer: "${config.responsibleEngineer}"`,
     `Board Name: "${config.boardName}"`,
     `Board Nickname: "${config.boardNickname}"`,
-    `JIRA Epic Link: "${config.jiraEpicLink}"`,
+    `Google Drive Link: "${config.googleDriveLink}"`,
     `Smartsheet Link: "${config.smartsheetLink}"`,
   ].join("\n");
 }
@@ -204,7 +204,7 @@ export function parseDashboardConfigText(
   const responsibleEngineer = readQuotedField(text, "Responsible Engineer");
   const boardName = readQuotedField(text, "Board Name");
   const boardNickname = readQuotedField(text, "Board Nickname");
-  const jiraEpicLink = readQuotedField(text, "JIRA Epic Link");
+  const googleDriveLink = readQuotedField(text, "Google Drive Link");
   const smartsheetLink = readQuotedField(text, "Smartsheet Link");
 
   // validateDashboardConfigSyntax already guarantees quoted fields exist.
@@ -212,7 +212,7 @@ export function parseDashboardConfigText(
     responsibleEngineer == null ||
     boardName == null ||
     boardNickname == null ||
-    jiraEpicLink == null ||
+    googleDriveLink == null ||
     smartsheetLink == null
   ) {
     return {
@@ -238,7 +238,7 @@ export function parseDashboardConfigText(
       responsibleEngineer: responsibleEngineer.trim(),
       boardName: boardName.trim(),
       boardNickname: boardNickname.trim(),
-      jiraEpicLink: jiraEpicLink.trim(),
+      googleDriveLink: googleDriveLink.trim(),
       smartsheetLink: smartsheetLink.trim(),
     },
   };

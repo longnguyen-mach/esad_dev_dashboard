@@ -23,7 +23,7 @@ export function createDefaultCustomCardConfig(
     responsibleEngineer: "",
     boardName: `New Board ${n}`,
     boardNickname: `NB${n}`,
-    jiraEpicLink: "",
+    googleDriveLink: "",
     smartsheetLink: "",
   };
 }

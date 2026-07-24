@@ -22,7 +22,7 @@ test("maps dashboard slots to board nicknames", () => {
   assert.equal(DASHBOARD_ID_BY_CODE.IND, "4");
 });
 
-test("formats DSB configuration text without LED thresholds", () => {
+test("formats DSB configuration text with Google Drive Link", () => {
   const text = formatDashboardConfigText(DASHBOARD_CONFIGS["1"]);
   assert.equal(
     text,
@@ -30,11 +30,12 @@ test("formats DSB configuration text without LED thresholds", () => {
       'Responsible Engineer: "Bruno Abousleiman"',
       'Board Name: "Digital Safety Board"',
       'Board Nickname: "DSB"',
-      'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+      'Google Drive Link: ""',
       'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
     ].join("\n"),
   );
   assert.doesNotMatch(text, /Dash Board ID/);
+  assert.doesNotMatch(text, /JIRA Epic Link/);
   assert.doesNotMatch(text, /^Green:/m);
   assert.doesNotMatch(text, /^Yellow:/m);
   assert.doesNotMatch(text, /^Red:/m);
@@ -45,7 +46,7 @@ test("parses editable configuration text back into card fields", () => {
     'Responsible Engineer: "Alex Rivera"',
     'Board Name: "Digital Safety Board Rev C"',
     'Board Nickname: "DSB-C"',
-    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Google Drive Link: "https://drive.google.com/drive/folders/example"',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
   ].join("\n");
 
@@ -55,6 +56,10 @@ test("parses editable configuration text back into card fields", () => {
   assert.equal(parsed.config.responsibleEngineer, "Alex Rivera");
   assert.equal(parsed.config.boardName, "Digital Safety Board Rev C");
   assert.equal(parsed.config.boardNickname, "DSB-C");
+  assert.equal(
+    parsed.config.googleDriveLink,
+    "https://drive.google.com/drive/folders/example",
+  );
 });
 
 test("rejects malformed configuration text", () => {
@@ -70,7 +75,7 @@ test("flags syntax errors when values are not inside quotes", () => {
     "Responsible Engineer: Bruno Abousleiman",
     'Board Name: "Digital Safety Board"',
     'Board Nickname: "DSB"',
-    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Google Drive Link: ""',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
   ].join("\n");
 
@@ -88,7 +93,7 @@ test("flags missing closing quote as a syntax error", () => {
     'Responsible Engineer: "Bruno Abousleiman"',
     'Board Name: "Digital Safety Board',
     'Board Nickname: "DSB"',
-    'JIRA Epic Link: "https://mach-industries.atlassian.net/browse/EE-2220"',
+    'Google Drive Link: ""',
     'Smartsheet Link: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1"',
   ].join("\n");
 

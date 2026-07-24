@@ -273,7 +273,10 @@ test("keeps dashboard metadata and project data in source", async () => {
     "utf8",
   );
   assert.match(configSource, /Bruno Abousleiman/);
-  assert.match(configSource, /EE-2220/);
+  assert.match(configSource, /Google Drive Link/);
+  assert.match(configSource, /googleDriveLink/);
+  assert.doesNotMatch(configSource, /JIRA Epic Link/);
+  assert.doesNotMatch(configSource, /jiraEpicLink/);
   assert.doesNotMatch(configSource, /ledGreenLessThan/);
   assert.match(configSource, /DEFAULT_ADMIN_USERNAME = "admin"/);
   assert.match(configSource, /DEFAULT_ADMIN_PASSWORD = "esad"/);
