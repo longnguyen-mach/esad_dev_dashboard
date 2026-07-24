@@ -34,10 +34,9 @@ test("server-renders the MACH ESAD dashboard", async () => {
     html,
     /<meta(?=[^>]*\bname=["']description["'])(?=[^>]*\bcontent=["']Engineering project health, progress, and work tracking at a glance\.["'])[^>]*>/i,
   );
-  assert.match(html, /Engineering Program Office/);
+  assert.match(html, /Lead: (?:<!-- -->)?Engineering Program Office/);
   assert.match(html, /Admin login/);
   assert.match(html, /MACH ESAD Development Dashboard/);
-  assert.match(html, /Engineering Program Office/);
   assert.match(html, /Responsible Engineer/);
   assert.match(html, /Bruno Abousleiman/);
   assert.match(html, /Digital Safety Board/);

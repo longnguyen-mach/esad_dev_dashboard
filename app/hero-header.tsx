@@ -25,7 +25,7 @@ export function HeroHeader({
         <h1>{programConfig.dashboardName}</h1>
         <div className="hero-subtitle">
           <span />
-          {programConfig.programLead}
+          Lead: {programConfig.programLead}
           <span />
         </div>
       </header>

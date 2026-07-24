@@ -12,7 +12,7 @@ test("formats Dashboard Configuration text with quoted fields", () => {
     formatProgramConfigText(DEFAULT_PROGRAM_CONFIG),
     [
       'Dashboard Name: "MACH ESAD Development Dashboard"',
-      'Program Lead: "Engineering Program Office"',
+      'Lead: "Engineering Program Office"',
     ].join("\n"),
   );
 });
@@ -20,7 +20,7 @@ test("formats Dashboard Configuration text with quoted fields", () => {
 test("parses Dashboard Configuration text", () => {
   const text = [
     'Dashboard Name: "ESAD Avionics Dashboard"',
-    'Program Lead: "Long Nguyen"',
+    'Lead: "Long Nguyen"',
   ].join("\n");
   const parsed = parseProgramConfigText(text);
   assert.ok("config" in parsed);
@@ -31,18 +31,19 @@ test("parses Dashboard Configuration text", () => {
 test("flags syntax errors when Dashboard Configuration values are unquoted", () => {
   const text = [
     "Dashboard Name: MACH ESAD Development Dashboard",
-    'Program Lead: "Engineering Program Office"',
+    'Lead: "Engineering Program Office"',
   ].join("\n");
   const errors = validateProgramConfigSyntax(text);
   assert.equal(errors.length, 1);
   assert.match(errors[0], /Dashboard Name value must be inside " "/);
 });
 
-test("flags missing closing quote for Program Lead", () => {
+test("flags missing closing quote for Lead", () => {
   const text = [
     'Dashboard Name: "MACH ESAD Development Dashboard"',
-    'Program Lead: "Engineering Program Office',
+    'Lead: "Engineering Program Office',
   ].join("\n");
   const errors = validateProgramConfigSyntax(text);
   assert.ok(errors.some((error) => /missing a closing "/i.test(error)));
+  assert.ok(errors.some((error) => /Lead/i.test(error)));
 });

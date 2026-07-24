@@ -11,7 +11,7 @@ export const DEFAULT_PROGRAM_CONFIG: ProgramConfig = {
 
 export const PROGRAM_CONFIG_FIELD_LABELS = [
   "Dashboard Name",
-  "Program Lead",
+  "Lead",
 ] as const;
 
 export type ProgramConfigFieldLabel =
@@ -20,7 +20,7 @@ export type ProgramConfigFieldLabel =
 export function formatProgramConfigText(config: ProgramConfig): string {
   return [
     `Dashboard Name: "${config.dashboardName}"`,
-    `Program Lead: "${config.programLead}"`,
+    `Lead: "${config.programLead}"`,
   ].join("\n");
 }
 
@@ -109,7 +109,7 @@ export function parseProgramConfigText(
   }
 
   const dashboardName = readQuotedField(text, "Dashboard Name");
-  const programLead = readQuotedField(text, "Program Lead");
+  const programLead = readQuotedField(text, "Lead");
   if (dashboardName == null || programLead == null) {
     return {
       error: 'Syntax error: each field must use Label: "value"',
@@ -122,7 +122,7 @@ export function parseProgramConfigText(
     valueErrors.push("Dashboard Name cannot be empty.");
   }
   if (!programLead.trim()) {
-    valueErrors.push("Program Lead cannot be empty.");
+    valueErrors.push("Lead cannot be empty.");
   }
   if (valueErrors.length > 0) {
     return {
