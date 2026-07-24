@@ -1,26 +1,107 @@
+import {
+  DEFAULT_OVERDUE_LED_THRESHOLDS,
+  type OverdueLedThresholds,
+} from "./dsb-tasks.ts";
+
 /** Top-level dashboard title / program lead shown in the hero header. */
 export type ProgramConfig = {
   dashboardName: string;
   programLead: string;
+  /** On Track when Over Due count is &lt; this value. */
+  ledGreenLessThan: number;
+  /** Delayed when Over Due count is &gt; this value (and not red). */
+  ledYellowGreaterThan: number;
+  /** At Risk when Over Due count is &gt; this value. */
+  ledRedGreaterThan: number;
 };
 
 export const DEFAULT_PROGRAM_CONFIG: ProgramConfig = {
   dashboardName: "MACH ESAD Development Dashboard",
   programLead: "Engineering Program Office",
+  ledGreenLessThan: DEFAULT_OVERDUE_LED_THRESHOLDS.greenLessThan,
+  ledYellowGreaterThan: DEFAULT_OVERDUE_LED_THRESHOLDS.yellowGreaterThan,
+  ledRedGreaterThan: DEFAULT_OVERDUE_LED_THRESHOLDS.redGreaterThan,
 };
+
+export function overdueThresholdsFromProgramConfig(
+  config: Pick<
+    ProgramConfig,
+    "ledGreenLessThan" | "ledYellowGreaterThan" | "ledRedGreaterThan"
+  >,
+): OverdueLedThresholds {
+  return {
+    greenLessThan: config.ledGreenLessThan,
+    yellowGreaterThan: config.ledYellowGreaterThan,
+    redGreaterThan: config.ledRedGreaterThan,
+  };
+}
+
+export function withDefaultProgramLedThresholds<
+  T extends Partial<ProgramConfig>,
+>(
+  config: T,
+): T & {
+  ledGreenLessThan: number;
+  ledYellowGreaterThan: number;
+  ledRedGreaterThan: number;
+} {
+  return {
+    ...config,
+    ledGreenLessThan:
+      typeof config.ledGreenLessThan === "number" &&
+      Number.isFinite(config.ledGreenLessThan)
+        ? config.ledGreenLessThan
+        : DEFAULT_OVERDUE_LED_THRESHOLDS.greenLessThan,
+    ledYellowGreaterThan:
+      typeof config.ledYellowGreaterThan === "number" &&
+      Number.isFinite(config.ledYellowGreaterThan)
+        ? config.ledYellowGreaterThan
+        : DEFAULT_OVERDUE_LED_THRESHOLDS.yellowGreaterThan,
+    ledRedGreaterThan:
+      typeof config.ledRedGreaterThan === "number" &&
+      Number.isFinite(config.ledRedGreaterThan)
+        ? config.ledRedGreaterThan
+        : DEFAULT_OVERDUE_LED_THRESHOLDS.redGreaterThan,
+  };
+}
 
 export const PROGRAM_CONFIG_FIELD_LABELS = [
   "Dashboard Name",
   "Program Lead",
+  "Green",
+  "Yellow",
+  "Red",
 ] as const;
 
 export type ProgramConfigFieldLabel =
   (typeof PROGRAM_CONFIG_FIELD_LABELS)[number];
 
+const LED_FIELD_OPS = {
+  Green: "<",
+  Yellow: ">",
+  Red: ">",
+} as const;
+
+type LedFieldLabel = keyof typeof LED_FIELD_OPS;
+
+function isLedFieldLabel(label: ProgramConfigFieldLabel): label is LedFieldLabel {
+  return label === "Green" || label === "Yellow" || label === "Red";
+}
+
+export function formatLedThresholdValue(
+  op: "<" | ">",
+  value: number,
+): string {
+  return `${op} ${value}`;
+}
+
 export function formatProgramConfigText(config: ProgramConfig): string {
   return [
     `Dashboard Name: "${config.dashboardName}"`,
     `Program Lead: "${config.programLead}"`,
+    `Green: "${formatLedThresholdValue("<", config.ledGreenLessThan)}"`,
+    `Yellow: "${formatLedThresholdValue(">", config.ledYellowGreaterThan)}"`,
+    `Red: "${formatLedThresholdValue(">", config.ledRedGreaterThan)}"`,
   ].join("\n");
 }
 
@@ -43,6 +124,16 @@ function findFieldLine(
   return null;
 }
 
+function parseLedThresholdRaw(
+  raw: string,
+  expectedOp: "<" | ">",
+): number | null {
+  const match = raw.trim().match(/^(<|>)\s*(\d+)$/);
+  if (!match) return null;
+  if (match[1] !== expectedOp) return null;
+  return Number(match[2]);
+}
+
 /** Validate Dashboard Configuration quote syntax. */
 export function validateProgramConfigSyntax(text: string): string[] {
   const errors: string[] = [];
@@ -58,7 +149,17 @@ export function validateProgramConfigSyntax(text: string): string[] {
     const quoted = line.match(
       new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"([^"]*)"\\s*$`, "i"),
     );
-    if (quoted) continue;
+    if (quoted) {
+      if (isLedFieldLabel(label)) {
+        const expectedOp = LED_FIELD_OPS[label];
+        if (parseLedThresholdRaw(quoted[1] ?? "", expectedOp) == null) {
+          errors.push(
+            `Syntax error on line ${lineNumber}: ${label} must use ${label}: "${expectedOp} N"`,
+          );
+        }
+      }
+      continue;
+    }
 
     const opensQuote = line.match(
       new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"`, "i"),
@@ -110,12 +211,25 @@ export function parseProgramConfigText(
 
   const dashboardName = readQuotedField(text, "Dashboard Name");
   const programLead = readQuotedField(text, "Program Lead");
-  if (dashboardName == null || programLead == null) {
+  const greenRaw = readQuotedField(text, "Green");
+  const yellowRaw = readQuotedField(text, "Yellow");
+  const redRaw = readQuotedField(text, "Red");
+  if (
+    dashboardName == null ||
+    programLead == null ||
+    greenRaw == null ||
+    yellowRaw == null ||
+    redRaw == null
+  ) {
     return {
       error: 'Syntax error: each field must use Label: "value"',
       errors: ['Syntax error: each field must use Label: "value"'],
     };
   }
+
+  const ledGreenLessThan = parseLedThresholdRaw(greenRaw, "<");
+  const ledYellowGreaterThan = parseLedThresholdRaw(yellowRaw, ">");
+  const ledRedGreaterThan = parseLedThresholdRaw(redRaw, ">");
 
   const valueErrors: string[] = [];
   if (!dashboardName.trim()) {
@@ -123,6 +237,15 @@ export function parseProgramConfigText(
   }
   if (!programLead.trim()) {
     valueErrors.push("Program Lead cannot be empty.");
+  }
+  if (
+    ledGreenLessThan == null ||
+    ledYellowGreaterThan == null ||
+    ledRedGreaterThan == null
+  ) {
+    valueErrors.push(
+      'LED thresholds must use Green: "< N", Yellow: "> N", Red: "> N".',
+    );
   }
   if (valueErrors.length > 0) {
     return {
@@ -135,6 +258,9 @@ export function parseProgramConfigText(
     config: {
       dashboardName: dashboardName.trim(),
       programLead: programLead.trim(),
+      ledGreenLessThan: ledGreenLessThan!,
+      ledYellowGreaterThan: ledYellowGreaterThan!,
+      ledRedGreaterThan: ledRedGreaterThan!,
     },
   };
 }

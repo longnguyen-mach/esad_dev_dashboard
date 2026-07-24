@@ -6,10 +6,7 @@ import {
   isCustomCardId,
   type CustomCardRecord,
 } from "../lib/custom-cards";
-import {
-  withDefaultLedThresholds,
-  type DashboardConfig,
-} from "../lib/dashboard-config";
+import type { DashboardConfig } from "../lib/dashboard-config";
 import {
   DASHBOARD_CONFIG_STORAGE_KEY,
   readDashboardConfigs,
@@ -32,7 +29,7 @@ function sanitizeRecord(raw: unknown): CustomCardRecord | null {
 
   return {
     id,
-    config: withDefaultLedThresholds({
+    config: {
       dashboardId: id,
       responsibleEngineer:
         typeof config.responsibleEngineer === "string"
@@ -50,22 +47,7 @@ function sanitizeRecord(raw: unknown): CustomCardRecord | null {
         typeof config.jiraEpicLink === "string" ? config.jiraEpicLink : "",
       smartsheetLink:
         typeof config.smartsheetLink === "string" ? config.smartsheetLink : "",
-      ledGreenLessThan:
-        typeof config.ledGreenLessThan === "number" &&
-        Number.isFinite(config.ledGreenLessThan)
-          ? config.ledGreenLessThan
-          : undefined,
-      ledYellowGreaterThan:
-        typeof config.ledYellowGreaterThan === "number" &&
-        Number.isFinite(config.ledYellowGreaterThan)
-          ? config.ledYellowGreaterThan
-          : undefined,
-      ledRedGreaterThan:
-        typeof config.ledRedGreaterThan === "number" &&
-        Number.isFinite(config.ledRedGreaterThan)
-          ? config.ledRedGreaterThan
-          : undefined,
-    }),
+    },
   };
 }
 

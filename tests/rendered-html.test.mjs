@@ -256,7 +256,8 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(projectPanel, /project-panel--custom/);
   assert.match(projectPanel, /panel-status-block/);
   assert.match(projectPanel, /statusFromOverdueCount/);
-  assert.match(projectPanel, /overdueThresholdsFromConfig/);
+  assert.match(projectPanel, /useProgramConfig/);
+  assert.match(projectPanel, /overdueThresholdsFromProgramConfig/);
   assert.match(projectPanel, /"On Track"/);
   assert.match(projectPanel, /"Delayed"/);
   assert.match(projectPanel, /"At Risk"/);
@@ -273,12 +274,18 @@ test("keeps dashboard metadata and project data in source", async () => {
   );
   assert.match(configSource, /Bruno Abousleiman/);
   assert.match(configSource, /EE-2220/);
-  assert.match(configSource, /ledGreenLessThan/);
-  assert.match(configSource, /Green: "/);
-  assert.match(configSource, /Yellow: "/);
-  assert.match(configSource, /Red: "/);
+  assert.doesNotMatch(configSource, /ledGreenLessThan/);
   assert.match(configSource, /DEFAULT_ADMIN_USERNAME = "admin"/);
   assert.match(configSource, /DEFAULT_ADMIN_PASSWORD = "esad"/);
+
+  const programConfigSource = await readFile(
+    new URL("../lib/program-config.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(programConfigSource, /ledGreenLessThan/);
+  assert.match(programConfigSource, /Green: "/);
+  assert.match(programConfigSource, /Yellow: "/);
+  assert.match(programConfigSource, /Red: "/);
   assert.match(page, /function HealthCore\(/);
   assert.match(page, /programStatusFromProjects/);
   assert.match(page, /aggregateProgramTaskStats/);

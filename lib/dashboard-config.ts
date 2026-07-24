@@ -1,9 +1,5 @@
 import { AVIONICS_MASTER_SCHEDULE_PERMALINK } from "./esad-projects.ts";
 import type { EsadProjectCode } from "./esad-projects.ts";
-import {
-  DEFAULT_OVERDUE_LED_THRESHOLDS,
-  type OverdueLedThresholds,
-} from "./dsb-tasks.ts";
 
 /** Fixed dashboard slots: 1 top-left, 2 top-right, 3 bottom-left, 4 bottom-right. */
 export type FixedDashboardId = "1" | "2" | "3" | "4";
@@ -30,53 +26,7 @@ export type DashboardConfig = {
   boardNickname: string;
   jiraEpicLink: string;
   smartsheetLink: string;
-  /** On Track when Over Due count is &lt; this value. */
-  ledGreenLessThan: number;
-  /** Delayed when Over Due count is &gt; this value (and not red). */
-  ledYellowGreaterThan: number;
-  /** At Risk when Over Due count is &gt; this value. */
-  ledRedGreaterThan: number;
 };
-
-export function overdueThresholdsFromConfig(
-  config: Pick<
-    DashboardConfig,
-    "ledGreenLessThan" | "ledYellowGreaterThan" | "ledRedGreaterThan"
-  >,
-): OverdueLedThresholds {
-  return {
-    greenLessThan: config.ledGreenLessThan,
-    yellowGreaterThan: config.ledYellowGreaterThan,
-    redGreaterThan: config.ledRedGreaterThan,
-  };
-}
-
-export function withDefaultLedThresholds<T extends Partial<DashboardConfig>>(
-  config: T,
-): T & {
-  ledGreenLessThan: number;
-  ledYellowGreaterThan: number;
-  ledRedGreaterThan: number;
-} {
-  return {
-    ...config,
-    ledGreenLessThan:
-      typeof config.ledGreenLessThan === "number" &&
-      Number.isFinite(config.ledGreenLessThan)
-        ? config.ledGreenLessThan
-        : DEFAULT_OVERDUE_LED_THRESHOLDS.greenLessThan,
-    ledYellowGreaterThan:
-      typeof config.ledYellowGreaterThan === "number" &&
-      Number.isFinite(config.ledYellowGreaterThan)
-        ? config.ledYellowGreaterThan
-        : DEFAULT_OVERDUE_LED_THRESHOLDS.yellowGreaterThan,
-    ledRedGreaterThan:
-      typeof config.ledRedGreaterThan === "number" &&
-      Number.isFinite(config.ledRedGreaterThan)
-        ? config.ledRedGreaterThan
-        : DEFAULT_OVERDUE_LED_THRESHOLDS.redGreaterThan,
-  };
-}
 
 /** Default admin credentials (override with ADMIN_USERNAME / ADMIN_PASSWORD). */
 export const DEFAULT_ADMIN_USERNAME = "admin";
@@ -100,38 +50,38 @@ export function getAdminCredentials(): { username: string; password: string } {
  * Quoted values in the Configuration Window populate each card.
  */
 export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
-  "1": withDefaultLedThresholds({
+  "1": {
     dashboardId: "1",
     responsibleEngineer: "Bruno Abousleiman",
     boardName: "Digital Safety Board",
     boardNickname: "DSB",
     jiraEpicLink: "https://mach-industries.atlassian.net/browse/EE-2220",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
-  }),
-  "2": withDefaultLedThresholds({
+  },
+  "2": {
     dashboardId: "2",
     responsibleEngineer: "Bruno Abousleiman",
     boardName: "High Voltage Fireset Board",
     boardNickname: "HVFB",
     jiraEpicLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
-  }),
-  "3": withDefaultLedThresholds({
+  },
+  "3": {
     dashboardId: "3",
     responsibleEngineer: "Shane Olson",
     boardName: "CPLD - Primary",
     boardNickname: "PRI",
     jiraEpicLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
-  }),
-  "4": withDefaultLedThresholds({
+  },
+  "4": {
     dashboardId: "4",
     responsibleEngineer: "Gary Mejia Martinez",
     boardName: "CPLD - Independent",
     boardNickname: "IND",
     jiraEpicLink: "",
     smartsheetLink: AVIONICS_MASTER_SCHEDULE_PERMALINK,
-  }),
+  },
 };
 
 export const DASHBOARD_ID_BY_CODE: Record<EsadProjectCode, DashboardId> = {
@@ -147,31 +97,9 @@ export const CONFIG_FIELD_LABELS = [
   "Board Nickname",
   "JIRA Epic Link",
   "Smartsheet Link",
-  "Green",
-  "Yellow",
-  "Red",
 ] as const;
 
 export type ConfigFieldLabel = (typeof CONFIG_FIELD_LABELS)[number];
-
-const LED_FIELD_OPS = {
-  Green: "<",
-  Yellow: ">",
-  Red: ">",
-} as const;
-
-type LedFieldLabel = keyof typeof LED_FIELD_OPS;
-
-function isLedFieldLabel(label: ConfigFieldLabel): label is LedFieldLabel {
-  return label === "Green" || label === "Yellow" || label === "Red";
-}
-
-export function formatLedThresholdValue(
-  op: "<" | ">",
-  value: number,
-): string {
-  return `${op} ${value}`;
-}
 
 /** Text-based configuration content shown/edited in the Configuration Window. */
 export function formatDashboardConfigText(config: DashboardConfig): string {
@@ -181,9 +109,6 @@ export function formatDashboardConfigText(config: DashboardConfig): string {
     `Board Nickname: "${config.boardNickname}"`,
     `JIRA Epic Link: "${config.jiraEpicLink}"`,
     `Smartsheet Link: "${config.smartsheetLink}"`,
-    `Green: "${formatLedThresholdValue("<", config.ledGreenLessThan)}"`,
-    `Yellow: "${formatLedThresholdValue(">", config.ledYellowGreaterThan)}"`,
-    `Red: "${formatLedThresholdValue(">", config.ledRedGreaterThan)}"`,
   ].join("\n");
 }
 
@@ -206,16 +131,6 @@ function findFieldLine(
   return null;
 }
 
-function parseLedThresholdRaw(
-  raw: string,
-  expectedOp: "<" | ">",
-): number | null {
-  const match = raw.trim().match(/^(<|>)\s*(\d+)$/);
-  if (!match) return null;
-  if (match[1] !== expectedOp) return null;
-  return Number(match[2]);
-}
-
 /**
  * Validate that each configuration value is wrapped in double quotes.
  * Returns one syntax-error message per invalid/missing field.
@@ -234,17 +149,7 @@ export function validateDashboardConfigSyntax(text: string): string[] {
     const quoted = line.match(
       new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"([^"]*)"\\s*$`, "i"),
     );
-    if (quoted) {
-      if (isLedFieldLabel(label)) {
-        const expectedOp = LED_FIELD_OPS[label];
-        if (parseLedThresholdRaw(quoted[1] ?? "", expectedOp) == null) {
-          errors.push(
-            `Syntax error on line ${lineNumber}: ${label} must use ${label}: "${expectedOp} N"`,
-          );
-        }
-      }
-      continue;
-    }
+    if (quoted) continue;
 
     const opensQuote = line.match(
       new RegExp(`^\\s*${escapeRegExp(label)}\\s*:\\s*"`, "i"),
@@ -301,9 +206,6 @@ export function parseDashboardConfigText(
   const boardNickname = readQuotedField(text, "Board Nickname");
   const jiraEpicLink = readQuotedField(text, "JIRA Epic Link");
   const smartsheetLink = readQuotedField(text, "Smartsheet Link");
-  const greenRaw = readQuotedField(text, "Green");
-  const yellowRaw = readQuotedField(text, "Yellow");
-  const redRaw = readQuotedField(text, "Red");
 
   // validateDashboardConfigSyntax already guarantees quoted fields exist.
   if (
@@ -311,10 +213,7 @@ export function parseDashboardConfigText(
     boardName == null ||
     boardNickname == null ||
     jiraEpicLink == null ||
-    smartsheetLink == null ||
-    greenRaw == null ||
-    yellowRaw == null ||
-    redRaw == null
+    smartsheetLink == null
   ) {
     return {
       error: 'Syntax error: each field must use Label: "value"',
@@ -322,23 +221,12 @@ export function parseDashboardConfigText(
     };
   }
 
-  const ledGreenLessThan = parseLedThresholdRaw(greenRaw, "<");
-  const ledYellowGreaterThan = parseLedThresholdRaw(yellowRaw, ">");
-  const ledRedGreaterThan = parseLedThresholdRaw(redRaw, ">");
-
   const valueErrors: string[] = [];
   if (!boardName.trim()) {
     valueErrors.push("Board Name cannot be empty.");
   }
   if (!boardNickname.trim()) {
     valueErrors.push("Board Nickname cannot be empty.");
-  }
-  if (
-    ledGreenLessThan == null ||
-    ledYellowGreaterThan == null ||
-    ledRedGreaterThan == null
-  ) {
-    valueErrors.push('LED thresholds must use Green: "< N", Yellow: "> N", Red: "> N".');
   }
   if (valueErrors.length > 0) {
     return { error: valueErrors[0] ?? "Invalid configuration", errors: valueErrors };
@@ -352,9 +240,6 @@ export function parseDashboardConfigText(
       boardNickname: boardNickname.trim(),
       jiraEpicLink: jiraEpicLink.trim(),
       smartsheetLink: smartsheetLink.trim(),
-      ledGreenLessThan: ledGreenLessThan!,
-      ledYellowGreaterThan: ledYellowGreaterThan!,
-      ledRedGreaterThan: ledRedGreaterThan!,
     },
   };
 }

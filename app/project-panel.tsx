@@ -2,12 +2,10 @@
 
 import { ConfigWindow } from "./config-window";
 import { useDashboardConfig } from "./dashboard-config-store";
+import { useProgramConfig } from "./program-config-store";
 import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
-import {
-  overdueThresholdsFromConfig,
-  type DashboardConfig,
-} from "../lib/dashboard-config";
+import type { DashboardConfig } from "../lib/dashboard-config";
 import type { EsadProjectCode } from "../lib/esad-projects";
 import type { DsbScheduleRevision } from "../lib/dsb-schedule";
 import {
@@ -15,6 +13,7 @@ import {
   type DsbIndicatorStatus,
   type DsbTaskItem,
 } from "../lib/dsb-tasks";
+import { overdueThresholdsFromProgramConfig } from "../lib/program-config";
 
 type Board = { name: string; progress: number };
 type Metric = {
@@ -67,10 +66,11 @@ export function ProjectPanel({
   layout?: "fixed" | "custom";
 }) {
   const config = useDashboardConfig(project.config.dashboardId);
+  const programConfig = useProgramConfig();
   const overdueTasks = overdueCountFromMetrics(project.metrics);
   const status = statusFromOverdueCount(
     overdueTasks,
-    overdueThresholdsFromConfig(config),
+    overdueThresholdsFromProgramConfig(programConfig),
   );
   const boardAverage = Math.round(
     project.boards.reduce((total, board) => total + board.progress, 0) /

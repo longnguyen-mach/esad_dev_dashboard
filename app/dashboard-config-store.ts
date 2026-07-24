@@ -5,7 +5,6 @@ import {
   DASHBOARD_CONFIGS,
   FIXED_DASHBOARD_IDS,
   isFixedDashboardId,
-  withDefaultLedThresholds,
   type DashboardConfig,
   type DashboardId,
   type FixedDashboardId,
@@ -32,9 +31,9 @@ function mergeEntry(
   fallback: DashboardConfig,
 ): DashboardConfig {
   if (!entry || typeof entry !== "object") {
-    return withDefaultLedThresholds({ ...fallback, dashboardId: id });
+    return { ...fallback, dashboardId: id };
   }
-  return withDefaultLedThresholds({
+  return {
     dashboardId: id,
     responsibleEngineer:
       typeof entry.responsibleEngineer === "string"
@@ -54,33 +53,18 @@ function mergeEntry(
       typeof entry.smartsheetLink === "string"
         ? entry.smartsheetLink
         : fallback.smartsheetLink,
-    ledGreenLessThan:
-      typeof entry.ledGreenLessThan === "number" &&
-      Number.isFinite(entry.ledGreenLessThan)
-        ? entry.ledGreenLessThan
-        : fallback.ledGreenLessThan,
-    ledYellowGreaterThan:
-      typeof entry.ledYellowGreaterThan === "number" &&
-      Number.isFinite(entry.ledYellowGreaterThan)
-        ? entry.ledYellowGreaterThan
-        : fallback.ledYellowGreaterThan,
-    ledRedGreaterThan:
-      typeof entry.ledRedGreaterThan === "number" &&
-      Number.isFinite(entry.ledRedGreaterThan)
-        ? entry.ledRedGreaterThan
-        : fallback.ledRedGreaterThan,
-  });
+  };
 }
 
 function emptyCustomFallback(id: DashboardId): DashboardConfig {
-  return withDefaultLedThresholds({
+  return {
     dashboardId: id,
     responsibleEngineer: "",
     boardName: "New Board",
     boardNickname: "NEW",
     jiraEpicLink: "",
     smartsheetLink: "",
-  });
+  };
 }
 
 function mergeStored(raw: unknown): ConfigMap {
@@ -114,10 +98,7 @@ export function readDashboardConfigs(): ConfigMap {
 
 export function writeDashboardConfig(config: DashboardConfig): ConfigMap {
   const next = readDashboardConfigs();
-  next[config.dashboardId] = withDefaultLedThresholds({
-    ...config,
-    dashboardId: config.dashboardId,
-  });
+  next[config.dashboardId] = { ...config, dashboardId: config.dashboardId };
   if (typeof window !== "undefined") {
     window.localStorage.setItem(
       DASHBOARD_CONFIG_STORAGE_KEY,
