@@ -33,17 +33,32 @@ export function HeroHeader({
           <span className="hero-logo" role="img" aria-label="Mach Industries">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 110 111"
-              fill="none"
+              viewBox="0 0 100 100"
               aria-hidden="true"
             >
-              <path
-                d="M1 0 L21 0 L55 34 L89 0 L109 0 L55 54 Z"
+              <rect
+                className="hero-logo-plate"
+                width="100"
+                height="100"
                 fill="currentColor"
               />
               <path
-                d="M1 46 L21 46 L55 80 L89 46 L109 46 L55 100 Z"
-                fill="currentColor"
+                className="hero-logo-mark"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="11"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+                d="M22 28 L50 56 L78 28"
+              />
+              <path
+                className="hero-logo-mark"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="11"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+                d="M22 48 L50 76 L78 48"
               />
             </svg>
           </span>

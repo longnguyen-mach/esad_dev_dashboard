@@ -1,11 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 111" fill="none" role="img" aria-label="Mach Industries">
-  <!-- Official-style nested downward chevrons -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Mach Industries">
+  <!-- Black plate + white double-chevron mark -->
+  <rect width="100" height="100" fill="#05080d"/>
   <path
-    d="M1 0 L21 0 L55 34 L89 0 L109 0 L55 54 Z"
-    fill="currentColor"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="11"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    d="M22 28 L50 56 L78 28"
   />
   <path
-    d="M1 46 L21 46 L55 80 L89 46 L109 46 L55 100 Z"
-    fill="currentColor"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="11"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    d="M22 48 L50 76 L78 48"
   />
 </svg>
