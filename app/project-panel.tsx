@@ -24,8 +24,11 @@ type Metric = {
   barLabel?: string;
   valueText?: string;
   valueHref?: string;
-  /** Smartsheet Start Date shown immediately after the task name. */
-  valueStartDateLabel?: string;
+  /**
+   * Smartsheet date shown immediately after the task name.
+   * Current Task uses Finish; Next Task uses Start.
+   */
+  valueDateLabel?: string;
   /** Completion percent label shown to the right of Current Task name. */
   valuePercentLabel?: string;
   hideValueBar?: boolean;
@@ -227,9 +230,9 @@ export function ProjectPanel({
                       {metric.valueText}
                     </span>
                   )}
-                  {metric.valueStartDateLabel ? (
-                    <span className="metric-task-start">
-                      {metric.valueStartDateLabel}
+                  {metric.valueDateLabel ? (
+                    <span className="metric-task-date">
+                      {metric.valueDateLabel}
                     </span>
                   ) : null}
                   {metric.valuePercentLabel ? (

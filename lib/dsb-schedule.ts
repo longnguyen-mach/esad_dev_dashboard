@@ -122,8 +122,8 @@ export function formatSchedulePercentComplete(
   return `${label}%`;
 }
 
-/** Format Smartsheet Start Date for card display (e.g. "Jul 2, 2026"). */
-export function formatScheduleStartDate(
+/** Format Smartsheet Start/Finish date for card display (e.g. "Jul 2, 2026"). */
+export function formatScheduleDate(
   value: string | null | undefined,
 ): string | null {
   if (!value || !String(value).trim()) return null;
@@ -149,8 +149,15 @@ export function formatScheduleStartDate(
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
+/** @deprecated Use formatScheduleDate. */
+export function formatScheduleStartDate(
+  value: string | null | undefined,
+): string | null {
+  return formatScheduleDate(value);
+}
+
 function formatSyncDate(value: string | null): string | null {
-  return formatScheduleStartDate(value);
+  return formatScheduleDate(value);
 }
 
 function progressFromDates(

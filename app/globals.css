@@ -837,7 +837,7 @@ body {
   transition: color .2s ease, text-decoration-color .2s ease;
 }
 
-.metric-task-start {
+.metric-task-date {
   flex: 0 0 auto;
   color: #a8c4de;
   font-size: .68rem;
@@ -1546,7 +1546,7 @@ body {
   color: #132033;
 }
 
-[data-theme="light"] .metric-task-start {
+[data-theme="light"] .metric-task-date {
   color: #3a5a78;
 }
 

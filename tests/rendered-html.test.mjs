@@ -114,8 +114,8 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(html, /metric-row--text/);
   assert.match(html, /metric-task-name/);
   assert.match(html, /metric-task-name-link/);
-  assert.match(html, /metric-task-start/);
-  assert.match(html, /Current Task[\s\S]*?metric-task-start[\s\S]*?Next Task/);
+  assert.match(html, /metric-task-date/);
+  assert.match(html, /Current Task[\s\S]*?metric-task-date[\s\S]*?Next Task/);
   assert.match(html, /Current Task[\s\S]*?Next Task/);
   assert.doesNotMatch(html, />Schedule</);
   assert.doesNotMatch(
@@ -157,9 +157,11 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /valueText: current\?\.name/);
   assert.match(page, /valueText: scheduleStats\.nextTask\?\.name/);
   assert.match(page, /valuePercentLabel/);
-  assert.match(page, /valueStartDateLabel/);
+  assert.match(page, /valueDateLabel/);
   assert.match(page, /formatSchedulePercentComplete/);
-  assert.match(page, /formatScheduleStartDate/);
+  assert.match(page, /formatScheduleDate/);
+  assert.match(page, /current\?\.finish/);
+  assert.match(page, /nextTask\?\.start/);
   assert.match(page, /focusTaskId: current\?\.id/);
   assert.match(page, /focusTaskId: scheduleStats\.nextTask\?\.id/);
   assert.match(page, /valueHref: current\?\.permalink/);
@@ -171,7 +173,7 @@ test("keeps dashboard metadata and project data in source", async () => {
   );
   assert.match(
     await readFile(new URL("../app/project-panel.tsx", import.meta.url), "utf8"),
-    /metric-task-start/,
+    /metric-task-date/,
   );
   assert.match(scheduleHover, /focusTaskIdProp/);
   assert.match(page, /stats\.overdueTasks/);
