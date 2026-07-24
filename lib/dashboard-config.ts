@@ -1,11 +1,25 @@
 import { AVIONICS_MASTER_SCHEDULE_PERMALINK } from "./esad-projects.ts";
 import type { EsadProjectCode } from "./esad-projects.ts";
 
-/** Dashboard slot IDs: 1 top-left, 2 top-right, 3 bottom-left, 4 bottom-right. */
-export type DashboardId = "1" | "2" | "3" | "4";
+/** Fixed dashboard slots: 1 top-left, 2 top-right, 3 bottom-left, 4 bottom-right. */
+export type FixedDashboardId = "1" | "2" | "3" | "4";
+
+/** Fixed slot id, or a custom card id (e.g. custom-…). */
+export type DashboardId = FixedDashboardId | (string & {});
+
+export const FIXED_DASHBOARD_IDS: readonly FixedDashboardId[] = [
+  "1",
+  "2",
+  "3",
+  "4",
+] as const;
+
+export function isFixedDashboardId(id: string): id is FixedDashboardId {
+  return (FIXED_DASHBOARD_IDS as readonly string[]).includes(id);
+}
 
 export type DashboardConfig = {
-  /** Internal slot id — not shown in the editable Configuration Window text. */
+  /** Internal slot/card id — not shown in the editable Configuration Window text. */
   dashboardId: DashboardId;
   responsibleEngineer: string;
   boardName: string;
@@ -35,7 +49,7 @@ export function getAdminCredentials(): { username: string; password: string } {
  * Layout: #1 top-left, #2 top-right, #3 bottom-left, #4 bottom-right.
  * Quoted values in the Configuration Window populate each card.
  */
-export const DASHBOARD_CONFIGS: Record<DashboardId, DashboardConfig> = {
+export const DASHBOARD_CONFIGS: Record<FixedDashboardId, DashboardConfig> = {
   "1": {
     dashboardId: "1",
     responsibleEngineer: "Bruno Abousleiman",

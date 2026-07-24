@@ -424,9 +424,61 @@ body {
   transition: border-color 180ms ease, filter 180ms ease;
 }
 
-/* Keep all project content outside the center instrument's overlap zone. */
-.project-panel:nth-child(odd) { padding-right: 100px; }
-.project-panel:nth-child(even) { padding-left: 100px; }
+/* Keep fixed top-4 content outside the center instrument's overlap zone. */
+.systems-grid > .project-panel:nth-child(odd) { padding-right: 100px; }
+.systems-grid > .project-panel:nth-child(even) { padding-left: 100px; }
+
+.custom-cards-region {
+  margin-top: 28px;
+}
+
+.custom-cards-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.custom-systems-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.custom-card-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.custom-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.custom-card-remove {
+  border: 1px solid #7a3b3b;
+  background: rgba(46, 14, 14, .92);
+  color: #ffd0d0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 7px 10px;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.custom-card-remove:hover {
+  border-color: #c35a5a;
+  background: rgba(74, 22, 22, .96);
+  color: #fff;
+}
+
+.project-panel--custom {
+  min-height: 344px;
+}
 
 .project-panel:hover {
   border-color: #3b79ae;
@@ -1173,8 +1225,8 @@ body {
   .blueprint-tile { width: 102px; height: 96px; }
   .metric-row { grid-template-columns: 28px 118px minmax(70px,1fr); }
   .metric-row--text { grid-template-columns: 28px auto minmax(0,1fr); }
-  .project-panel:nth-child(odd) { padding-right: 92px; }
-  .project-panel:nth-child(even) { padding-left: 92px; }
+  .systems-grid > .project-panel:nth-child(odd) { padding-right: 92px; }
+  .systems-grid > .project-panel:nth-child(even) { padding-left: 92px; }
 }
 
 @media (max-width: 1000px) {
@@ -1189,8 +1241,9 @@ body {
   .responsible-engineer strong { font-size: .55rem; }
   .metric-row { grid-template-columns: 25px 104px minmax(55px,1fr); }
   .metric-row--text { grid-template-columns: 25px auto minmax(0,1fr); }
-  .project-panel:nth-child(odd),
-  .project-panel:nth-child(even) { padding-inline: 27px; }
+  .systems-grid > .project-panel:nth-child(odd),
+  .systems-grid > .project-panel:nth-child(even) { padding-inline: 27px; }
+  .custom-systems-grid { gap: 18px; }
 }
 
 @media (max-width: 720px) {
@@ -1205,8 +1258,10 @@ body {
   .config-window-text { font-size: .74rem; }
   .systems-grid { display: flex; flex-direction: column; }
   .project-panel { min-height: 330px; padding: 22px 18px 18px; }
-  .project-panel:nth-child(odd),
-  .project-panel:nth-child(even) { padding-inline: 18px; }
+  .systems-grid > .project-panel:nth-child(odd),
+  .systems-grid > .project-panel:nth-child(even) { padding-inline: 18px; }
+  .custom-systems-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .custom-cards-region { margin-top: 18px; }
   .project-panel--1 { order: 0; }
   .project-panel--2 { order: 1; }
   .health-core { order: 2; width: min(92vw, 390px); height: min(92vw, 390px); margin: 30px auto; }

@@ -1,3 +1,4 @@
+import { CustomCardsSection } from "./custom-cards-section";
 import { HeroHeader } from "./hero-header";
 import { ProjectPanel, type ProjectPanelProject } from "./project-panel";
 import {
@@ -620,6 +621,8 @@ export default async function Home() {
         ))}
         <HealthCore status={programStatus} />
       </section>
+
+      <CustomCardsSection />
     </main>
   );
 }

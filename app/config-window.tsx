@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAdminAuthenticated } from "./admin-auth";
+import { syncCustomCardConfig } from "./custom-cards-store";
 import { writeDashboardConfig } from "./dashboard-config-store";
 import type { DashboardConfig } from "../lib/dashboard-config";
 import {
@@ -10,6 +11,7 @@ import {
   parseDashboardConfigText,
   validateDashboardConfigSyntax,
 } from "../lib/dashboard-config";
+import { isCustomCardId } from "../lib/custom-cards";
 
 type ConfigWindowProps = {
   config: DashboardConfig;
@@ -68,6 +70,9 @@ export function ConfigWindow({ config }: ConfigWindowProps) {
     }
 
     writeDashboardConfig(parsed.config);
+    if (isCustomCardId(parsed.config.dashboardId)) {
+      syncCustomCardConfig(parsed.config);
+    }
     const savedText = formatDashboardConfigText(parsed.config);
     setDraft(savedText);
     setErrors([]);

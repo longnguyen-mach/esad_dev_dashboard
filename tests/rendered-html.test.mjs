@@ -174,7 +174,18 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /sheetEditUrlFor/);
   assert.match(page, /HeroHeader/);
   assert.match(page, /ProjectPanel/);
+  assert.match(page, /CustomCardsSection/);
   assert.match(page, /DASHBOARD_CONFIGS/);
+
+  const customCardsSection = await readFile(
+    new URL("../app/custom-cards-section.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(customCardsSection, /Add Card/);
+  assert.match(customCardsSection, /addCustomCard/);
+  assert.match(customCardsSection, /custom-systems-grid/);
+  assert.match(customCardsSection, /layout="custom"/);
+  assert.match(customCardsSection, /Remove Card/);
 
   const heroHeader = await readFile(
     new URL("../app/hero-header.tsx", import.meta.url),
@@ -196,6 +207,8 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(projectPanel, /config\.boardName/);
   assert.match(projectPanel, /config\.boardNickname/);
   assert.match(projectPanel, /ConfigWindow/);
+  assert.match(projectPanel, /layout = "fixed"/);
+  assert.match(projectPanel, /project-panel--custom/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);

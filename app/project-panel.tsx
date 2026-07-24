@@ -26,7 +26,8 @@ type Metric = {
 
 export type ProjectPanelProject = {
   name: string;
-  code: EsadProjectCode;
+  /** Fixed board code, or custom board nickname. */
+  code: EsadProjectCode | string;
   status: "Critical" | "At risk" | "On track";
   boards: Board[];
   metrics: Metric[];
@@ -41,14 +42,17 @@ const metricIcons = ["◷", "▤", "▥", "▸"];
 export function ProjectPanel({
   project,
   index,
+  layout = "fixed",
 }: {
   project: ProjectPanelProject;
   index: number;
+  /** `custom` cards sit below the top-4 grid and skip ring inset classes. */
+  layout?: "fixed" | "custom";
 }) {
   const config = useDashboardConfig(project.config.dashboardId);
   const boardAverage = Math.round(
     project.boards.reduce((total, board) => total + board.progress, 0) /
-      project.boards.length,
+      Math.max(1, project.boards.length),
   );
   const progressPercent = project.taskProgressPercent ?? boardAverage;
   const progressCaption =
@@ -57,11 +61,16 @@ export function ProjectPanel({
     project.taskProgressPercent != null
       ? `Task progress ${progressPercent} percent done versus open`
       : `Average board progress ${boardAverage} percent`;
+  const panelClass =
+    layout === "custom"
+      ? "project-panel project-panel--custom"
+      : `project-panel project-panel--${index + 1}`;
 
   return (
     <article
-      className={`project-panel project-panel--${index + 1}`}
+      className={panelClass}
       data-dashboard-id={config.dashboardId}
+      data-card-layout={layout}
     >
       <div className="panel-topline" aria-hidden="true" />
       <header className="panel-header">

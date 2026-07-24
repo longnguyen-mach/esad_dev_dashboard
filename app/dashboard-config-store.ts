@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react";
 import {
   DASHBOARD_CONFIGS,
+  FIXED_DASHBOARD_IDS,
+  isFixedDashboardId,
   type DashboardConfig,
   type DashboardId,
+  type FixedDashboardId,
 } from "../lib/dashboard-config";
+import { isCustomCardId } from "../lib/custom-cards";
 
 export const DASHBOARD_CONFIG_STORAGE_KEY = "esad-dashboard-configs";
 export const DASHBOARD_CONFIG_EVENT = "esad-dashboard-config-change";
 
-type ConfigMap = Record<DashboardId, DashboardConfig>;
+type ConfigMap = Record<string, DashboardConfig>;
 
 function cloneDefaults(): ConfigMap {
   return {
@@ -21,39 +25,58 @@ function cloneDefaults(): ConfigMap {
   };
 }
 
+function mergeEntry(
+  id: DashboardId,
+  entry: Partial<DashboardConfig> | undefined,
+  fallback: DashboardConfig,
+): DashboardConfig {
+  if (!entry || typeof entry !== "object") return { ...fallback, dashboardId: id };
+  return {
+    dashboardId: id,
+    responsibleEngineer:
+      typeof entry.responsibleEngineer === "string"
+        ? entry.responsibleEngineer
+        : fallback.responsibleEngineer,
+    boardName:
+      typeof entry.boardName === "string" ? entry.boardName : fallback.boardName,
+    boardNickname:
+      typeof entry.boardNickname === "string"
+        ? entry.boardNickname
+        : fallback.boardNickname,
+    jiraEpicLink:
+      typeof entry.jiraEpicLink === "string"
+        ? entry.jiraEpicLink
+        : fallback.jiraEpicLink,
+    smartsheetLink:
+      typeof entry.smartsheetLink === "string"
+        ? entry.smartsheetLink
+        : fallback.smartsheetLink,
+  };
+}
+
 function mergeStored(raw: unknown): ConfigMap {
   const defaults = cloneDefaults();
   if (!raw || typeof raw !== "object") return defaults;
 
-  const stored = raw as Partial<Record<DashboardId, Partial<DashboardConfig>>>;
-  for (const id of ["1", "2", "3", "4"] as DashboardId[]) {
-    const entry = stored[id];
-    if (!entry || typeof entry !== "object") continue;
-    defaults[id] = {
-      ...defaults[id],
-      responsibleEngineer:
-        typeof entry.responsibleEngineer === "string"
-          ? entry.responsibleEngineer
-          : defaults[id].responsibleEngineer,
-      boardName:
-        typeof entry.boardName === "string"
-          ? entry.boardName
-          : defaults[id].boardName,
-      boardNickname:
-        typeof entry.boardNickname === "string"
-          ? entry.boardNickname
-          : defaults[id].boardNickname,
-      jiraEpicLink:
-        typeof entry.jiraEpicLink === "string"
-          ? entry.jiraEpicLink
-          : defaults[id].jiraEpicLink,
-      smartsheetLink:
-        typeof entry.smartsheetLink === "string"
-          ? entry.smartsheetLink
-          : defaults[id].smartsheetLink,
-      dashboardId: id,
-    };
+  const stored = raw as Partial<Record<string, Partial<DashboardConfig>>>;
+  for (const id of FIXED_DASHBOARD_IDS) {
+    defaults[id] = mergeEntry(id, stored[id], defaults[id]!);
   }
+
+  for (const [id, entry] of Object.entries(stored)) {
+    if (isFixedDashboardId(id)) continue;
+    if (!isCustomCardId(id)) continue;
+    const fallback: DashboardConfig = {
+      dashboardId: id,
+      responsibleEngineer: "",
+      boardName: "New Board",
+      boardNickname: "NEW",
+      jiraEpicLink: "",
+      smartsheetLink: "",
+    };
+    defaults[id] = mergeEntry(id, entry, fallback);
+  }
+
   return defaults;
 }
 
@@ -85,13 +108,31 @@ export function writeDashboardConfig(config: DashboardConfig): ConfigMap {
   return next;
 }
 
+function defaultConfigForId(dashboardId: DashboardId): DashboardConfig {
+  if (isFixedDashboardId(dashboardId)) {
+    return { ...DASHBOARD_CONFIGS[dashboardId as FixedDashboardId] };
+  }
+  return (
+    readDashboardConfigs()[dashboardId] ?? {
+      dashboardId,
+      responsibleEngineer: "",
+      boardName: "New Board",
+      boardNickname: "NEW",
+      jiraEpicLink: "",
+      smartsheetLink: "",
+    }
+  );
+}
+
 export function useDashboardConfig(dashboardId: DashboardId): DashboardConfig {
-  const [config, setConfig] = useState<DashboardConfig>(
-    () => DASHBOARD_CONFIGS[dashboardId],
+  const [config, setConfig] = useState<DashboardConfig>(() =>
+    defaultConfigForId(dashboardId),
   );
 
   useEffect(() => {
-    setConfig(readDashboardConfigs()[dashboardId]);
+    setConfig(
+      readDashboardConfigs()[dashboardId] ?? defaultConfigForId(dashboardId),
+    );
 
     const onChange = (event: Event) => {
       const detail = (event as CustomEvent<{ config: DashboardConfig }>).detail;
@@ -99,11 +140,16 @@ export function useDashboardConfig(dashboardId: DashboardId): DashboardConfig {
         setConfig(detail.config);
         return;
       }
-      setConfig(readDashboardConfigs()[dashboardId]);
+      setConfig(
+        readDashboardConfigs()[dashboardId] ?? defaultConfigForId(dashboardId),
+      );
     };
     const onStorage = (event: StorageEvent) => {
       if (event.key === DASHBOARD_CONFIG_STORAGE_KEY) {
-        setConfig(readDashboardConfigs()[dashboardId]);
+        setConfig(
+          readDashboardConfigs()[dashboardId] ??
+            defaultConfigForId(dashboardId),
+        );
       }
     };
 
