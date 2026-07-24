@@ -36,6 +36,8 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(html, /Engineering Program Office/);
   assert.match(html, /Admin login/);
+  assert.match(html, /Responsible Engineer/);
+  assert.match(html, /Bruno Abousleiman/);
   assert.match(html, /Digital Safety Board/);
   assert.match(html, /High Voltage Fireset Board/);
   assert.match(html, /CPLD - Primary/);
@@ -141,8 +143,6 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /hideValueBar: true/);
   assert.match(scheduleHover, /focusTaskIdProp/);
   assert.match(page, /stats\.overdueTasks/);
-  assert.match(page, /TaskHoverLabel/);
-  assert.match(page, /ScheduleHoverLabel/);
   assert.match(scheduleHover, /findCurrentScheduleTaskId/);
   assert.match(scheduleHover, /findNextScheduleTaskId/);
   assert.match(scheduleHover, /is-\$\{focus\}-work/);
@@ -155,8 +155,19 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /ESAD_PROJECT_INTEGRATIONS/);
   assert.match(page, /sheetEditUrlFor/);
   assert.match(page, /AdminLogin/);
-  assert.match(page, /ConfigWindow/);
+  assert.match(page, /ProjectPanel/);
   assert.match(page, /DASHBOARD_CONFIGS/);
+
+  const projectPanel = await readFile(
+    new URL("../app/project-panel.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(projectPanel, /TaskHoverLabel/);
+  assert.match(projectPanel, /ScheduleHoverLabel/);
+  assert.match(projectPanel, /responsible-engineer/);
+  assert.match(projectPanel, /config\.boardName/);
+  assert.match(projectPanel, /config\.boardNickname/);
+  assert.match(projectPanel, /ConfigWindow/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);

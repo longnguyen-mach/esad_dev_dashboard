@@ -1,12 +1,8 @@
 import { AdminLogin } from "./admin-login";
-import { ConfigWindow } from "./config-window";
-import { ScheduleHoverLabel } from "./schedule-hover";
-import { TaskHoverLabel } from "./task-hover";
+import { ProjectPanel, type ProjectPanelProject } from "./project-panel";
 import {
   DASHBOARD_CONFIGS,
   getAdminCredentials,
-  getDashboardConfigForCode,
-  type DashboardConfig,
 } from "../lib/dashboard-config";
 import {
   ESAD_PROJECT_INTEGRATIONS,
@@ -22,41 +18,10 @@ import {
 import {
   fetchAllProjectTaskStats,
   statusFromOverdueCount,
-  type DsbTaskItem,
   type DsbTaskStats,
 } from "../lib/dsb-tasks";
 
-type Board = { name: string; progress: number };
-type Metric = {
-  value: number;
-  label: string;
-  href?: string;
-  /** When set, status bar uses this completion percent instead of value/scale. */
-  barPercent?: number;
-  barLabel?: string;
-  /** Replaces the numeric value + progress bar (used by Current/Next Task). */
-  valueText?: string;
-  valueHref?: string;
-  hideValueBar?: boolean;
-  detailItems?: DsbTaskItem[];
-  scheduleRevisions?: DsbScheduleRevision[];
-  /** Keeps Current/Next Task popup highlight aligned with valueText. */
-  focusTaskId?: number;
-};
-
-type Project = {
-  name: string;
-  code: EsadProjectCode;
-  status: "Critical" | "At risk" | "On track";
-  boards: Board[];
-  metrics: Metric[];
-  updated: string;
-  /** When set, header progress uses Done/(Done+Open) instead of board average. */
-  taskProgressPercent?: number;
-  taskProgressCaption?: string;
-  /** Text Configuration Window payload for this dashboard slot. */
-  config: DashboardConfig;
-};
+type Project = ProjectPanelProject;
 
 function sheetEditUrlFor(code: EsadProjectCode): string {
   return googleSheetEditUrl(ESAD_PROJECT_INTEGRATIONS[code].googleSheetId);
@@ -441,153 +406,6 @@ const projects: Project[] = [
     updated: "Jul 21, 2026",
   },
 ];
-
-const metricIcons = ["◷", "▤", "▥", "▸"];
-
-function ProjectPanel({ project, index }: { project: Project; index: number }) {
-  const boardAverage = Math.round(
-    project.boards.reduce((total, board) => total + board.progress, 0) / project.boards.length,
-  );
-  const progressPercent = project.taskProgressPercent ?? boardAverage;
-  const progressCaption =
-    project.taskProgressCaption ?? `${boardAverage}% average progress`;
-  const progressAriaLabel =
-    project.taskProgressPercent != null
-      ? `Task progress ${progressPercent} percent done versus open`
-      : `Average board progress ${boardAverage} percent`;
-  const config = project.config ?? getDashboardConfigForCode(project.code);
-
-  return (
-    <article
-      className={`project-panel project-panel--${index + 1}`}
-      data-dashboard-id={config.dashboardId}
-    >
-      <div className="panel-topline" aria-hidden="true" />
-      <header className="panel-header">
-        <div className="blueprint-tile" aria-hidden="true">
-          <span>{project.code}</span>
-          <i />
-        </div>
-        <div className="panel-title">
-          <p>{project.status}</p>
-          <h2>{project.name}</h2>
-          <div className="board-summary" aria-label={progressAriaLabel}>
-            <span style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
-          </div>
-          <small>{progressCaption}</small>
-        </div>
-        <div className="panel-header-actions">
-          <ConfigWindow config={config} />
-          <div className="signal-lights" aria-label={`${project.status} project`}>
-            <i className={project.status === "On track" ? "active" : ""} />
-            <i className={project.status === "At risk" ? "active" : ""} />
-            <i className={project.status === "Critical" ? "active" : ""} />
-          </div>
-        </div>
-      </header>
-
-      <div className="tech-divider" />
-
-      <dl className="panel-metrics">
-        {project.metrics.map((metric, metricIndex) => {
-          const scale = metricIndex === 0 ? 80 : 10;
-          const width =
-            metric.barPercent != null
-              ? Math.max(0, Math.min(100, metric.barPercent))
-              : metric.value === 0
-                ? 2
-                : Math.max(10, Math.min(100, (metric.value / scale) * 100));
-          const showValueBar = !metric.hideValueBar;
-
-          return (
-            <div
-              className={`metric-row${showValueBar ? "" : " metric-row--text"}`}
-              key={metric.label}
-            >
-              <span className="metric-icon" aria-hidden="true">{metricIcons[metricIndex]}</span>
-              <div className="metric-copy">
-                <dt>
-                  {metric.label === "Open Tasks" && metric.detailItems ? (
-                    <TaskHoverLabel
-                      label={metric.label}
-                      href={metric.href}
-                      items={metric.detailItems}
-                      title="Open tasks"
-                      emptyText="No open tasks"
-                      tone="open"
-                    />
-                  ) : metric.label === "Over Due" ? (
-                    <TaskHoverLabel
-                      label={metric.label}
-                      href={metric.href}
-                      items={metric.detailItems ?? []}
-                      title="Overdue items"
-                      emptyText="No overdue tasks"
-                      tone="overdue"
-                    />
-                  ) : (metric.label === "Current Task" ||
-                      metric.label === "Next Task") &&
-                    metric.scheduleRevisions ? (
-                    <ScheduleHoverLabel
-                      label={metric.label}
-                      href={metric.href}
-                      revisions={metric.scheduleRevisions}
-                      focus={
-                        metric.label === "Next Task" ? "next" : "current"
-                      }
-                      focusTaskId={metric.focusTaskId}
-                    />
-                  ) : metric.href ? (
-                    <a
-                      className="metric-link"
-                      href={metric.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {metric.label}
-                    </a>
-                  ) : (
-                    metric.label
-                  )}
-                </dt>
-                {showValueBar ? <dd>{metric.value}</dd> : null}
-              </div>
-              {showValueBar ? (
-                <div
-                  className="metric-track"
-                  aria-label={metric.barLabel}
-                  aria-hidden={metric.barLabel ? undefined : true}
-                >
-                  <span
-                    className={`metric-fill metric-fill--${metricIndex}`}
-                    style={{ width: `${width}%` }}
-                  />
-                </div>
-              ) : metric.valueText ? (
-                metric.valueHref || metric.href ? (
-                  <dd className="metric-task-name">
-                    <a
-                      className="metric-task-name-link"
-                      href={metric.valueHref ?? metric.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {metric.valueText}
-                    </a>
-                  </dd>
-                ) : (
-                  <dd className="metric-task-name">{metric.valueText}</dd>
-                )
-              ) : null}
-            </div>
-          );
-        })}
-      </dl>
-
-      <p className="panel-updated">SYNC {project.updated.toUpperCase()}</p>
-    </article>
-  );
-}
 
 function HealthCore() {
   return (

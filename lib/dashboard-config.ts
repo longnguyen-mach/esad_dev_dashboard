@@ -5,10 +5,11 @@ import type { EsadProjectCode } from "./esad-projects.ts";
 export type DashboardId = "1" | "2" | "3" | "4";
 
 export type DashboardConfig = {
+  /** Internal slot id — not shown in the editable Configuration Window text. */
   dashboardId: DashboardId;
   responsibleEngineer: string;
   boardName: string;
-  boardNickname: EsadProjectCode;
+  boardNickname: string;
   jiraEpicLink: string;
   smartsheetLink: string;
 };
@@ -32,6 +33,7 @@ export function getAdminCredentials(): { username: string; password: string } {
 /**
  * Per-dashboard configuration.
  * Layout: #1 top-left, #2 top-right, #3 bottom-left, #4 bottom-right.
+ * Quoted values in the Configuration Window populate each card.
  */
 export const DASHBOARD_CONFIGS: Record<DashboardId, DashboardConfig> = {
   "1": {
@@ -75,16 +77,70 @@ export const DASHBOARD_ID_BY_CODE: Record<EsadProjectCode, DashboardId> = {
   IND: "4",
 };
 
-/** Text-based configuration file content for the Configuration Window. */
+/** Text-based configuration content shown/edited in the Configuration Window. */
 export function formatDashboardConfigText(config: DashboardConfig): string {
   return [
-    `Dash Board ID:  "${config.dashboardId}"`,
     `Responsible Engineer: "${config.responsibleEngineer}"`,
     `Board Name: "${config.boardName}"`,
     `Board Nickname: "${config.boardNickname}"`,
     `JIRA Epic Link: "${config.jiraEpicLink}"`,
     `Smartsheet Link: "${config.smartsheetLink}"`,
   ].join("\n");
+}
+
+function readQuotedField(text: string, label: string): string | null {
+  const pattern = new RegExp(
+    `${label}:\\s*"([^"]*)"`,
+    "i",
+  );
+  const match = text.match(pattern);
+  return match ? match[1] : null;
+}
+
+/**
+ * Parse editable Configuration Window text back into a config object.
+ * Dash Board ID is not part of the editable text and is preserved from `base`.
+ */
+export function parseDashboardConfigText(
+  text: string,
+  base: DashboardConfig,
+): { config: DashboardConfig } | { error: string } {
+  const responsibleEngineer = readQuotedField(text, "Responsible Engineer");
+  const boardName = readQuotedField(text, "Board Name");
+  const boardNickname = readQuotedField(text, "Board Nickname");
+  const jiraEpicLink = readQuotedField(text, "JIRA Epic Link");
+  const smartsheetLink = readQuotedField(text, "Smartsheet Link");
+
+  if (
+    responsibleEngineer == null ||
+    boardName == null ||
+    boardNickname == null ||
+    jiraEpicLink == null ||
+    smartsheetLink == null
+  ) {
+    return {
+      error:
+        'Keep each field on its own line as Label: "value" (Board Name, Board Nickname, Responsible Engineer, JIRA Epic Link, Smartsheet Link).',
+    };
+  }
+
+  if (!boardName.trim()) {
+    return { error: "Board Name cannot be empty." };
+  }
+  if (!boardNickname.trim()) {
+    return { error: "Board Nickname cannot be empty." };
+  }
+
+  return {
+    config: {
+      dashboardId: base.dashboardId,
+      responsibleEngineer: responsibleEngineer.trim(),
+      boardName: boardName.trim(),
+      boardNickname: boardNickname.trim(),
+      jiraEpicLink: jiraEpicLink.trim(),
+      smartsheetLink: smartsheetLink.trim(),
+    },
+  };
 }
 
 export function getDashboardConfigForCode(
