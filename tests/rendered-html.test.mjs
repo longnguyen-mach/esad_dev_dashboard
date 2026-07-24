@@ -198,6 +198,9 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(heroHeader, /admin-toolbar/);
   assert.match(heroHeader, /programConfig\.dashboardName/);
   assert.match(heroHeader, /programConfig\.programLead/);
+  assert.match(heroHeader, /hero-logo/);
+  assert.match(heroHeader, /Mach Industries/);
+  assert.match(heroHeader, /hero-title-row/);
 
   const themePicker = await readFile(
     new URL("../app/theme-picker.tsx", import.meta.url),

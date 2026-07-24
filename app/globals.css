@@ -1283,8 +1283,8 @@ body {
 
 .health-donut::after {
   position: absolute;
-  /* Larger hole gives room for bigger Program Status type. */
-  inset: 62px;
+  /* Hole sized for larger type with clear ring clearance. */
+  inset: 58px;
   border: 2px solid #3d8dcc;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #0b1d2d, #05111d 72%);
@@ -1295,10 +1295,10 @@ body {
 .health-center {
   position: relative;
   z-index: 2;
-  /* Stay inside the hole with clear ring clearance. */
-  width: 188px;
-  max-width: 58%;
-  padding: 8px 12px;
+  /* Stay inside the hole; corners must clear the ring. */
+  width: 172px;
+  max-width: 54%;
+  padding: 8px 14px;
   box-sizing: border-box;
   margin-inline: auto;
 }
@@ -1306,7 +1306,7 @@ body {
 .health-center h2 {
   margin: 0 0 14px;
   font-family: var(--font-geist-mono), monospace;
-  font-size: 1.28rem;
+  font-size: 1.26rem;
   letter-spacing: .04em;
   line-height: 1.12;
   text-align: center;
@@ -1325,14 +1325,14 @@ body {
 .health-stat i { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .health-stat span {
   color: #8399ae;
-  font-size: .62rem;
+  font-size: .6rem;
   letter-spacing: .03em;
   line-height: 1.2;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 .health-stat strong {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   min-width: 4.2ch;
   text-align: right;
   padding-left: 4px;
