@@ -38,6 +38,18 @@ body {
   padding: 24px 42px 26px;
 }
 
+.admin-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  min-height: 40px;
+  position: relative;
+  z-index: 40;
+}
+
 .hero-header {
   position: relative;
   display: flex;
@@ -49,9 +61,9 @@ body {
 }
 
 .admin-login {
-  position: absolute;
-  top: 8px;
-  right: 0;
+  position: relative;
+  top: auto;
+  right: auto;
   z-index: 40;
   display: flex;
   flex-direction: column;
@@ -1179,8 +1191,9 @@ body {
   .hero-header { min-height: 102px; }
   .hero-header h1 { max-width: 570px; font-size: clamp(1.7rem, 8vw, 2.5rem); line-height: 1.05; }
   .hero-subtitle { width: 100%; gap: 10px; font-size: .62rem; letter-spacing: .18em; white-space: normal; }
-  .admin-login { top: 0; right: 0; }
-  .admin-login-button { padding: 7px 10px; font-size: .6rem; }
+  .admin-toolbar { margin-bottom: 6px; gap: 8px; }
+  .admin-login-button,
+  .admin-toolbar .config-window-trigger { padding: 7px 10px; font-size: .6rem; }
   .config-window { max-height: 85vh; }
   .config-window-text { font-size: .74rem; }
   .systems-grid { display: flex; flex-direction: column; }

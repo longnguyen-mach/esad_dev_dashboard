@@ -1,4 +1,4 @@
-import { AdminLogin } from "./admin-login";
+import { HeroHeader } from "./hero-header";
 import { ProjectPanel, type ProjectPanelProject } from "./project-panel";
 import {
   DASHBOARD_CONFIGS,
@@ -552,14 +552,10 @@ export default async function Home() {
 
   return (
     <main className="dashboard-shell">
-      <header className="hero-header">
-        <AdminLogin
-          username={adminCredentials.username}
-          password={adminCredentials.password}
-        />
-        <h1>MACH ESAD Development Dashboard</h1>
-        <div className="hero-subtitle"><span />Engineering Program Office<span /></div>
-      </header>
+      <HeroHeader
+        adminUsername={adminCredentials.username}
+        adminPassword={adminCredentials.password}
+      />
 
       <section className="systems-grid" aria-label="Engineering project portfolio">
         {dashboardProjects.map((project, index) => (

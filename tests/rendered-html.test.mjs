@@ -36,6 +36,8 @@ test("server-renders the MACH ESAD dashboard", async () => {
   );
   assert.match(html, /Engineering Program Office/);
   assert.match(html, /Admin login/);
+  assert.match(html, /MACH ESAD Development Dashboard/);
+  assert.match(html, /Engineering Program Office/);
   assert.match(html, /Responsible Engineer/);
   assert.match(html, /Bruno Abousleiman/);
   assert.match(html, /Digital Safety Board/);
@@ -154,9 +156,19 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /fetchAllProjectScheduleStats/);
   assert.match(page, /ESAD_PROJECT_INTEGRATIONS/);
   assert.match(page, /sheetEditUrlFor/);
-  assert.match(page, /AdminLogin/);
+  assert.match(page, /HeroHeader/);
   assert.match(page, /ProjectPanel/);
   assert.match(page, /DASHBOARD_CONFIGS/);
+
+  const heroHeader = await readFile(
+    new URL("../app/hero-header.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(heroHeader, /AdminLogin/);
+  assert.match(heroHeader, /ProgramConfigWindow/);
+  assert.match(heroHeader, /admin-toolbar/);
+  assert.match(heroHeader, /programConfig\.dashboardName/);
+  assert.match(heroHeader, /programConfig\.programLead/);
 
   const projectPanel = await readFile(
     new URL("../app/project-panel.tsx", import.meta.url),
