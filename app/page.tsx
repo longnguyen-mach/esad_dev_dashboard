@@ -252,7 +252,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           <i />
         </div>
         <div className="panel-title">
-          <p>{project.status} · {project.boards.length} board{project.boards.length === 1 ? "" : "s"}</p>
+          <p>{project.status}</p>
           <h2>{project.name}</h2>
           <div className="board-summary" aria-label={progressAriaLabel}>
             <span style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
