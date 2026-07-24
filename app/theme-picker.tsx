@@ -92,9 +92,6 @@ export function ThemePicker() {
                         >
                           <strong>{option.label}</strong>
                           <span>{option.description}</span>
-                          {option.id === "lucky" && selected ? (
-                            <em>Active roll: {theme.resolved}</em>
-                          ) : null}
                         </button>
                       </li>
                     );

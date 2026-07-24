@@ -17,16 +17,18 @@ test("exposes Default plus four selectable themes", () => {
   assert.equal(THEME_OPTIONS[4]?.label, "Theme 4: Lucky");
 });
 
-test("Lucky resolves only to defense / war themes", () => {
-  assert.deepEqual([...LUCKY_THEME_POOL], ["default", "dark", "futuristic"]);
-  assert.equal(resolveThemeId("lucky", () => 0), "default");
-  assert.equal(resolveThemeId("lucky", () => 0.4), "dark");
-  assert.equal(resolveThemeId("lucky", () => 0.9), "futuristic");
+test("Lucky is its own concrete theme (not a roll into Futuristic)", () => {
+  assert.deepEqual([...LUCKY_THEME_POOL], ["lucky"]);
+  assert.equal(resolveThemeId("lucky"), "lucky");
+  assert.equal(resolveThemeId("lucky", () => 0.9), "lucky");
+  assert.equal(resolveThemeId("futuristic"), "futuristic");
   assert.equal(resolveThemeId("light"), "light");
+  assert.notEqual(resolveThemeId("lucky"), "futuristic");
 });
 
 test("validates theme ids", () => {
   assert.equal(isThemeId("futuristic"), true);
+  assert.equal(isThemeId("lucky"), true);
   assert.equal(isThemeId("neon"), false);
 });
 
@@ -47,4 +49,25 @@ test("futuristic theme ships layered defense motif artwork", async () => {
   assert.match(dense, /Jet|Drone|Missile|Rocket|UAV|Chevron/i);
   assert.match(primary, /<circle/);
   assert.match(dense, /stroke-dasharray/);
+});
+
+test("lucky theme ships a distinct warm brass motif set", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\[data-theme="lucky"\]/);
+  assert.match(css, /lucky-motifs\.svg/);
+  assert.match(css, /lucky-motifs-dense\.svg/);
+  assert.match(css, /#e0b45a|#c8963a|#140e08/);
+
+  const primary = await readFile(
+    new URL("../public/themes/lucky-motifs.svg", import.meta.url),
+    "utf8",
+  );
+  const dense = await readFile(
+    new URL("../public/themes/lucky-motifs-dense.svg", import.meta.url),
+    "utf8",
+  );
+  assert.match(primary, /Compass|Star|luck|reticle|chevron|brass/i);
+  assert.match(dense, /stars|chevron|compass|olive|hash/i);
+  assert.doesNotMatch(primary, /#3ec7ff/);
+  assert.doesNotMatch(dense, /#3ec7ff/);
 });

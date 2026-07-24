@@ -6,7 +6,8 @@ export type ThemeId =
   | "futuristic"
   | "lucky";
 
-export type ConcreteThemeId = Exclude<ThemeId, "lucky">;
+/** Every selectable theme maps 1:1 to a concrete look (including Lucky). */
+export type ConcreteThemeId = ThemeId;
 
 export const THEME_OPTIONS: ReadonlyArray<{
   id: ThemeId;
@@ -31,21 +32,20 @@ export const THEME_OPTIONS: ReadonlyArray<{
   {
     id: "futuristic",
     label: "Theme 3: Futuristic",
-    description: "Defense motifs in the background",
+    description: "Cool cyan defense motifs",
   },
   {
     id: "lucky",
     label: "Theme 4: Lucky",
-    description: "Random defense / war theme",
+    description: "Warm brass field-command look",
   },
 ];
 
-/** Defense / war themes Lucky may resolve to. */
-export const LUCKY_THEME_POOL: readonly ConcreteThemeId[] = [
-  "default",
-  "dark",
-  "futuristic",
-] as const;
+/**
+ * @deprecated Lucky is now its own concrete theme (no longer rolls into others).
+ * Kept for tests / callers that still import the pool name.
+ */
+export const LUCKY_THEME_POOL: readonly ConcreteThemeId[] = ["lucky"] as const;
 
 export function isThemeId(value: string): value is ThemeId {
   return THEME_OPTIONS.some((option) => option.id === value);
@@ -53,9 +53,7 @@ export function isThemeId(value: string): value is ThemeId {
 
 export function resolveThemeId(
   themeId: ThemeId,
-  random: () => number = Math.random,
+  _random: () => number = Math.random,
 ): ConcreteThemeId {
-  if (themeId !== "lucky") return themeId;
-  const index = Math.floor(random() * LUCKY_THEME_POOL.length);
-  return LUCKY_THEME_POOL[index] ?? "default";
+  return themeId;
 }

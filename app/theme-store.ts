@@ -36,7 +36,7 @@ export function readThemeState(): ThemeState {
     const selection =
       selectionRaw && isThemeId(selectionRaw) ? selectionRaw : "default";
     const resolved =
-      resolvedRaw && resolvedRaw !== "lucky" && isThemeId(resolvedRaw)
+      resolvedRaw && isThemeId(resolvedRaw)
         ? (resolvedRaw as ConcreteThemeId)
         : resolveThemeId(selection);
     return { selection, resolved };
