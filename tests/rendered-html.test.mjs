@@ -100,6 +100,7 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /name: "Digital Safety Board"/);
   assert.match(page, /label: "Open Tasks"/);
   assert.match(page, /label: "Over Due"/);
+  assert.match(page, /statusFromOverdueCount/);
   assert.match(page, /label: "Current Task"/);
   assert.match(page, /label: "Next Task"/);
   assert.match(page, /valueText: scheduleStats\.currentTask\?\.name/);

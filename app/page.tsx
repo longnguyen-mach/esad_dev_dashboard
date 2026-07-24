@@ -8,6 +8,7 @@ import {
 import {
   DSB_SHEET_EDIT_URL,
   fetchDsbTaskStats,
+  statusFromOverdueCount,
   type DsbTaskItem,
   type DsbTaskStats,
 } from "../lib/dsb-tasks";
@@ -106,7 +107,8 @@ const projects: Project[] = [
   {
     name: "Digital Safety Board",
     code: "DSB",
-    status: "Critical",
+    // Fallback overdue count is 1 → green / On track.
+    status: "On track",
     boards: [
       { name: "Main Carrier Board Rev B", progress: 70 },
       { name: "Main Carrier Board Rev C", progress: 50 },
@@ -404,6 +406,7 @@ function applyDsbTaskStats(
 
       nextProject = {
         ...nextProject,
+        status: statusFromOverdueCount(stats.overdueTasks),
         updated: stats.syncedAt ?? nextProject.updated,
         taskProgressPercent: doneOverOpenPercent,
         taskProgressCaption: `${doneOverOpenPercent}% done · ${stats.doneTasks} done / ${stats.openTasks} open`,

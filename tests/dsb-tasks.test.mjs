@@ -4,6 +4,7 @@ import {
   countOpenTasksFromCsv,
   fetchDsbTaskStats,
   jiraIssueUrl,
+  statusFromOverdueCount,
 } from "../lib/dsb-tasks.ts";
 
 const sampleCsv = `Issue Type,Key,Summary,Status,Updated,Due date
@@ -26,6 +27,16 @@ test("counts non-done DSB sheet rows as open tasks", () => {
     stats.openItems.map((item) => item.key),
     ["EE-1", "EE-2", "EE-3", "EE-5", "EE-6"],
   );
+});
+
+test("maps overdue counts to indicator light status", () => {
+  assert.equal(statusFromOverdueCount(0), "On track");
+  assert.equal(statusFromOverdueCount(1), "On track");
+  assert.equal(statusFromOverdueCount(2), "On track");
+  assert.equal(statusFromOverdueCount(3), "At risk");
+  assert.equal(statusFromOverdueCount(5), "At risk");
+  assert.equal(statusFromOverdueCount(6), "Critical");
+  assert.equal(statusFromOverdueCount(12), "Critical");
 });
 
 test("counts overdue open tasks from Due date before today", () => {
