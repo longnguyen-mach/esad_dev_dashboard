@@ -95,10 +95,16 @@ export function formatLedThresholdValue(
   return `${op} ${value}`;
 }
 
+/** Section header shown above editable LED threshold fields. */
+export const CARD_LED_THRESHOLD_SECTION =
+  "Card LED Threshold Configuration:";
+
 export function formatProgramConfigText(config: ProgramConfig): string {
   return [
     `Dashboard Name: "${config.dashboardName}"`,
     `Program Lead: "${config.programLead}"`,
+    "",
+    CARD_LED_THRESHOLD_SECTION,
     `Green: "${formatLedThresholdValue("<", config.ledGreenLessThan)}"`,
     `Yellow: "${formatLedThresholdValue(">", config.ledYellowGreaterThan)}"`,
     `Red: "${formatLedThresholdValue(">", config.ledRedGreaterThan)}"`,

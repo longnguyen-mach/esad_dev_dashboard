@@ -250,7 +250,7 @@ body {
 
 .config-window-editor {
   margin: 0 18px;
-  min-height: 220px;
+  min-height: 280px;
   padding: 14px;
   border: 1px solid #2f5f88;
   background: rgba(4, 12, 22, .95);

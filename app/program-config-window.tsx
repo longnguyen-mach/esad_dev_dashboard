@@ -108,7 +108,9 @@ export function ProgramConfigWindow({ config }: ProgramConfigWindowProps) {
                     <p className="config-window-kicker">
                       Dashboard Configuration
                     </p>
-                    <h3 id={titleId}>Hero title and program lead</h3>
+                    <h3 id={titleId}>
+                      Hero title, program lead, and card LED thresholds
+                    </h3>
                   </div>
                   <div className="config-window-actions">
                     <button
@@ -129,8 +131,10 @@ export function ProgramConfigWindow({ config }: ProgramConfigWindowProps) {
                   </div>
                 </header>
                 <p className="config-window-help">
-                  Each value must be inside quotes, e.g. Dashboard Name: "MACH
-                  ESAD Development Dashboard".
+                  Each value must be inside quotes. Under Card LED Threshold
+                  Configuration, Green / Yellow / Red thresholds (e.g. Green:
+                  &quot;&lt; 1&quot;) set which status LED lights on every card
+                  from its Over Due task count.
                 </p>
                 <textarea
                   className={`config-window-editor${

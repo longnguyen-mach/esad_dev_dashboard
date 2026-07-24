@@ -283,9 +283,17 @@ test("keeps dashboard metadata and project data in source", async () => {
     "utf8",
   );
   assert.match(programConfigSource, /ledGreenLessThan/);
+  assert.match(programConfigSource, /Card LED Threshold Configuration/);
   assert.match(programConfigSource, /Green: "/);
   assert.match(programConfigSource, /Yellow: "/);
   assert.match(programConfigSource, /Red: "/);
+
+  const programConfigWindow = await readFile(
+    new URL("../app/program-config-window.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(programConfigWindow, /Card LED Threshold/);
+  assert.match(programConfigWindow, /status LED/);
   assert.match(page, /function HealthCore\(/);
   assert.match(page, /programStatusFromProjects/);
   assert.match(page, /aggregateProgramTaskStats/);
