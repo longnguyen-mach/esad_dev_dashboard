@@ -51,6 +51,20 @@ test("futuristic theme ships layered defense motif artwork", async () => {
   assert.match(dense, /stroke-dasharray/);
 });
 
+test("dark theme uses graphite steel palette distinct from default blue", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\[data-theme="dark"\]/);
+  assert.match(css, /Graphite \/ steel|ops-black|#121316|#c8ccd6/);
+  // Dark should not reuse Default’s bright blue accent.
+  const darkBlock = css.match(
+    /\/\* Graphite[\s\S]*?\[data-theme="dark"\] \{[\s\S]*?\n\}/,
+  );
+  assert.ok(darkBlock);
+  assert.doesNotMatch(darkBlock[0], /--blue:\s*#248dff/);
+  assert.doesNotMatch(darkBlock[0], /--blue:\s*#3d8de0/);
+  assert.match(darkBlock[0], /--blue:\s*#aeb4c2/);
+});
+
 test("lucky theme ships a distinct warm brass motif set", async () => {
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(css, /\[data-theme="lucky"\]/);

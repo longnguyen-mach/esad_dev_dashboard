@@ -27,7 +27,7 @@ export const THEME_OPTIONS: ReadonlyArray<{
   {
     id: "dark",
     label: "Theme 2: Dark",
-    description: "Darker dashboard surfaces",
+    description: "Graphite steel / ops-black look",
   },
   {
     id: "futuristic",
