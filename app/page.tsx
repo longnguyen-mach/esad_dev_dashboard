@@ -1,13 +1,18 @@
 import { ScheduleHoverLabel } from "./schedule-hover";
 import { TaskHoverLabel } from "./task-hover";
 import {
-  fetchDsbScheduleStats,
+  ESAD_PROJECT_INTEGRATIONS,
+  googleSheetEditUrl,
+  smartsheetRowUrl,
+  type EsadProjectCode,
+} from "../lib/esad-projects";
+import {
+  fetchAllProjectScheduleStats,
   type DsbScheduleRevision,
   type DsbScheduleStats,
 } from "../lib/dsb-schedule";
 import {
-  DSB_SHEET_EDIT_URL,
-  fetchDsbTaskStats,
+  fetchAllProjectTaskStats,
   statusFromOverdueCount,
   type DsbTaskItem,
   type DsbTaskStats,
@@ -33,7 +38,7 @@ type Metric = {
 
 type Project = {
   name: string;
-  code: string;
+  code: EsadProjectCode;
   status: "Critical" | "At risk" | "On track";
   boards: Board[];
   metrics: Metric[];
@@ -43,7 +48,29 @@ type Project = {
   taskProgressCaption?: string;
 };
 
+function sheetEditUrlFor(code: EsadProjectCode): string {
+  return googleSheetEditUrl(ESAD_PROJECT_INTEGRATIONS[code].googleSheetId);
+}
+
 export const dynamic = "force-dynamic";
+
+function scheduleTask(
+  id: number,
+  name: string,
+  start: string,
+  finish: string,
+): DsbScheduleRevision["tasks"][number] {
+  return {
+    id,
+    name,
+    start,
+    finish,
+    percentComplete: null,
+    status: null,
+    assignee: null,
+    permalink: smartsheetRowUrl(id),
+  };
+}
 
 const dsbScheduleFallbackRevisions: DsbScheduleRevision[] = [
   {
@@ -52,31 +79,20 @@ const dsbScheduleFallbackRevisions: DsbScheduleRevision[] = [
     start: "2026-07-02T08:00:00",
     finish: "2026-09-29T16:59:59",
     assignee: "George Madden",
-    permalink:
-      "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4631884474285956",
+    permalink: smartsheetRowUrl(4631884474285956),
     tasks: [
-      {
-        id: 2380084660600708,
-        name: "Detail Architecture Work",
-        start: "2026-07-02T08:00:00",
-        finish: "2026-07-16T16:59:59",
-        percentComplete: null,
-        status: null,
-        assignee: null,
-        permalink:
-          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
-      },
-      {
-        id: 6602209311260999,
-        name: "Block Diagram + Review",
-        start: "2026-07-17T08:00:00",
-        finish: "2026-07-23T16:59:59",
-        percentComplete: null,
-        status: null,
-        assignee: null,
-        permalink:
-          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
-      },
+      scheduleTask(
+        2380084660600708,
+        "Detail Architecture Work",
+        "2026-07-02T08:00:00",
+        "2026-07-16T16:59:59",
+      ),
+      scheduleTask(
+        6883684287971204,
+        "Block Diagram + Review",
+        "2026-07-17T08:00:00",
+        "2026-07-23T16:59:59",
+      ),
     ],
   },
   {
@@ -85,20 +101,105 @@ const dsbScheduleFallbackRevisions: DsbScheduleRevision[] = [
     start: "2026-09-29T16:59:59",
     finish: "2026-11-11T16:59:59",
     assignee: null,
-    permalink:
-      "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=409759823626116",
+    permalink: smartsheetRowUrl(409759823626116),
     tasks: [
-      {
-        id: 4913359450996612,
-        name: "Requirements",
-        start: "2026-09-29T16:59:59",
-        finish: "2026-09-29T16:59:59",
-        percentComplete: null,
-        status: null,
-        assignee: null,
-        permalink:
-          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=4913359450996612",
-      },
+      scheduleTask(
+        4913359450996612,
+        "Requirements",
+        "2026-09-29T16:59:59",
+        "2026-09-29T16:59:59",
+      ),
+    ],
+  },
+];
+
+const hvfbScheduleFallbackRevisions: DsbScheduleRevision[] = [
+  {
+    id: 4772621962641284,
+    name: "Rev A",
+    start: "2026-07-02T08:00:00",
+    finish: "2026-09-29T16:59:59",
+    assignee: null,
+    permalink: smartsheetRowUrl(4772621962641284),
+    tasks: [
+      scheduleTask(
+        2520822148956036,
+        "Detail Architecture Work",
+        "2026-07-02T08:00:00",
+        "2026-07-16T16:59:59",
+      ),
+      scheduleTask(
+        7024421776326532,
+        "Block Diagram + Review",
+        "2026-07-17T08:00:00",
+        "2026-07-23T16:59:59",
+      ),
+    ],
+  },
+  {
+    id: 550497311981444,
+    name: "Rev B",
+    start: "2026-09-29T16:59:59",
+    finish: "2026-11-11T16:59:59",
+    assignee: null,
+    permalink: smartsheetRowUrl(550497311981444),
+    tasks: [
+      scheduleTask(
+        5054096939351940,
+        "Requirements",
+        "2026-09-29T16:59:59",
+        "2026-09-29T16:59:59",
+      ),
+    ],
+  },
+];
+
+const cpldPrimaryScheduleFallbackRevisions: DsbScheduleRevision[] = [
+  {
+    id: 3398599580516228,
+    name: "Schedule",
+    start: "2026-07-02T08:00:00",
+    finish: "2026-10-26T16:59:59",
+    assignee: null,
+    permalink: smartsheetRowUrl(3398599580516228),
+    tasks: [
+      scheduleTask(
+        7902199207886724,
+        "Requirements",
+        "2026-07-02T08:00:00",
+        "2026-07-23T16:59:59",
+      ),
+      scheduleTask(
+        583849813409668,
+        "Block Diagram Review",
+        "2026-07-24T08:00:00",
+        "2026-08-10T16:59:59",
+      ),
+    ],
+  },
+];
+
+const cpldIndependentScheduleFallbackRevisions: DsbScheduleRevision[] = [
+  {
+    id: 221931156930436,
+    name: "Schedule",
+    start: "2026-07-02T08:00:00",
+    finish: "2026-10-26T16:59:59",
+    assignee: null,
+    permalink: smartsheetRowUrl(221931156930436),
+    tasks: [
+      scheduleTask(
+        4725530784300932,
+        "Requirements",
+        "2026-07-02T08:00:00",
+        "2026-07-23T16:59:59",
+      ),
+      scheduleTask(
+        2473730970615684,
+        "Block Diagram Review",
+        "2026-07-24T08:00:00",
+        "2026-08-10T16:59:59",
+      ),
     ],
   },
 ];
@@ -121,7 +222,7 @@ const projects: Project[] = [
       {
         value: 25,
         label: "Open Tasks",
-        href: DSB_SHEET_EDIT_URL,
+        href: sheetEditUrlFor("DSB"),
         // Fallback when the sheet cannot be fetched: 1 Done / 26 total.
         barPercent: 3.8,
         barLabel: "1 of 26 tasks done",
@@ -136,7 +237,7 @@ const projects: Project[] = [
       {
         value: 1,
         label: "Over Due",
-        href: DSB_SHEET_EDIT_URL,
+        href: sheetEditUrlFor("DSB"),
         // Fallback when the sheet cannot be fetched.
         barPercent: 20,
         barLabel: "1 of 5 dated open tasks overdue",
@@ -152,10 +253,9 @@ const projects: Project[] = [
       {
         value: 0,
         label: "Current Task",
-        href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=128284846915460",
+        href: smartsheetRowUrl(128284846915460),
         valueText: "Detail Architecture Work",
-        valueHref:
-          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=2380084660600708",
+        valueHref: smartsheetRowUrl(2380084660600708),
         focusTaskId: 2380084660600708,
         hideValueBar: true,
         scheduleRevisions: dsbScheduleFallbackRevisions,
@@ -163,11 +263,10 @@ const projects: Project[] = [
       {
         value: 0,
         label: "Next Task",
-        href: "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
+        href: smartsheetRowUrl(6883684287971204),
         valueText: "Block Diagram + Review",
-        valueHref:
-          "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1?rowId=6602209311260999",
-        focusTaskId: 6602209311260999,
+        valueHref: smartsheetRowUrl(6883684287971204),
+        focusTaskId: 6883684287971204,
         hideValueBar: true,
         scheduleRevisions: dsbScheduleFallbackRevisions,
       },
@@ -180,6 +279,7 @@ const projects: Project[] = [
   {
     name: "High Voltage Fireset Board",
     code: "HVFB",
+    // Fallback until Google Sheet overdue count is available.
     status: "Critical",
     boards: [
       { name: "IO Board Rev A", progress: 100 },
@@ -190,9 +290,42 @@ const projects: Project[] = [
       { name: "Array Launcher Rev A", progress: 50 },
     ],
     metrics: [
-      { value: 41, label: "Open Tasks" },
-      { value: 5, label: "Open rework" },
-      { value: 3, label: "On order" },
+      {
+        value: 41,
+        label: "Open Tasks",
+        href: sheetEditUrlFor("HVFB"),
+        barPercent: 0,
+        barLabel: "Open tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 5,
+        label: "Over Due",
+        href: sheetEditUrlFor("HVFB"),
+        barPercent: 0,
+        barLabel: "Overdue tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 0,
+        label: "Current Task",
+        href: smartsheetRowUrl(269022335270788),
+        valueText: "Detail Architecture Work",
+        valueHref: smartsheetRowUrl(2520822148956036),
+        focusTaskId: 2520822148956036,
+        hideValueBar: true,
+        scheduleRevisions: hvfbScheduleFallbackRevisions,
+      },
+      {
+        value: 0,
+        label: "Next Task",
+        href: smartsheetRowUrl(7024421776326532),
+        valueText: "Block Diagram + Review",
+        valueHref: smartsheetRowUrl(7024421776326532),
+        focusTaskId: 7024421776326532,
+        hideValueBar: true,
+        scheduleRevisions: hvfbScheduleFallbackRevisions,
+      },
     ],
     updated: "Jul 21, 2026",
   },
@@ -202,9 +335,42 @@ const projects: Project[] = [
     status: "Critical",
     boards: [{ name: "Servo Board", progress: 5 }],
     metrics: [
-      { value: 21, label: "Open Tasks" },
-      { value: 0, label: "Open rework" },
-      { value: 0, label: "On order" },
+      {
+        value: 21,
+        label: "Open Tasks",
+        href: sheetEditUrlFor("PRI"),
+        barPercent: 0,
+        barLabel: "Open tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 0,
+        label: "Over Due",
+        href: sheetEditUrlFor("PRI"),
+        barPercent: 0,
+        barLabel: "Overdue tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 0,
+        label: "Current Task",
+        href: smartsheetRowUrl(3398599580516228),
+        valueText: "Requirements",
+        valueHref: smartsheetRowUrl(7902199207886724),
+        focusTaskId: 7902199207886724,
+        hideValueBar: true,
+        scheduleRevisions: cpldPrimaryScheduleFallbackRevisions,
+      },
+      {
+        value: 0,
+        label: "Next Task",
+        href: smartsheetRowUrl(583849813409668),
+        valueText: "Block Diagram Review",
+        valueHref: smartsheetRowUrl(583849813409668),
+        focusTaskId: 583849813409668,
+        hideValueBar: true,
+        scheduleRevisions: cpldPrimaryScheduleFallbackRevisions,
+      },
     ],
     updated: "Jun 23, 2026",
   },
@@ -221,9 +387,42 @@ const projects: Project[] = [
       { name: "BMS Connector Rev A", progress: 41 },
     ],
     metrics: [
-      { value: 66, label: "Open Tasks" },
-      { value: 1, label: "Open rework" },
-      { value: 5, label: "On order" },
+      {
+        value: 66,
+        label: "Open Tasks",
+        href: sheetEditUrlFor("IND"),
+        barPercent: 0,
+        barLabel: "Open tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 1,
+        label: "Over Due",
+        href: sheetEditUrlFor("IND"),
+        barPercent: 0,
+        barLabel: "Overdue tasks from Google Sheet when configured",
+        detailItems: [],
+      },
+      {
+        value: 0,
+        label: "Current Task",
+        href: smartsheetRowUrl(221931156930436),
+        valueText: "Requirements",
+        valueHref: smartsheetRowUrl(4725530784300932),
+        focusTaskId: 4725530784300932,
+        hideValueBar: true,
+        scheduleRevisions: cpldIndependentScheduleFallbackRevisions,
+      },
+      {
+        value: 0,
+        label: "Next Task",
+        href: smartsheetRowUrl(2473730970615684),
+        valueText: "Block Diagram Review",
+        valueHref: smartsheetRowUrl(2473730970615684),
+        focusTaskId: 2473730970615684,
+        hideValueBar: true,
+        scheduleRevisions: cpldIndependentScheduleFallbackRevisions,
+      },
     ],
     updated: "Jul 21, 2026",
   },
@@ -386,13 +585,15 @@ function HealthCore() {
   );
 }
 
-function applyDsbTaskStats(
+function applyLiveProjectStats(
   projectList: Project[],
-  stats: DsbTaskStats | null,
-  scheduleStats: DsbScheduleStats | null,
+  taskStatsByCode: Partial<Record<EsadProjectCode, DsbTaskStats>>,
+  scheduleStatsByCode: Partial<Record<EsadProjectCode, DsbScheduleStats>>,
 ): Project[] {
   return projectList.map((project) => {
-    if (project.code !== "DSB") return project;
+    const stats = taskStatsByCode[project.code] ?? null;
+    const scheduleStats = scheduleStatsByCode[project.code] ?? null;
+    const sheetHref = sheetEditUrlFor(project.code);
 
     let nextProject = { ...project, metrics: [...project.metrics] };
 
@@ -415,7 +616,7 @@ function applyDsbTaskStats(
             return {
               ...metric,
               value: stats.openTasks,
-              href: DSB_SHEET_EDIT_URL,
+              href: sheetHref,
               barPercent: stats.completionPercent,
               barLabel: `${stats.doneTasks} of ${stats.totalTasks} tasks done`,
               detailItems: stats.openItems,
@@ -426,7 +627,7 @@ function applyDsbTaskStats(
             return {
               ...metric,
               value: stats.overdueTasks,
-              href: DSB_SHEET_EDIT_URL,
+              href: sheetHref,
               barPercent: stats.overduePercent,
               barLabel:
                 stats.openTasksWithDueDate === 0
@@ -436,6 +637,18 @@ function applyDsbTaskStats(
             };
           }
 
+          return metric;
+        }),
+      };
+    } else {
+      // Keep Open Tasks / Over Due links pointed at the board's Google Sheet
+      // (or Drive folder when the sheet id is not configured yet).
+      nextProject = {
+        ...nextProject,
+        metrics: nextProject.metrics.map((metric) => {
+          if (metric.label === "Open Tasks" || metric.label === "Over Due") {
+            return { ...metric, href: sheetHref };
+          }
           return metric;
         }),
       };
@@ -487,11 +700,15 @@ function applyDsbTaskStats(
 }
 
 export default async function Home() {
-  const [dsbStats, scheduleStats] = await Promise.all([
-    fetchDsbTaskStats(),
-    fetchDsbScheduleStats(),
+  const [taskStatsByCode, scheduleStatsByCode] = await Promise.all([
+    fetchAllProjectTaskStats(),
+    fetchAllProjectScheduleStats(),
   ]);
-  const dashboardProjects = applyDsbTaskStats(projects, dsbStats, scheduleStats);
+  const dashboardProjects = applyLiveProjectStats(
+    projects,
+    taskStatsByCode,
+    scheduleStatsByCode,
+  );
 
   return (
     <main className="dashboard-shell">

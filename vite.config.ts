@@ -26,17 +26,34 @@ if (smartsheetAccessToken) {
   process.env.SMARTSHEET_ACCESS_TOKEN = smartsheetAccessToken;
 }
 
+const googleSheetEnvKeys = [
+  "ESAD_GOOGLE_SHEET_ID_DSB",
+  "ESAD_GOOGLE_SHEET_ID_HVFB",
+  "ESAD_GOOGLE_SHEET_ID_PRI",
+  "ESAD_GOOGLE_SHEET_ID_IND",
+] as const;
+
+const googleSheetVars: Record<string, string> = {};
+for (const key of googleSheetEnvKeys) {
+  const value = process.env[key] ?? readEnvFileValue(key);
+  if (value) {
+    process.env[key] = value;
+    googleSheetVars[key] = value;
+  }
+}
+
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
-  vars: smartsheetAccessToken
-    ? {
-        SMARTSHEET_ACCESS_TOKEN: smartsheetAccessToken,
-      }
-    : {},
+  vars: {
+    ...(smartsheetAccessToken
+      ? { SMARTSHEET_ACCESS_TOKEN: smartsheetAccessToken }
+      : {}),
+    ...googleSheetVars,
+  },
   d1_databases: d1
     ? [
         {

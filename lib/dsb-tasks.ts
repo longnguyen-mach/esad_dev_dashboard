@@ -1,8 +1,14 @@
-export const DSB_SHEET_ID = "1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps";
-export const DSB_SHEET_EDIT_URL =
-  `https://docs.google.com/spreadsheets/d/${DSB_SHEET_ID}/edit?usp=drive_link`;
-export const DSB_SHEET_CSV_URL =
-  `https://docs.google.com/spreadsheets/d/${DSB_SHEET_ID}/export?format=csv`;
+import {
+  ESAD_PROJECT_INTEGRATIONS,
+  googleSheetCsvUrl,
+  googleSheetEditUrl,
+} from "./esad-projects.ts";
+
+export const DSB_SHEET_ID =
+  ESAD_PROJECT_INTEGRATIONS.DSB.googleSheetId ??
+  "1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps";
+export const DSB_SHEET_EDIT_URL = googleSheetEditUrl(DSB_SHEET_ID);
+export const DSB_SHEET_CSV_URL = googleSheetCsvUrl(DSB_SHEET_ID);
 export const DSB_JIRA_BROWSE_BASE_URL = "https://mach.atlassian.net/browse";
 
 export function jiraIssueUrl(key: string): string {
@@ -289,11 +295,12 @@ export function countOpenTasksFromCsv(
   };
 }
 
-export async function fetchDsbTaskStats(
+export async function fetchProjectTaskStats(
+  sheetId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<DsbTaskStats | null> {
   try {
-    const response = await fetchImpl(DSB_SHEET_CSV_URL, {
+    const response = await fetchImpl(googleSheetCsvUrl(sheetId), {
       headers: {
         Accept: "text/csv,text/plain,*/*",
         "User-Agent": "mach-esad-dashboard/1.0",
@@ -314,4 +321,33 @@ export async function fetchDsbTaskStats(
   } catch {
     return null;
   }
+}
+
+export async function fetchDsbTaskStats(
+  fetchImpl: typeof fetch = fetch,
+): Promise<DsbTaskStats | null> {
+  return fetchProjectTaskStats(DSB_SHEET_ID, fetchImpl);
+}
+
+/** Fetch Google Sheet task stats for every configured ESAD board. */
+export async function fetchAllProjectTaskStats(
+  fetchImpl: typeof fetch = fetch,
+): Promise<Partial<Record<"DSB" | "HVFB" | "PRI" | "IND", DsbTaskStats>>> {
+  const entries = await Promise.all(
+    (Object.values(ESAD_PROJECT_INTEGRATIONS) as Array<{
+      code: "DSB" | "HVFB" | "PRI" | "IND";
+      googleSheetId: string | null;
+    }>).map(async (project) => {
+      if (!project.googleSheetId) return [project.code, null] as const;
+      const stats = await fetchProjectTaskStats(project.googleSheetId, fetchImpl);
+      return [project.code, stats] as const;
+    }),
+  );
+
+  const result: Partial<Record<"DSB" | "HVFB" | "PRI" | "IND", DsbTaskStats>> =
+    {};
+  for (const [code, stats] of entries) {
+    if (stats) result[code] = stats;
+  }
+  return result;
 }

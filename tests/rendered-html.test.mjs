@@ -47,6 +47,11 @@ test("server-renders the MACH ESAD dashboard", async () => {
     html,
     /href="https:\/\/docs\.google\.com\/spreadsheets\/d\/1RbnLe7FBrnT1njFWnsVyW74Iq2N5miTH9vFmRwagzps\/edit\?usp=drive_link"/,
   );
+  // Non-DSB boards link to the shared Drive folder until their sheet ids are configured.
+  assert.match(
+    html,
+    /href="https:\/\/drive\.google\.com\/drive\/folders\/1rzUg72NQvjyvbNVi2Y7yH36uT6wiMylj"/,
+  );
   assert.match(html, />Open Tasks<\/a>/);
   assert.match(html, /Over Due/);
   assert.match(html, /Current Task/);
@@ -58,6 +63,18 @@ test("server-renders the MACH ESAD dashboard", async () => {
   assert.match(
     html,
     /Digital Safety Board[\s\S]*?Over Due[\s\S]*?<dd>\d+<\/dd>/,
+  );
+  assert.match(
+    html,
+    /High Voltage Fireset Board[\s\S]*?Open Tasks[\s\S]*?Over Due[\s\S]*?Current Task[\s\S]*?Next Task/,
+  );
+  assert.match(
+    html,
+    /CPLD - Primary[\s\S]*?Open Tasks[\s\S]*?Over Due[\s\S]*?Current Task[\s\S]*?Next Task/,
+  );
+  assert.match(
+    html,
+    /CPLD - Independent[\s\S]*?Open Tasks[\s\S]*?Over Due[\s\S]*?Current Task[\s\S]*?Next Task/,
   );
   assert.match(html, /task-hover-trigger--open/);
   assert.match(html, /task-hover-trigger--overdue/);
@@ -121,13 +138,16 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(scheduleHover, /focus === "next"/);
   assert.match(page, /detailItems: stats\.openItems/);
   assert.match(page, /detailItems: stats\.overdueItems/);
-  assert.match(page, /fetchDsbTaskStats/);
-  assert.match(page, /fetchDsbScheduleStats/);
-  assert.match(page, /DSB_SHEET_EDIT_URL/);
+  assert.match(page, /fetchAllProjectTaskStats/);
+  assert.match(page, /fetchAllProjectScheduleStats/);
+  assert.match(page, /ESAD_PROJECT_INTEGRATIONS/);
+  assert.match(page, /sheetEditUrlFor/);
   assert.match(hover, /jiraIssueUrl\(item\.key\)/);
   assert.match(page, /name: "High Voltage Fireset Board"/);
   assert.match(page, /name: "CPLD - Primary"/);
   assert.match(page, /name: "CPLD - Independent"/);
+  assert.doesNotMatch(page, /label: "Open rework"/);
+  assert.doesNotMatch(page, /label: "On order"/);
   assert.match(page, /function HealthCore\(\)/);
   assert.match(layout, /title: "MACH ESAD Development Dashboard"/);
   assert.match(layout, /og\.png/);

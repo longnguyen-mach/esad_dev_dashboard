@@ -1,7 +1,12 @@
+import {
+  ESAD_PROJECT_INTEGRATIONS,
+  type EsadProjectCode,
+} from "./esad-projects.ts";
 import { getSmartsheetSheet } from "./smartsheet.ts";
 
 export const AVIONICS_MASTER_SCHEDULE_SHEET_ID = 2069122061913988;
-export const DSB_SCHEDULE_TASK_NAME = "Digital Safety Board (DSB)";
+export const DSB_SCHEDULE_TASK_NAME =
+  ESAD_PROJECT_INTEGRATIONS.DSB.smartsheetTaskName;
 
 const COLUMN = {
   taskName: 5067326880960388,
@@ -132,11 +137,22 @@ function toScheduleTask(
   };
 }
 
-export function buildDsbScheduleStats(
+function isRevisionName(name: string | null): boolean {
+  const normalized = (name ?? "").trim().toLowerCase();
+  return normalized === "rev a" || normalized === "rev b";
+}
+
+/**
+ * Build schedule stats for any ESAD board Task Name.
+ * - Boards with Rev A / Rev B children (DSB, HVFB) use those revision groups.
+ * - Boards with a flat task list (CPLD) treat direct children as schedule steps.
+ */
+export function buildScheduleStats(
   sheet: {
     permalink?: string;
     rows?: SmartsheetRow[];
   },
+  taskName: string,
   now: Date = new Date(),
 ): DsbScheduleStats | null {
   const rows = sheet.rows ?? [];
@@ -152,49 +168,82 @@ export function buildDsbScheduleStats(
     childrenByParent.set(row.parentId, list);
   }
 
-  const dsbRow = rows.find(
-    (row) => cellValue(row, COLUMN.taskName) === DSB_SCHEDULE_TASK_NAME,
+  const boardRow = rows.find(
+    (row) => cellValue(row, COLUMN.taskName) === taskName,
   );
-  if (!dsbRow) return null;
+  if (!boardRow) return null;
 
-  const revisionRows = (childrenByParent.get(dsbRow.id) ?? []).filter((row) => {
-    const name = (cellValue(row, COLUMN.taskName) ?? "").toLowerCase();
-    return name === "rev a" || name === "rev b";
-  });
+  const directChildren = childrenByParent.get(boardRow.id) ?? [];
+  const revisionRows = directChildren.filter((row) =>
+    isRevisionName(cellValue(row, COLUMN.taskName)),
+  );
 
-  const revisions: DsbScheduleRevision[] = revisionRows.map((revisionRow) => {
-    const tasks = (childrenByParent.get(revisionRow.id) ?? []).map((taskRow) =>
-      toScheduleTask(taskRow, sheetPermalink),
-    );
-    return {
-      id: revisionRow.id,
-      name: cellValue(revisionRow, COLUMN.taskName) ?? "Revision",
-      start: cellValue(revisionRow, COLUMN.start),
-      finish: cellValue(revisionRow, COLUMN.finish),
-      assignee: cellValue(revisionRow, COLUMN.assignee),
-      permalink: rowPermalink(sheetPermalink, revisionRow.id, revisionRow.permalink),
-      tasks,
-    };
-  });
+  let revisions: DsbScheduleRevision[];
 
-  // Keep Rev A before Rev B when both exist.
-  revisions.sort((a, b) => a.name.localeCompare(b.name));
+  if (revisionRows.length > 0) {
+    revisions = revisionRows.map((revisionRow) => {
+      const tasks = (childrenByParent.get(revisionRow.id) ?? []).map((taskRow) =>
+        toScheduleTask(taskRow, sheetPermalink),
+      );
+      return {
+        id: revisionRow.id,
+        name: cellValue(revisionRow, COLUMN.taskName) ?? "Revision",
+        start: cellValue(revisionRow, COLUMN.start),
+        finish: cellValue(revisionRow, COLUMN.finish),
+        assignee: cellValue(revisionRow, COLUMN.assignee),
+        permalink: rowPermalink(
+          sheetPermalink,
+          revisionRow.id,
+          revisionRow.permalink,
+        ),
+        tasks,
+      };
+    });
+    // Keep Rev A before Rev B when both exist.
+    revisions.sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    // Flat schedule (e.g. CPLD): direct children are the Current/Next steps.
+    revisions = [
+      {
+        id: boardRow.id,
+        name: "Schedule",
+        start: cellValue(boardRow, COLUMN.start),
+        finish: cellValue(boardRow, COLUMN.finish),
+        assignee: cellValue(boardRow, COLUMN.assignee),
+        permalink: rowPermalink(sheetPermalink, boardRow.id, boardRow.permalink),
+        tasks: directChildren.map((taskRow) =>
+          toScheduleTask(taskRow, sheetPermalink),
+        ),
+      },
+    ];
+  }
 
-  const dsbStart = cellValue(dsbRow, COLUMN.start);
-  const dsbFinish = cellValue(dsbRow, COLUMN.finish);
+  const boardStart = cellValue(boardRow, COLUMN.start);
+  const boardFinish = cellValue(boardRow, COLUMN.finish);
   const currentTask = findCurrentScheduleTask(revisions, now);
   const nextTask = findNextScheduleTask(revisions, now);
 
   return {
-    taskName: DSB_SCHEDULE_TASK_NAME,
-    href: rowPermalink(sheetPermalink, dsbRow.id, dsbRow.permalink),
+    taskName,
+    href: rowPermalink(sheetPermalink, boardRow.id, boardRow.permalink),
     revisionCount: revisions.length,
     revisions,
     currentTask,
     nextTask,
-    overallProgressPercent: progressFromDates(dsbStart, dsbFinish, now),
-    syncedAt: formatSyncDate(dsbFinish),
+    overallProgressPercent: progressFromDates(boardStart, boardFinish, now),
+    syncedAt: formatSyncDate(boardFinish),
   };
+}
+
+/** @deprecated Prefer buildScheduleStats(sheet, taskName, now) */
+export function buildDsbScheduleStats(
+  sheet: {
+    permalink?: string;
+    rows?: SmartsheetRow[];
+  },
+  now: Date = new Date(),
+): DsbScheduleStats | null {
+  return buildScheduleStats(sheet, DSB_SCHEDULE_TASK_NAME, now);
 }
 
 /** Business calendar for DSB schedule dates (Smartsheet wall times). */
@@ -397,24 +446,50 @@ export function findNextScheduleTaskId(
   return findNextScheduleTask(revisions, now)?.id ?? null;
 }
 
-export async function fetchDsbScheduleStats(
+async function fetchAvionicsMasterScheduleSheet(
   token?: string,
-  now: Date = new Date(),
-): Promise<DsbScheduleStats | null> {
+): Promise<{ permalink?: string; rows?: SmartsheetRow[] } | null> {
   try {
     const columnIds = Object.values(COLUMN).join(",");
     const sheet = await getSmartsheetSheet(
       `${AVIONICS_MASTER_SCHEDULE_SHEET_ID}?columnIds=${columnIds}`,
       token,
     );
-    return buildDsbScheduleStats(
-      sheet as {
-        permalink?: string;
-        rows?: SmartsheetRow[];
-      },
-      now,
-    );
+    return sheet as { permalink?: string; rows?: SmartsheetRow[] };
   } catch {
     return null;
   }
+}
+
+export async function fetchScheduleStats(
+  taskName: string,
+  token?: string,
+  now: Date = new Date(),
+): Promise<DsbScheduleStats | null> {
+  const sheet = await fetchAvionicsMasterScheduleSheet(token);
+  if (!sheet) return null;
+  return buildScheduleStats(sheet, taskName, now);
+}
+
+export async function fetchDsbScheduleStats(
+  token?: string,
+  now: Date = new Date(),
+): Promise<DsbScheduleStats | null> {
+  return fetchScheduleStats(DSB_SCHEDULE_TASK_NAME, token, now);
+}
+
+/** Fetch Current/Next schedule stats for every ESAD board from one Smartsheet pull. */
+export async function fetchAllProjectScheduleStats(
+  token?: string,
+  now: Date = new Date(),
+): Promise<Partial<Record<EsadProjectCode, DsbScheduleStats>>> {
+  const sheet = await fetchAvionicsMasterScheduleSheet(token);
+  if (!sheet) return {};
+
+  const result: Partial<Record<EsadProjectCode, DsbScheduleStats>> = {};
+  for (const project of Object.values(ESAD_PROJECT_INTEGRATIONS)) {
+    const stats = buildScheduleStats(sheet, project.smartsheetTaskName, now);
+    if (stats) result[project.code] = stats;
+  }
+  return result;
 }

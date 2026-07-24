@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import {
   DSB_SCHEDULE_TASK_NAME,
   buildDsbScheduleStats,
+  buildScheduleStats,
   fetchDsbScheduleStats,
   findCurrentScheduleTaskId,
   findNextScheduleTask,
@@ -146,6 +147,54 @@ test("does not select a same-calendar-day task before its Smartsheet start time"
   assert.ok(stats);
   assert.notEqual(stats.currentTask?.name, "Schematic");
   assert.notEqual(stats.currentTask?.name, "Block Diagram + Review");
+});
+
+const flatCpldFixture = {
+  permalink:
+    "https://app.smartsheet.com/sheets/MQWP7M7WVcg7J7q5JFqvwV8mMpHVMx8w3wmXwMW1",
+  rows: [
+    {
+      id: 3398599580516228,
+      cells: [
+        { columnId: 5067326880960388, value: "CPLD - Primary" },
+        { columnId: 7319126694645636, value: "2026-07-02T08:00:00" },
+        { columnId: 1689627160432516, value: "2026-10-26T16:59:59" },
+      ],
+    },
+    {
+      id: 7902199207886724,
+      parentId: 3398599580516228,
+      cells: [
+        { columnId: 5067326880960388, value: "Requirements" },
+        { columnId: 7319126694645636, value: "2026-07-02T08:00:00" },
+        { columnId: 1689627160432516, value: "2026-07-23T16:59:59" },
+      ],
+    },
+    {
+      id: 583849813409668,
+      parentId: 3398599580516228,
+      cells: [
+        { columnId: 5067326880960388, value: "Block Diagram Review" },
+        { columnId: 7319126694645636, value: "2026-07-24T08:00:00" },
+        { columnId: 1689627160432516, value: "2026-08-10T16:59:59" },
+      ],
+    },
+  ],
+};
+
+test("builds a flat schedule for CPLD boards without Rev A/B", () => {
+  const stats = buildScheduleStats(
+    flatCpldFixture,
+    "CPLD - Primary",
+    new Date("2026-07-10T12:00:00Z"),
+  );
+  assert.ok(stats);
+  assert.equal(stats.taskName, "CPLD - Primary");
+  assert.equal(stats.revisionCount, 1);
+  assert.equal(stats.revisions[0]?.name, "Schedule");
+  assert.equal(stats.currentTask?.name, "Requirements");
+  assert.equal(stats.nextTask?.name, "Block Diagram Review");
+  assert.match(stats.href, /rowId=3398599580516228/);
 });
 
 test("fetches live DSB schedule from Smartsheet when token is configured", async () => {
