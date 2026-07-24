@@ -70,7 +70,8 @@ body {
   --line: #9db7d1;
   --line-bright: #1c6fbf;
   --text: #132033;
-  --muted: #4f6780;
+  /* Stronger muted tone so captions stay readable on white cards. */
+  --muted: #2f4d68;
   --blue: #1c6fbf;
   --green: #1f8a45;
   --amber: #c27a08;
@@ -1256,7 +1257,8 @@ body {
 
 .health-donut::after {
   position: absolute;
-  inset: 68px;
+  /* Larger hole + smaller .health-center keeps labels off the ring. */
+  inset: 58px;
   border: 2px solid #3d8dcc;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #0b1d2d, #05111d 72%);
@@ -1267,13 +1269,18 @@ body {
 .health-center {
   position: relative;
   z-index: 2;
-  width: 226px;
+  /* Keep copy clear of the donut ring; hole is larger than this block. */
+  width: 176px;
+  max-width: 58%;
+  padding: 2px 12px;
+  box-sizing: border-box;
+  margin-inline: auto;
 }
 
 .health-center h2 {
-  margin: 0 0 22px;
+  margin: 0 0 14px;
   font-family: var(--font-geist-mono), monospace;
-  font-size: 1.45rem;
+  font-size: 1.15rem;
   letter-spacing: .04em;
   line-height: 1.14;
   text-align: center;
@@ -1282,22 +1289,29 @@ body {
 
 .health-stat {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  margin: 10px 0;
+  column-gap: 8px;
+  margin: 7px 0;
   font-family: var(--font-geist-mono), monospace;
 }
 
-.health-stat i { width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0; }
+.health-stat i { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .health-stat span {
   color: #8399ae;
-  font-size: .58rem;
-  letter-spacing: .04em;
+  font-size: .5rem;
+  letter-spacing: .02em;
   line-height: 1.2;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
-.health-stat strong { font-size: 1.15rem; min-width: 4.5ch; text-align: right; }
+.health-stat strong {
+  font-size: 1rem;
+  min-width: 4ch;
+  text-align: right;
+  padding-left: 4px;
+  justify-self: end;
+}
 .health-stat--green i { background: var(--green); }
 .health-stat--amber i { background: var(--amber); }
 .health-stat--red i { background: var(--red); }
@@ -1310,7 +1324,8 @@ body {
   .systems-grid { column-gap: 290px; }
   .health-core { width: 455px; height: 455px; }
   .health-donut { width: 366px; height: 366px; }
-  .health-donut::after { inset: 58px; }
+  .health-donut::after { inset: 48px; }
+  .health-center { width: 158px; padding-inline: 10px; }
   .panel-header { grid-template-columns: 102px minmax(0,1fr) auto; gap: 18px; }
   .blueprint-tile { width: 102px; height: 96px; }
   .metric-row { grid-template-columns: 28px 118px minmax(70px,1fr); }
@@ -1324,7 +1339,8 @@ body {
   .systems-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
   .health-core { position: relative; top: auto; left: auto; grid-column: 1 / -1; grid-row: 2; width: 430px; height: 430px; margin: 28px auto; transform: none; }
   .health-donut { width: 345px; height: 345px; }
-  .health-donut::after { inset: 55px; }
+  .health-donut::after { inset: 46px; }
+  .health-center { width: 148px; padding-inline: 10px; }
   .project-panel--3, .project-panel--4 { grid-row: 3; }
   .panel-header { grid-template-columns: 74px minmax(0,1fr) auto; }
   .blueprint-tile { width: 74px; height: 72px; }
@@ -1367,10 +1383,10 @@ body {
   .signal-lights i { width: 9px; height: 9px; }
   .metric-row { grid-template-columns: 26px 112px minmax(60px,1fr); gap: 8px; }
   .metric-row--text { grid-template-columns: 26px auto minmax(0,1fr); }
-  .health-center { width: 190px; }
-  .health-center h2 { font-size: 1.1rem; margin-bottom: 15px; }
-  .health-stat { margin: 7px 0; }
-  .health-stat strong { font-size: 1rem; }
+  .health-center { width: 128px; padding-inline: 8px; }
+  .health-center h2 { font-size: .95rem; margin-bottom: 10px; }
+  .health-stat { margin: 5px 0; column-gap: 6px; }
+  .health-stat strong { font-size: .9rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1391,19 +1407,44 @@ body {
   box-shadow: 0 0 0 10px rgba(220, 232, 244, .9), 0 0 0 11px #9db7d1, 0 0 50px rgba(80, 130, 180, .18);
 }
 
+[data-theme="light"] .health-donut {
+  border-color: #4f8fc8;
+}
+
+/* Light inner disk so Program Status copy stays readable. */
+[data-theme="light"] .health-donut::after {
+  border-color: #7fa4c4;
+  background: radial-gradient(circle at 50% 40%, #f7fbff, #e6f0fa 72%);
+  box-shadow: 0 0 0 7px rgba(180, 205, 225, .8);
+}
+
 [data-theme="light"] .hero-header h1,
-[data-theme="light"] .health-center h2,
 [data-theme="light"] .panel-title h2,
 [data-theme="light"] .panel-title p,
 [data-theme="light"] .metric-copy dt,
 [data-theme="light"] .metric-copy dd,
 [data-theme="light"] .metric-task-name,
 [data-theme="light"] .metric-task-name-link,
-[data-theme="light"] .responsible-engineer strong,
-[data-theme="light"] .panel-updated,
-[data-theme="light"] .health-stat span,
-[data-theme="light"] .health-stat strong {
+[data-theme="light"] .responsible-engineer strong {
   color: var(--text);
+}
+
+[data-theme="light"] .health-center h2 {
+  color: #0a3a6e;
+}
+
+[data-theme="light"] .health-stat span {
+  color: #244864;
+}
+
+[data-theme="light"] .health-stat--green strong { color: #0f6a30; }
+[data-theme="light"] .health-stat--amber strong { color: #8a5200; }
+[data-theme="light"] .health-stat--red strong { color: #a01c14; }
+
+[data-theme="light"] .panel-updated,
+[data-theme="light"] .panel-title small,
+[data-theme="light"] .responsible-engineer span {
+  color: #244864;
 }
 
 /* Board nickname chip: dark text on light tile (was dark-on-dark). */
@@ -1434,8 +1475,6 @@ body {
 }
 
 [data-theme="light"] .hero-subtitle { color: #1c6fbf; }
-[data-theme="light"] .responsible-engineer span,
-[data-theme="light"] .panel-title small { color: var(--muted); }
 
 [data-theme="light"] .admin-login-button,
 [data-theme="light"] .config-window-trigger,
