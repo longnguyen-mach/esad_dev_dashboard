@@ -152,13 +152,19 @@ test("keeps dashboard metadata and project data in source", async () => {
   assert.match(page, /statusFromOverdueCount/);
   assert.match(page, /label: "Current Task"/);
   assert.match(page, /label: "Next Task"/);
-  assert.match(page, /valueText: scheduleStats\.currentTask\?\.name/);
+  assert.match(page, /valueText: current\?\.name/);
   assert.match(page, /valueText: scheduleStats\.nextTask\?\.name/);
-  assert.match(page, /focusTaskId: scheduleStats\.currentTask\?\.id/);
+  assert.match(page, /valuePercentLabel/);
+  assert.match(page, /formatSchedulePercentComplete/);
+  assert.match(page, /focusTaskId: current\?\.id/);
   assert.match(page, /focusTaskId: scheduleStats\.nextTask\?\.id/);
-  assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.currentTask\?\.permalink/);
+  assert.match(page, /valueHref: current\?\.permalink/);
   assert.match(page, /valueHref:\s*\n?\s*scheduleStats\.nextTask\?\.permalink/);
   assert.match(page, /hideValueBar: true/);
+  assert.match(
+    await readFile(new URL("../app/project-panel.tsx", import.meta.url), "utf8"),
+    /metric-task-percent/,
+  );
   assert.match(scheduleHover, /focusTaskIdProp/);
   assert.match(page, /stats\.overdueTasks/);
   assert.match(scheduleHover, /findCurrentScheduleTaskId/);

@@ -13,6 +13,7 @@ import {
 } from "../lib/esad-projects";
 import {
   fetchAllProjectScheduleStats,
+  formatSchedulePercentComplete,
   type DsbScheduleRevision,
   type DsbScheduleStats,
 } from "../lib/dsb-schedule";
@@ -555,14 +556,19 @@ function applyLiveProjectStats(
         ...nextProject,
         metrics: nextProject.metrics.map((metric) => {
           if (metric.label === "Current Task") {
+            const current = scheduleStats.currentTask;
+            // Blank Smartsheet % Complete cells read as 0% for in-progress work.
+            const percentLabel = current
+              ? formatSchedulePercentComplete(current.percentComplete ?? 0)
+              : undefined;
             return {
               ...metric,
               value: 0,
               href: scheduleStats.href,
-              valueText: scheduleStats.currentTask?.name ?? "—",
-              valueHref:
-                scheduleStats.currentTask?.permalink ?? scheduleStats.href,
-              focusTaskId: scheduleStats.currentTask?.id,
+              valueText: current?.name ?? "—",
+              valueHref: current?.permalink ?? scheduleStats.href,
+              valuePercentLabel: percentLabel ?? undefined,
+              focusTaskId: current?.id,
               hideValueBar: true,
               barPercent: undefined,
               barLabel: undefined,

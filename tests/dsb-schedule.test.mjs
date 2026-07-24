@@ -8,6 +8,8 @@ import {
   fetchDsbScheduleStats,
   findCurrentScheduleTaskId,
   findNextScheduleTask,
+  formatSchedulePercentComplete,
+  parsePercentCompleteCell,
 } from "../lib/dsb-schedule.ts";
 
 const fixtureSheet = {
@@ -43,6 +45,11 @@ const fixtureSheet = {
         { columnId: 5067326880960388, value: "Detail Architecture Work" },
         { columnId: 7319126694645636, value: "2026-07-02T08:00:00" },
         { columnId: 1689627160432516, value: "2026-07-16T16:59:59" },
+        {
+          columnId: 282252276879236,
+          value: 0.45,
+          displayValue: "45%",
+        },
       ],
     },
     {
@@ -108,11 +115,25 @@ test("highlights the in-window task as current work", () => {
   );
   assert.equal(stats.currentTask?.id, 2380084660600708);
   assert.equal(stats.currentTask?.name, "Detail Architecture Work");
+  assert.equal(stats.currentTask?.percentComplete, 45);
   assert.equal(stats.nextTask?.name, "Requirements");
   assert.equal(
     findNextScheduleTask(stats.revisions, new Date("2026-07-10T12:00:00Z"))?.name,
     "Requirements",
   );
+});
+
+test("parses Smartsheet % Complete display and fraction values", () => {
+  assert.equal(
+    parsePercentCompleteCell({ columnId: 1, displayValue: "72%", value: 0.72 }),
+    72,
+  );
+  assert.equal(parsePercentCompleteCell({ columnId: 1, value: 0.455 }), 45.5);
+  assert.equal(parsePercentCompleteCell({ columnId: 1, value: 1 }), 100);
+  assert.equal(parsePercentCompleteCell({ columnId: 1 }), null);
+  assert.equal(formatSchedulePercentComplete(45), "45%");
+  assert.equal(formatSchedulePercentComplete(45.5), "45.5%");
+  assert.equal(formatSchedulePercentComplete(null), null);
 });
 
 test("does not select a future Smartsheet task as current", () => {

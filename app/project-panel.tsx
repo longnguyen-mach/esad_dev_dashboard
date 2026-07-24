@@ -18,6 +18,8 @@ type Metric = {
   barLabel?: string;
   valueText?: string;
   valueHref?: string;
+  /** Completion percent label shown to the right of Current Task name. */
+  valuePercentLabel?: string;
   hideValueBar?: boolean;
   detailItems?: DsbTaskItem[];
   scheduleRevisions?: DsbScheduleRevision[];
@@ -189,8 +191,8 @@ export function ProjectPanel({
                   />
                 </div>
               ) : metric.valueText ? (
-                metric.valueHref || metric.href ? (
-                  <dd className="metric-task-name">
+                <dd className="metric-task-name">
+                  {metric.valueHref || metric.href ? (
                     <a
                       className="metric-task-name-link"
                       href={metric.valueHref ?? metric.href}
@@ -199,10 +201,17 @@ export function ProjectPanel({
                     >
                       {metric.valueText}
                     </a>
-                  </dd>
-                ) : (
-                  <dd className="metric-task-name">{metric.valueText}</dd>
-                )
+                  ) : (
+                    <span className="metric-task-name-text">
+                      {metric.valueText}
+                    </span>
+                  )}
+                  {metric.valuePercentLabel ? (
+                    <span className="metric-task-percent">
+                      {metric.valuePercentLabel}
+                    </span>
+                  ) : null}
+                </dd>
               ) : null}
             </div>
           );

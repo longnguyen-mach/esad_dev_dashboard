@@ -73,11 +73,53 @@ function cellValue(row: SmartsheetRow, columnId: number): string | null {
   return String(cell.value);
 }
 
-function parsePercent(value: string | null): number | null {
-  if (!value) return null;
-  const match = value.replace("%", "").trim();
-  const num = Number(match);
-  return Number.isFinite(num) ? num : null;
+function cellById(
+  row: SmartsheetRow,
+  columnId: number,
+): SmartsheetCell | undefined {
+  return row.cells?.find((entry) => entry.columnId === columnId);
+}
+
+/**
+ * Smartsheet % Complete cells use displayValue like "72%" and raw value 0-1.
+ * Blank cells return null (callers may treat that as 0% for display).
+ */
+export function parsePercentCompleteCell(
+  cell: SmartsheetCell | undefined,
+): number | null {
+  if (!cell) return null;
+
+  if (cell.displayValue != null && String(cell.displayValue).trim() !== "") {
+    const fromDisplay = Number(String(cell.displayValue).replace("%", "").trim());
+    if (Number.isFinite(fromDisplay)) {
+      return Math.round(Math.max(0, Math.min(100, fromDisplay)) * 10) / 10;
+    }
+  }
+
+  if (typeof cell.value === "number" && Number.isFinite(cell.value)) {
+    const raw = cell.value;
+    const asPercent = raw >= 0 && raw <= 1 ? raw * 100 : raw;
+    return Math.round(Math.max(0, Math.min(100, asPercent)) * 10) / 10;
+  }
+
+  if (cell.value == null) return null;
+  const fromValue = Number(String(cell.value).replace("%", "").trim());
+  if (!Number.isFinite(fromValue)) return null;
+  const asPercent = fromValue >= 0 && fromValue <= 1 ? fromValue * 100 : fromValue;
+  return Math.round(Math.max(0, Math.min(100, asPercent)) * 10) / 10;
+}
+
+/** Format a schedule % Complete value for UI (e.g. 45 → "45%"). */
+export function formatSchedulePercentComplete(
+  percent: number | null | undefined,
+): string | null {
+  if (percent == null || !Number.isFinite(percent)) return null;
+  const clamped = Math.max(0, Math.min(100, percent));
+  const rounded = Math.round(clamped * 10) / 10;
+  const label = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(1);
+  return `${label}%`;
 }
 
 function formatSyncDate(value: string | null): string | null {
@@ -130,7 +172,9 @@ function toScheduleTask(
     name: cellValue(row, COLUMN.taskName) ?? "Untitled task",
     start: cellValue(row, COLUMN.start),
     finish: cellValue(row, COLUMN.finish),
-    percentComplete: parsePercent(cellValue(row, COLUMN.percentComplete)),
+    percentComplete: parsePercentCompleteCell(
+      cellById(row, COLUMN.percentComplete),
+    ),
     status: cellValue(row, COLUMN.status),
     assignee: cellValue(row, COLUMN.assignee),
     permalink: rowPermalink(sheetPermalink, row.id, row.permalink),

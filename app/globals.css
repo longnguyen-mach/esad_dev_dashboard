@@ -753,6 +753,9 @@ body {
 }
 
 .metric-task-name {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   margin: 0;
   color: #eaf5ff;
   font-family: var(--font-geist-mono), monospace;
@@ -763,12 +766,29 @@ body {
   min-width: 0;
 }
 
+.metric-task-name-link,
+.metric-task-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .metric-task-name-link {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: rgba(243, 170, 38, .45);
   text-underline-offset: 3px;
   transition: color .2s ease, text-decoration-color .2s ease;
+}
+
+.metric-task-percent {
+  flex: 0 0 auto;
+  color: #9ec9ff;
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-task-name-link:hover,
@@ -1455,8 +1475,13 @@ body {
 [data-theme="light"] .metric-copy dd,
 [data-theme="light"] .metric-task-name,
 [data-theme="light"] .metric-task-name-link,
+[data-theme="light"] .metric-task-name-text,
 [data-theme="light"] .responsible-engineer strong {
   color: #132033;
+}
+
+[data-theme="light"] .metric-task-percent {
+  color: #0d3558;
 }
 
 /* Light theme: invert exact black/white Mach mark */
